@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:mate="http://mate.asfusion.com/" xmlns:addOns="MAVRIC2.views.addOns.*"
+			   xmlns:models="com.transcendss.mavric.extended.models.*"
+			   close="handleCloseEvent();"
+			   creationComplete="init();"
+			   width="350" height="235"
+			   title="Go to Mile Point"
+			   backgroundColor="0xFFFFCC"
+			   skinClass="skins.MavricTitleWindowSkin">
+	<s:layout>
+		<s:VerticalLayout verticalAlign="top" horizontalAlign="center"/>
+	</s:layout>
+	<fx:Declarations>
+		<fx:Array>
+			<mx:NumberValidator id="MilepointValidator" source="{txtMilepoint}" property="text" domain="real"
+								minValue="{String(FlexGlobals.topLevelApplication.currentBeginMile)}" maxValue="{String(FlexGlobals.topLevelApplication.currentEndMile)}" 
+								trigger="{txtMilepoint}" triggerEvent="change"/>
+		</fx:Array>
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.events.GPSEvent;
+			import com.transcendss.mavric.util.PopUpUtils;
+			import com.transcendss.transcore.events.NavControlEvent;
+			import com.transcendss.transcore.sld.models.components.NearestBaseAsset;
+			import com.transcendss.transcore.sld.models.managers.LRMManager;
+			
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			
+			private var app:MAVRIC2 = FlexGlobals.topLevelApplication as MAVRIC2;
+			
+			private function init():void
+			{
+				PopUpUtils.closeAll(this);
+				range.text = String(FlexGlobals.topLevelApplication.currentBeginMile) + " - " + String(FlexGlobals.topLevelApplication.currentEndMile);
+				
+			}		
+			
+			private function handleCloseEvent():void 
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				handleCloseEvent();
+			}
+			
+			private function go_clickHandler(event:Event):void
+			{
+				if (MilepointValidator.validate().type == "invalid")
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Invalid milepost input.");
+					return;
+				}
+				app.sldDiagram.sldDiagram.goTo(new Number(txtMilepoint.text));
+				handleCloseEvent();
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup gap="5" width="75" height="75" horizontalAlign="center">
+		<s:Spacer height="10"/>
+		<s:Label text="Current Range:" />
+		<!-- <s:Label text="Current range:"/> -->
+		<s:Spacer height="10"/>
+		<s:Label id="range"/> 
+		
+		<s:Form backgroundColor="0xFFFFCC">
+			<s:FormItem backgroundColor="0xFFFFCC">
+				<s:HGroup horizontalAlign="center" verticalAlign="middle">
+					<s:Label text="Mile Point:" verticalAlign="middle"/>
+					<s:TextInput id="txtMilepoint" softKeyboardType="number" width="100"/>
+				</s:HGroup>
+			</s:FormItem>
+		</s:Form>
+		
+		
+		<s:Button label="Go" height="30" fontSize="14" click="go_clickHandler(event)" />
+		<s:Spacer height="10"/>
+	</s:VGroup>
+</s:TitleWindow>

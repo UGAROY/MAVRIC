@@ -1,0 +1,5 @@
+[
+	{
+	"ServiceURL": "http://ec2-50-19-197-5.compute-1.amazonaws.com/MAVRICService/MAVRICService.svc/"
+	}
+]

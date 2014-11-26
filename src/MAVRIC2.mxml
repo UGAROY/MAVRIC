@@ -1,0 +1,1492 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:views="com.transcendss.mavric.views.*"
+			   xmlns:controllers="com.transcendss.mavric.controllers.*" 
+			   xmlns:managers="com.transcendss.mavric.managers.*"
+			   xmlns:skins="com.skins.*"
+			   xmlns:tssutils="com.transcendss.mavric.util.*"
+			   xmlns:mate="http://mate.asfusion.com/"
+			   height="100%" width="100%"	
+			   applicationDPI="160"
+			   preloader="com.transcendss.mavric.util.MAVRICPreLoader"
+			   applicationComplete="init()"
+			   creationComplete="checkConnection()"
+			   preinitialize="onPreinitialize()">
+	<!--xmlns="http://mate.asfusion.com/"-->
+	<!--- This is the MAVRIC App -->
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<managers:ComponentManager id="GlobalComponents"/>
+		<!--<controllers:MainEventMap id="EventMap"/>-->
+		<mate:EventMap id="TSSEventMap"/>
+		
+		<fx:Component className="AlertMsg">
+			<s:SkinnablePopUpContainer>	
+				<s:TitleWindow title="Alert!" close="close()">
+					<s:VGroup horizontalAlign="center" paddingTop="8" paddingBottom="8" paddingLeft="8" paddingRight="8" gap="5" width="100%">
+						<s:Label id="txtMsg" text="My alert message text here..."/>
+						<s:Button label="OK" height="40" click="close()"/>
+					</s:VGroup>
+				</s:TitleWindow>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+		<views:OverviewMap id="overViewMap" height="100%" width="100%" />
+		<s:VideoPlayer id="player"
+					   skinClass="skins.VideoPlayer"
+					   autoPlay="false"
+					   width="600"
+					   height="400"
+					   horizontalCenter="0"
+					   verticalCenter="0"/>
+		
+		<!--<fx:Component className="MapCacheConfirm">
+		<s:SkinnablePopUpContainer>
+		<s:TitleWindow title="Retrieve and Cache Maps?" close="close()">
+		<s:VGroup horizontalAlign="center" paddingTop="8" paddingBottom="8" paddingLeft="8" paddingRight="8" gap="5" width="100%">
+		<s:Button label="Yes" click="close()"/>
+		<s:Button label="No" click="close()"/>
+		</s:VGroup>
+		</s:TitleWindow>
+		</s:SkinnablePopUpContainer>
+		</fx:Component>-->
+		
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			
+			import air.net.URLMonitor;
+			
+			import com.VideoPlayer.toky.video.TokyVideoPlayer;
+			import com.asfusion.mate.events.Dispatcher;
+			import com.transcendss.mavric.controllers.MainEventMap;
+			import com.transcendss.mavric.db.AgsMapService;
+			import com.transcendss.mavric.managers.AssetManager;
+			import com.transcendss.mavric.managers.ConfigurationManager;
+			import com.transcendss.mavric.util.FileUtility;
+			import com.transcendss.mavric.views.AssetEditForm;
+			import com.transcendss.mavric.views.EditElementDialog;
+			import com.transcendss.mavric.views.GeoOptionsDialog;
+			import com.transcendss.mavric.views.GuardrailMenu;
+			import com.transcendss.mavric.views.InventoryMenu;
+			import com.transcendss.mavric.views.MediaPopUp;
+			import com.transcendss.mavric.views.OverviewMap;
+			import com.transcendss.mavric.views.SettingsMenu;
+			import com.transcendss.mavric.views.SignInventory;
+			import com.transcendss.mavric.views.TextMemo;
+			import com.transcendss.mavric.views.VoiceMemo;
+			import com.transcendss.mavric.views.YesNoDialog;
+			import com.transcendss.mavric.views.baseViews.BaseAssetTitleWindow;
+			import com.transcendss.mavric.views.componentviews.CameraControl;
+			import com.transcendss.mavric.views.componentviews.LocalRoutesForm;
+			import com.transcendss.mavric.views.componentviews.MainEntryForm;
+			import com.transcendss.mavric.views.componentviews.PrintOptions;
+			import com.transcendss.mavric.views.componentviews.RouteSelector;
+			import com.transcendss.mavric.views.componentviews.SettingsSelector;
+			import com.transcendss.mavric.views.okdot.SignInv;
+			import com.transcendss.mavric.views.vdot.SignInv;
+//			import com.transcendss.nativeExtensions.GPSTools.GPSHandler;
+			import com.transcendss.transcore.events.AttributeEvent;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.ElementEditEvent;
+			import com.transcendss.transcore.events.MapInitEvent;
+			import com.transcendss.transcore.events.MenuBarEvent;
+			import com.transcendss.transcore.events.RouteSelectorEvent;
+			import com.transcendss.transcore.events.TextMemoEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.components.AttrObj;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			import com.transcendss.transcore.sld.models.components.Element;
+			import com.transcendss.transcore.sld.models.components.ElementSection;
+			import com.transcendss.transcore.sld.models.components.GeoTag;
+			import com.transcendss.transcore.sld.models.components.Route;
+			import com.transcendss.transcore.util.Converter;
+			import com.transcendss.transcore.util.TSSPicture;
+			import com.transcendss.transcore.util.TSSVideo;
+			
+			import flash.utils.getDefinitionByName;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			
+			import spark.components.DropDownList;
+			import spark.components.Image;
+			import spark.components.Label;
+			import spark.components.SkinnablePopUpContainer;
+			import spark.components.TitleWindow;
+			import spark.components.VGroup;
+			
+			[Bindable]
+			/**
+			 *  Padding distance in pixels on left and right of diagram 
+			 */
+			public var mergeInProgress:Boolean = false;
+			public var finishMergePromptDisplayed:Boolean = false;
+			public var elementsToMerge:Array;
+			public var savedEditMP:Number=-1;
+			public var savedEditX:Number=-1;
+
+			public var sldGroupBuffer:Number = ConfigUtility.getNumber("sld_buffer");
+			public var isInvForm:Boolean = false;
+			public var useInternalGPS:Boolean = true;
+			
+			private var overviewMapWindow:OverviewMap;
+			private var settingsSelWindow:SettingsSelector;
+			private var routeSelWindow:RouteSelector;
+			private var mainForm:TitleWindow;
+			private var printDialogWindow:PrintOptions;
+			private var attrDropDown:DropDownList;
+			private var loadRoutesWindow:LocalRoutesForm;
+			private var _connected:Boolean;
+			private var connectionType:String;
+			public var currentRouteName:String;
+			public var currentBeginMile:Number;
+			public var currentEndMile:Number;
+			public var cacheLocalMaps:Boolean = false;
+			
+			public var latitude:Number;
+			public var longitude:Number;
+//			public var btGPSHandler:GPSHandler = null;
+			
+			
+			private var deviceCameraApp:CameraUI = new CameraUI();
+			private var imageLoader:Loader; 
+			private var videoObject:Video;
+			
+			private var inForm:BaseAssetTitleWindow = null;
+			private var culData:Object = null;
+			private var edittingCulvert:BaseAsset = null;
+			private var edittingSignArrayC:ArrayCollection = null;
+			private var dataSource:IDataInput;
+			public var runningEvents:int = 0;
+			private var _keepRunning:Boolean = false;
+			public var attachmentDownloadError:Boolean = false;
+			public var _platform:String = "";
+			public var eventSource:String = "";
+			private var vFrame:MediaPopUp;
+		
+			private var tokyPlayer:TokyVideoPlayer;
+			public var currAttrObj:AttrObj = new AttrObj();
+			public var routeCoords:ArrayCollection;
+			public static const LONG_CLICK_SPEED:int = 1000;
+			public var isCachedRoute:Boolean = false;
+			private var lastClick:Number;
+			public var rawCoords:String;
+			public var inspCutOff:Number;
+			public var savedMPValue:Number;
+			public var userFormCaller:String;
+			public var SyncLogID:String;
+			public var syncAssetsCount:Number =0;
+			public var failedSyncDetails:String="";
+			
+			public var useAgsService:Boolean = ConfigUtility.getBool('use_ags_service');
+			public var useAgsLatLong:Boolean = ConfigUtility.getBool('use_ags_latlong');
+			
+			public var agsMapService: AgsMapService = useAgsService|| useAgsLatLong ? new AgsMapService(ConfigUtility.get('ags_service_url'),ConfigUtility.get('map_server_endpoint'),ConfigUtility.get('feature_server_endpoint')) : null;
+			
+			
+			//To Prevent runtime reference error******ADD for each asset type which has custom form
+			com.transcendss.mavric.views.okdot.GuardRail;
+			com.transcendss.mavric.views.InventoryMenu;
+			com.transcendss.mavric.views.SignInventory;
+			com.transcendss.mavric.views.okdot.SignInv;
+			com.transcendss.mavric.views.vdot.SignInv;
+			com.transcendss.mavric.views.GuardrailMenu;
+			
+			
+			
+			private function onPreinitialize():void
+			{
+				var emid:String = "_MAVRIC2";
+
+				TSSEventMap = new MainEventMap();
+				emid += "_MainEventMap";
+
+				
+				TSSEventMap.initialized(this, emid);
+			}
+			
+			protected function init():void
+			{
+				currentState = "NoMaps";
+				checkPlatform();
+				checkConnection();
+				
+				//create config manager wich loads the settings & config files and create the route selector popup
+				GlobalComponents.ConfigManager = new ConfigurationManager(connected, new Dispatcher());
+				
+				GlobalComponents.assetManager = new AssetManager();
+				
+				GlobalComponents.ConfigManager.loadSettings();
+				
+				//GlobalComponents.assetManager.getAssetDomains();
+				// menuBar.menuCreationComplete();
+				
+				
+				
+				
+				// set the stage add full screen listener
+				stage.scaleMode = StageScaleMode.NO_SCALE;
+				stage.align = StageAlign.TOP_LEFT;
+				//				stage.addEventListener(Event.FULLSCREEN, menuBar.fullScrHandler);
+				
+				//add other listenters			
+				this.addEventListener(Event.RESIZE,redrawWindow);
+				setContextMenu();  // remove normal (very bad) print control
+				
+				
+				if (routeSelWindow != null && routeSelWindow.currentState != "loading")
+					routeSelWindow.currentState = "preload";
+				
+				//add listener on mouse up event
+				addEventListener(MouseEvent.MOUSE_UP,sldDiagram.triangulateMouseUp);
+				
+				menuBar.x = 0;
+				userFormCaller = "Main App";
+				//if (connected)
+				showMainForm();
+				//keep settings on top of main form
+				if (GlobalComponents.assetManager.mdbm.getKeys().length == 0)
+				{
+					if (this.connected)
+					{
+						// Show the Settings Window
+						var settingsMenu:TitleWindow =
+							PopUpManager.createPopUp(this,SettingsMenu, true) as TitleWindow;
+						
+						PopUpManager.centerPopUp(settingsMenu);
+						settingsMenu.setFocus();
+					} else
+					{
+						TSSAlert("MAVRIC must be initialized with an active network connection. Please exit the app, turn on WiFi, connect to a network, and try again.");
+						return;
+						//NativeApplication.nativeApplication.exit(0);
+					}
+				}
+			}
+			
+			public function incrementEventStack():void
+			{
+				//trace("call function incrementEventStack:" + runningEvents);
+				runningEvents++;
+				setBusyStatus(true);
+			}
+			
+			public function decrementEventStack():void
+			{
+				//trace("call function decrementEventStack :" + runningEvents);
+				runningEvents--;
+				if (runningEvents == 0 && !_keepRunning)
+					setBusyStatus(false);
+				else if (runningEvents < 0)
+					runningEvents = 0;
+				//TSSAlert("Running Events Error");
+			}
+			
+			private function checkPlatform():void {
+				var version:String = Capabilities.version;
+				if (version.indexOf('IOS') > -1) {
+					platform = 'IOS';
+				} else if (version.indexOf('AND') > -1) {
+					platform = 'ANDROID';
+				} else {
+					platform = 'OTHERS';
+				}
+			}
+			
+			private function checkConnection():void {
+				if (NetworkInfo.isSupported) {
+					var interfaces:Vector.<NetworkInterface> = NetworkInfo.networkInfo.findInterfaces();
+					connected = false;
+					for(var i:uint = 0; i < interfaces.length; i++) {
+						if((interfaces[i].name.toLowerCase() == "wifi" || interfaces[i].displayName.toLowerCase() == "wi-fi")&& interfaces[i].active) {
+							connected = true;
+							connectionType = "wifi";
+							break;
+						} else if(interfaces[i].name.toLowerCase() == "mobile" && interfaces[i].active) {
+							connected = false;
+							connectionType = "mobile"
+							break;
+						} else if(interfaces[i].displayName.toLowerCase() == "local area connection" && interfaces[i].active){
+							connected = true;
+							connectionType = "lac";
+							break;
+						} else if(interfaces[i].displayName.toLowerCase().indexOf("wireless network") > -1 && interfaces[i].active){
+							connected = true;
+							connectionType = "lac";
+							break;
+						}
+						else {
+							connected = false;
+						}
+					}
+				} else {
+					// TODO: Check connection on ios device http://forums.adobe.com/message/3841355
+					// http://www.webmapsolutions.com/mobile-flex-testing-ios-android-internet-access
+					/// SOLUTION FOR CHECKING FOR INTERNET CONNECTION FOR BOTH IOS AND ANDROID ////
+					connected = true;
+					var testURL:String = "http://www.google.com";
+					var testRequest:URLRequest = new URLRequest(testURL);
+					var urlCheck:URLMonitor = new URLMonitor(testRequest);
+					urlCheck.addEventListener(StatusEvent.STATUS, statusChanged);
+					urlCheck.start();
+					
+					// This function is called when internet connection status has changed
+					function statusChanged(event:StatusEvent):void {
+						if(urlCheck.available) {
+							connected  = true;
+						}
+						else {
+							connected  = false;
+						}
+					}
+					// END OF SOLUTION FOR INTERNET CONNECTION TEST //
+				}
+			}
+			
+			protected function redrawWindow(e:Event):void
+			{
+				sldDiagram.setSLDDiagramWidth();
+				
+				// todo: handle other window level events
+			}
+			
+			private function setContextMenu():void
+			{
+				//create the new contextMenu 
+				var customContextMenu:ContextMenu = new ContextMenu();
+				//disable the default options
+				customContextMenu.hideBuiltInItems();
+				
+				//create custom print option (other than 'Print') and add it to the new contextMenu
+				var printOption:ContextMenuItem = new ContextMenuItem("Print to PDF");
+				printOption.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, printPDF);
+				//customContextMenu.customItems.push(printOption);
+				// The following line should replace the previous line for the mobile version
+				customContextMenu.addItem(printOption);
+				//set the newly created contextMenu for this application
+				this.contextMenu = customContextMenu;
+			}			
+			
+			public function showSettingPopUp(event:Event):void
+			{
+				//display the setting form
+				var popup:IFlexDisplayObject = PopUpManager.createPopUp(this,SettingsSelector,false);
+				settingsSelWindow = SettingsSelector(popup);
+				PopUpManager.centerPopUp(settingsSelWindow);
+			}
+			
+			public function showControlBar(event:MenuBarEvent):void
+			{
+				//display the control bar
+				appCntrlBar.visible = event.itemToggled ;             
+				appCntrlBar.includeInLayout = event.itemToggled;              
+				/* for each (var oChild:DisplayObject in appCntrlBar.getChildren()) {                 
+				oChild.visible = event.itemToggled;             
+				} */	
+				if (event.itemToggled){
+					vPanelGroup.paddingBottom = 0;
+				}
+				else vPanelGroup.paddingBottom = 10;
+			}
+			
+			public function showDriveMapOnly(event:Event):void
+			{
+				switch (currentState){
+					case "NoMaps": // Drive map is off - turn on
+						currentState = "DriveMapOnly";
+						redrawMaps();
+						break;
+					case "FullUI": // Drive map is on - turn off
+						currentState = 'OVMapOnly';
+						break;
+					case "OVMapOnly": // Drive map is off - turn on
+						currentState = 'FullUI';
+						redrawMaps();
+						break;
+					case "DriveMapOnly": // Drive map is on and OV Map is off - turn off (no maps)
+						currentState = 'NoMaps';
+						break;
+				}
+			}
+			
+			public function showOverviewOnly(event:MenuBarEvent):void
+			{
+				if (event.itemToggled)
+				{
+					overviewMapWindow = OverviewMap(PopUpManager.createPopUp(this,OverviewMap,false));
+					redrawMaps();
+					PopUpManager.centerPopUp(overviewMapWindow);
+				}
+				else
+				{
+					PopUpManager.removePopUp(overviewMapWindow);
+				}
+				
+			}
+			
+			
+			public function redrawMaps(route:Route=null):void
+			{
+				if(route==null)
+					route = sldDiagram.getRoute();
+				if(route !=null && route.routeName != "no_rte")
+				{
+					if(connected)
+					{
+						if(overViewMap && (route == null || overViewMap.isNewRoute(route.routeName, route.beginMi, route.endMi)))//redraw only if new route
+						{
+							var rsEvent:RouteSelectorEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTION_MAP_REDRAW, route, sldDiagram.getScale());
+						
+							rsEvent.routeName = route.routeName;
+							rsEvent.serviceURL = GlobalComponents.ConfigManager.serviceURL + "LatLong/"+route.routeName+"/"+route.beginMi+"/"+route.endMi;
+							dispatchEvent(rsEvent); 
+						}
+					}
+					else //disconnected mode
+					{
+						var rdmEvent:MapInitEvent = new MapInitEvent(MapInitEvent.MAP_ROUTE_INFO_READY);
+						rdmEvent.routeCoords = routeCoords;
+						dispatchEvent(rdmEvent);
+					}
+				}
+			}
+			
+			public function displayFullScreen(event:Event):void 
+			{
+				if (stage.displayState == StageDisplayState.NORMAL) 
+					stage.displayState = StageDisplayState.FULL_SCREEN;
+				else 
+					stage.displayState = StageDisplayState.NORMAL;
+			}
+			
+			public function showRteSelection(event:Event):void
+			{
+				checkConnection();
+				if(connected)
+				{
+					/*if(GlobalComponents.ConfigManager.fileLocation =="local")
+					{
+					GlobalComponents.ConfigManager.readExternalConfigFiles();
+					}*/
+					
+					
+					
+					showRouteSelector();
+					var rsEvent:RouteSelectorEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTOR_POPULATE,sldDiagram.getRoute(),sldDiagram.getScale());
+					rsEvent.routeName = sldDiagram.getRoute().routeName;
+					dispatchEvent(rsEvent);
+				}
+				else
+				{
+					//					Alert.show("No internet connection detected");
+				} 
+				//				routeSelWindow.rteSelectorPopulate(rsEvent);
+			}
+			
+			//Method for showing routeselector for intersection click
+			public function showRteSelectionForRteChange(event:RouteSelectorEvent):void
+			{
+				checkConnection();
+				if(connected)
+				{
+					
+					//GlobalComponents.ConfigManager.readExternalConfigFiles();
+					
+					showRouteSelector();
+					var rsEvent:RouteSelectorEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTOR_POPULATE,event.route,sldDiagram.getScale());
+					rsEvent.routeName = event.route.routeName;
+					dispatchEvent(rsEvent);
+				}
+				else
+				{
+					//					Alert.show("No internet connection detected");
+				} 
+			}
+			
+			
+			protected function showRouteSelector():void{
+				routeSelWindow = RouteSelector(PopUpManager.createPopUp(this,RouteSelector,false));
+				PopUpManager.centerPopUp(routeSelWindow);
+				routeSelWindow.y = 50;
+			}
+			
+			public function showMainForm():void
+			{
+				//routeSelWindow = RouteSelector(PopUpManager.createPopUp(this,RouteSelector,true));
+				
+				mainForm=PopUpManager.createPopUp(this,MainEntryForm,true) as TitleWindow
+				PopUpManager.centerPopUp(mainForm);
+			}	
+			
+			public function showPrintDialog(event:Event):void
+			{
+				//display the setting form
+				var popup:IFlexDisplayObject = PopUpManager.createPopUp(this,PrintOptions,false);
+				printDialogWindow = PrintOptions(popup);
+				PopUpManager.centerPopUp(printDialogWindow);
+			}	
+			
+			public function saveCurrentRoute(event:Event):void
+			{
+				var curRte:Route = sldDiagram.getRoute();
+				//				Alert.show("Save route " + curRte.routeName + " (mile " + curRte.beginMi + " - " + curRte.endMi + ") \nto the local database","Confirmation",Alert.OK|Alert.CANCEL,this,sldDiagram.saveLocalDiagram,null,Alert.OK);
+			}
+			
+			public function loadSavedRoute(event:Event):void
+			{
+				//display the setting form
+				loadRoutesWindow = LocalRoutesForm(PopUpManager.createPopUp(this,LocalRoutesForm,false));
+				PopUpManager.centerPopUp(loadRoutesWindow);
+				loadRoutesWindow.y = 50;
+			}
+			
+			public function showAttrDetails(event:AttributeEvent):void 
+			{
+				if (GlobalComponents.ConfigManager.linearEditFormSwitch)
+					showBarElementDetails(event.data.getItemAt(0), event.milePoint, event.ClickX, event.ClickY);
+			}
+			
+			public function showBarElementDetails(elem:Object, milepoint:Number, x:Number, y:Number):void
+			{
+				var attrWindowWidth:int = 350;
+				var maxAttrWindowLeftX:int = 950;
+				var attName:String = "";
+				var barElem:Object = elem;
+				if(elem.hasOwnProperty("ATT_NAME"))
+				{
+					attName = elem.ATT_NAME;
+					barElem = elem.DATA[0];
+					barElem.ELEM_DESC = GlobalComponents.assetManager.getTypeFromAttName(attName)
+				}
+				else
+					attName = GlobalComponents.assetManager.getBarElementUIName(barElem.ELEM_DESC);
+				
+				// If the window is too far right on the display, modify the x value to be the right edge of the 
+				// attribute window
+				if(x > maxAttrWindowLeftX)
+					x -= attrWindowWidth;
+				
+				sldDiagram.showAttrDetailsTable(attName, barElem, milepoint, x, y-300);
+			}
+			
+			public function showVideoControl(event:videoEvent):void
+			{
+				
+				if (CameraUI.isSupported)
+				{
+					trace("Initializing video camera");
+					deviceCameraApp.removeEventListener( MediaEvent.COMPLETE, imageCaptured );
+					
+					deviceCameraApp.addEventListener( MediaEvent.COMPLETE, videoCaptured );
+					deviceCameraApp.addEventListener(Event.CANCEL,captureCanceled);
+					deviceCameraApp.addEventListener(ErrorEvent.ERROR, cameraError);
+					deviceCameraApp.launch(MediaType.VIDEO);
+				}
+				else
+				{
+					
+				}
+			}
+			
+			// TODO: Fix garbage, garbage, and more garbage
+			private var tempEvent2:videoEvent = null;
+			//private var customForm:AssetEditForm;
+			private var customize:Boolean;
+			
+			private function videoCaptured(event:MediaEvent):void
+			{
+				trace("Video Captured");
+				
+				var media:MediaPromise =event.data;
+				trace(media.file.url + "-" + media.relativePath + "-" + media.mediaType);
+				var tmpEvent:videoEvent = new videoEvent(videoEvent.NEWVIDEO, true, true);
+				
+				var video:Video = event.data as Video;
+				tmpEvent.video = video;
+				tmpEvent.memo = "test video";
+				tmpEvent.path = media.file.url;
+				dataSource = media.open();
+				
+				if (media.isAsync)
+				{
+					var eventSource:IEventDispatcher = dataSource as IEventDispatcher;
+					tempEvent2 = tmpEvent;	
+					eventSource.addEventListener(flash.events.Event.COMPLETE, onVideoLoaded );
+				}
+				
+			}
+			
+			private function onVideoLoaded(ev:flash.events.Event):void
+			{
+				var nc:NetConnection = new NetConnection();
+				nc.connect(null);
+				var tVideo:Video = new Video();
+				tempEvent2.video = tVideo;
+				tempEvent2.media = ev.target as FileStream;
+				dispatchEvent(tempEvent2);
+			}
+			
+			
+			public function showCameraControl(event:CameraEvent):void{
+				
+				//var tssCamera:TSSCamera = new TSSCamera();
+				//PopUpManager.addPopUp(tssCamera, this.parent, false);
+				//var cam:Camera = Camera.getCamera();
+				//var vid:Video = new Video();
+				//vid.attachCamera(cam);
+				////this.addChild(vid);
+				//var vidSprite:Sprite = new Sprite();
+				//vidSprite.addChild(vid);
+				//GlobalComponents.stkDiagram.addChild(vidSprite);
+				if( CameraUI.isSupported )
+				{
+					//eventSource = event.eventSource;
+					trace( "Initializing camera..." );
+					deviceCameraApp.removeEventListener( MediaEvent.COMPLETE, videoCaptured );
+					
+					deviceCameraApp.addEventListener( MediaEvent.COMPLETE, imageCaptured );
+					deviceCameraApp.addEventListener( Event.CANCEL, captureCanceled );
+					deviceCameraApp.addEventListener( ErrorEvent.ERROR, cameraError );
+					deviceCameraApp.launch( MediaType.IMAGE );
+				}
+				else
+				{
+					/*var cam:Camera = Camera.getCamera(); 
+					if (cam != null) 
+					{ 
+						cam.addEventListener(StatusEvent.STATUS, winCamStatusHandler); 
+						cam.setMode(640, 480, 30);
+						var vid:Video = new Video(); 
+						vid.attachCamera(cam); 
+						vid.height = 490;
+						vid.width = 700;
+						vidHolder.addChild(vid);
+						camGroup.visible = true;
+						vidHolder.visible = true;
+						vidHolder.height = 500;
+					} else
+					{
+						trace( "Camera interface is not supported.");
+					}*/
+					
+					var cc:CameraControl = new CameraControl();
+					PopUpManager.addPopUp(cc, this);
+					PopUpManager.centerPopUp(cc);
+				}
+			}
+			function cancelCam():void
+			{
+				camGroup.visible = false;
+				vidHolder.height = 0;
+				vidHolder.removeChildAt(0);
+			}
+			function winCamStatusHandler(event:StatusEvent):void 
+			{ 
+				// This event gets dispatched when the user clicks the "Allow" or "Deny" 
+				// button in the Flash Player Settings dialog box. 
+				trace(event.code); // "Camera.Muted" or "Camera.Unmuted" 
+			}
+			
+			private function imageCaptured( event:MediaEvent ):void
+			{
+				trace( "Media captured..." );
+				
+				var imagePromise:MediaPromise = event.data;
+				
+				if( imagePromise.isAsync )
+				{
+					trace( "Asynchronous media promise." );
+					imageLoader = new Loader();
+					imageLoader.contentLoaderInfo.addEventListener( Event.COMPLETE, asyncImageLoaded );
+					imageLoader.addEventListener( IOErrorEvent.IO_ERROR, cameraError );
+					imageLoader.loadFilePromise( imagePromise );
+				}
+				else
+				{
+					trace( "Synchronous media promise." );
+					imageLoader.loadFilePromise( imagePromise );
+					showMedia( imageLoader );
+				}
+			}
+			
+			private function captureCanceled( event:Event ):void
+			{
+				trace( "Media capture canceled." );
+				setBusyStatus(false);
+				deviceCameraApp.removeEventListener( MediaEvent.COMPLETE, videoCaptured );
+				deviceCameraApp.removeEventListener( MediaEvent.COMPLETE, imageCaptured );
+				deviceCameraApp.removeEventListener(Event.CANCEL,captureCanceled);
+				deviceCameraApp.removeEventListener(ErrorEvent.ERROR, cameraError);
+				
+				//NativeApplication.nativeApplication.exit();
+			}
+			
+			private function asyncImageLoaded( event:Event ):void
+			{
+				trace( "Media loaded in memory." );
+				//showMedia( imageLoader );
+				var tmpEvent:CameraEvent = new CameraEvent(CameraEvent.NEWPICTURE, true, true);
+				var displayObject:DisplayObject = imageLoader.getChildAt(0);
+				tmpEvent.bitmap = displayObject as Bitmap;;
+				tmpEvent.memo = "test";
+				dispatchEvent(tmpEvent);
+			}
+			
+			private function showMedia( loader:Loader ):void
+			{
+				var tmpEvent:CameraEvent = new CameraEvent(CameraEvent.NEWPICTURE, true, true);
+				var displayObject:DisplayObject = imageLoader.getChildAt(0);
+				tmpEvent.bitmap = displayObject as Bitmap;;
+				tmpEvent.memo = "test";
+				//tmpEvent.eventSource = eventSource;
+				dispatchEvent(tmpEvent);
+			}
+			
+			private function cameraError(error:ErrorEvent):void
+			{
+				trace( "Error:" +error.toString());
+				//NativeApplication.nativeApplication.exit();
+			}
+			
+			public function showFullImage(event:CameraEvent):void
+			{
+				var clkimage:Bitmap = event.tsspicture.bitmap as Bitmap;				
+				var pimage:Image = new Image();
+				pimage.source = clkimage;
+				//*******
+				// Will we be guranteed that all pictures will have these dimensions?
+				//*******
+				
+				pimage.width=1215;
+				pimage.height=865;
+				pimage.doubleClickEnabled = true;
+				pimage.addEventListener(MouseEvent.DOUBLE_CLICK, closeImagePopup);
+				
+				var popup : IFlexDisplayObject = PopUpManager.createPopUp(this, MediaPopUp, true);
+				//				popup.height = pimage.height;
+				//				popup.width = pimage.width;
+				var frame:MediaPopUp = popup as MediaPopUp;
+				frame.height = height * 0.50;
+				frame.width = width * 0.50;
+				frame.x = this.x + this.width - frame.width - this.width * 0.05;
+				frame.y = this.y + this.height - frame.height - this.height * 0.35;
+				frame.addPicture(pimage);
+				//PopUpManager.centerPopUp(popup);
+				
+				//PopUpManager.addPopUp(popup, this, false);
+				
+			}
+			
+			public function showVideo(event:videoEvent):void
+			{
+				
+				var videoObject:Video=new Video();
+				var popup : IFlexDisplayObject;
+				var container:DisplayObject;
+				if(inForm)
+				{
+					popup = PopUpManager.createPopUp(inForm as TitleWindow, MediaPopUp, true);
+					container = inForm as TitleWindow;
+				}
+				else
+				{
+					popup = PopUpManager.createPopUp(this, MediaPopUp, true);
+					container = this;
+				}
+				
+				
+				//				popup.height = pimage.height;
+				//				popup.width = pimage.width;
+				vFrame = popup as MediaPopUp;
+				vFrame.height = height * 0.50;
+				vFrame.width = width * 0.50;
+				vFrame.x = container.x + container.width - vFrame.width - container.width * 0.05;
+				vFrame.y = container.y + container.height - vFrame.height - container.height * 0.30;
+				
+				//tokyPlayer = new TokyVideoPlayer(event.tssvideo.filePath, 500, 300);
+				//Replaced by toky video player
+				if (event.tssvideo.filePath.substring(0, 4) == "http") // if the source is the online database, else the local database
+					player.source = event.tssvideo.filePath;
+					//player.source = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL+"FileUpload/" + event.tssvideo.filePath.substr(event.tssvideo.filePath.length - 17);
+				else if (event.tssvideo.filePath.substring(0, 8) == "file:///") // if the path is full path.
+					player.source = event.tssvideo.filePath;
+				else
+					player.source = "file:///mnt/sdcard/geotags/" + event.tssvideo.filePath;
+				player.autoRewind = true;
+				
+				vFrame.addVideoPlayer(player);
+				//vFrame.addVideo(event.tssvideo.video);
+				
+				vFrame.addEventListener(CloseEvent.CLOSE, handleVideoClose);
+			}
+			
+			public function handleVideoClose(ev:CloseEvent):void
+			{
+				//player = new spark.components.VideoPlayer();
+				vFrame.removeAllElements();
+			}
+			
+			public function showTextMemo(event:TextMemoEvent):void{
+				//				eventSource = event.eventSource;
+				var txtMemo:TextMemo=TextMemo(PopUpManager.createPopUp(this,TextMemo,false));
+				txtMemo.memo.text=event.memo;
+				txtMemo.memo.enabled = false;
+				txtMemo.captureBtn.visible= false;
+				txtMemo.captureBtn.includeInLayout= false;
+				//				var label:Label=new Label();
+				//				label.text=event.memo;
+				//				txtMemo.addElement(label);
+				PopUpManager.centerPopUp(txtMemo);
+			}
+			
+			public function addListenersToGeoTag(media:Object):void{
+				var img:Image = media as Image;
+				img.addEventListener(MouseEvent.MOUSE_DOWN, processClick);
+				img.addEventListener(MouseEvent.MOUSE_UP, processClick);
+			}
+			
+			/**
+			 * This method processes clicks on geotags. A click (quick press and release
+			 * should open the geotag straightaway, while a long click (about 1s) should
+			 * open the geotag options dialog.
+			 */
+			public function processClick(e:Event):void
+			{
+				var tssmedia:Object = e.target is TSSPicture? e.target:e.target.parent.parent;
+				if((e as MouseEvent).type === MouseEvent.MOUSE_DOWN)
+					lastClick = getTimer();
+				else
+				{
+					if(getTimer() - lastClick > LONG_CLICK_SPEED)
+						geoLongClick(tssmedia);
+					else
+						tssmedia.open();
+				}
+				
+				/*if(clickNum == 0)
+				{
+				clickNum++;
+				//				timer = new Timer(DOUBLE_CLICK_SPEED, 1);
+				//				timer.addEventListener(TimerEvent.TIMER, finished);
+				//				timer.start();
+				}
+				else 
+				clickNum++;
+				
+				function finished(e:TimerEvent):void
+				{
+				
+				if(clickNum < 2)
+				{
+				openFullImage(new Event(MouseEvent.CLICK));	
+				}
+				else 
+				{
+				FlexGlobals.topLevelApplication.geoDoubleClick(this);
+				}
+				
+				}*/
+			}
+			
+			/**
+			 * Brings up geotag options when a geotag is clicked and held.
+			 */ 
+			public function geoLongClick(tssmedia:Object):void
+			{
+				var resp:mx.rpc.Responder = new mx.rpc.Responder(result, fault);
+				//var popup:GeoOptionsDialog = PopUpManager.createPopUp(this, GeoOptionsDialog, false) as GeoOptionsDialog;
+				var popup:GeoOptionsDialog = new GeoOptionsDialog();
+				popup.responder = resp;
+				popup.media = tssmedia;
+				popup.open(tssmedia.parent, false);
+				if(inForm)
+				{
+					popup.x = inForm.width/2 -popup.width/2;
+					popup.y = inForm.height/2-popup.height/2;
+				}
+				else
+				{
+					popup.x = this.width/2 -popup.width/2;
+					popup.y = this.height/2-popup.height/2;
+				}
+				
+				function result(data:Object):void
+				{
+					var str:String = data.choice as String;
+					var media:Object = data.tssmedia;
+					var geoTag:GeoTag = media.geoTag as GeoTag;
+					if(str === "open")
+					{
+						//e.target.open();
+						media.open();
+					}
+					else if(str === "delete")
+					{
+						checkConnection();
+						if(!connected)
+						{
+							TSSAlert("No connection. Cannot delete geotag.");
+							return;
+						}
+						
+						var _delResp:mx.rpc.Responder = new mx.rpc.Responder(deleteOkay, fault);
+						
+						YesNoPrompt("Are you sure you want to delete this record? Deletion will be permanent.", "Record Deletion", _delResp);
+						
+						function deleteOkay(data:Object):void
+						{
+							if(data == true)
+							{
+								deleteGeoTag(media);
+							}
+						}
+						
+					}
+				}
+				
+				function fault(data:Object):void
+				{	
+					TSSAlert("Error in Opening Options Dialog.");
+				}
+			}
+			
+			private function deleteGeoTag(media:Object):void
+			{
+				// remove reference from culvert's geotag list
+				//				if (customize == true)
+				//					(customForm as AssetEditForm).removeGeoTag(media);
+				//				else 
+				if (media.geoTag.asset_ty_id!="0")
+					inForm.removeGeoTag(media);
+				else
+					this.GlobalComponents.stkDiagram.removeGeoTag(media);
+				
+				// remove image/button from Inventory Diagram
+				// remove file reference from db tables (geotags & live db)
+				if(media.geoLocalId)
+					GlobalComponents.assetManager.mdbm.deleteGeoTag(new Number(media.geoLocalId));
+				
+				deleteFromLiveDB(media.geoTag);
+				
+				// remove file from device
+				if(media is TSSPicture || media is TSSVideo)
+				{
+					var fileutil:FileUtility = new FileUtility();
+					var filename:String = media.source;
+					var file:File = new File("/sdcard/" + filename.substring(filename.lastIndexOf("/"), filename.length));
+					if(filename !== "" && filename && file.exists)
+					{
+						fileutil.deleteFiles(filename);
+					}
+				}
+			}
+			
+			private function deleteFromLiveDB(geoTag:GeoTag):void
+			{
+				//				checkConnection();
+				//				if(connected)
+				if(!geoTag)
+					return;
+				{
+					var requestStr:String = GlobalComponents.ConfigManager.serviceURL+"DeleteGeotags/"+geoTag.is_insp+"/"+geoTag.id;
+					
+					if(geoTag.video_file_name && geoTag.video_file_name !== "")
+					{
+						requestStr += "/"+ geoTag.video_file_name;
+					}
+					else if(geoTag.image_file_name && geoTag.image_file_name !=="")
+					{
+						requestStr += "/" + geoTag.image_file_name;
+					}
+					
+					var httpServ:HTTPService = new HTTPService();
+					httpServ.url = requestStr;
+					httpServ.method = "POST";
+					httpServ.addEventListener(FaultEvent.FAULT, fault);
+					httpServ.addEventListener(ResultEvent.RESULT, success);
+					httpServ.send();
+					function fault(e:Event):void
+					{
+						trace("GeoTag is not in the live database.");
+					}
+					
+					function success(e:Event):void
+					{
+						TSSAlert("GeoTag successfully deleted.");
+					}
+				}
+			}
+
+			/**
+			 * Brings up options for editing a bar element when a bar segment is clicked and held.
+			 */ 
+			public function handleEditElementLongClick(event:ElementEditEvent):void
+			{
+				var resp:mx.rpc.Responder = new mx.rpc.Responder(result, fault);
+				var popup:EditElementDialog = new EditElementDialog();
+				popup.responder = resp;
+				popup.open(event.elem.parent, false);
+				if(inForm)
+				{
+					popup.x = inForm.width/2 -popup.width/2;
+					popup.y = inForm.height/2-popup.height/2;
+				}
+				else
+				{
+					popup.x = this.width/2 -popup.width/2;
+					popup.y = this.height/2-popup.height/2;
+				}
+				
+				function result(data:Object):void
+				{
+					var str:String = data.choice as String;
+					if(str === "split")
+					{
+						// Split the element at the guide mile position, not the clicked milepoint
+						event.milepoint = sldDiagram.sldDiagram.getCurrentMP();
+						if(!(event.milepoint >= event.elem.secBegMile && event.milepoint <= event.elem.secEndMile))
+						{
+							TSSAlert("Guide Mile is outside the clicked bar element.  Cannot split.");
+							return;
+						}
+						displaySplitMilepoint(event);
+					}
+					else if(str === "merge")
+					{
+						var elemsection:ElementSection = event.elem as ElementSection;
+						if(hasMultipleElements(elemsection.elemDesc))
+						{
+							elemsection.highlight();
+							mergeElements(elemsection);
+						}
+						else
+						{
+							TSSAlert("Cannot merge only one element");
+							return;
+						}
+					}
+				}
+				
+				function fault(data:Object):void
+				{	
+					TSSAlert("Error in Opening Element Edit dialog.");
+				}
+			}
+
+			private function hasMultipleElements(desc:String):Boolean
+			{
+				var numElems:int = this.GlobalComponents.invDiagram.getNumElemsByDesc(desc);
+				return numElems > 1;
+			}
+			
+			private function displaySplitMilepoint(event:ElementEditEvent):void
+			{
+				sldDiagram.showAttrInput(event, true);
+			}
+			
+			// Send the request to split a bar element into two individual segments
+			public function splitElement(elem:Object, milepoint:Number, splitX:Number):void
+			{
+				elem.highlight();
+
+				var elem1:BaseAsset;
+				var elem2:BaseAsset;
+				
+				// Get the field values from the existing ElementSection and create two new objects
+				var tmpElem1:Object = new Object();
+				tmpElem1 = GlobalComponents.assetManager.getBarElementInvProperties(elem, currentRouteName);
+				tmpElem1["ENDREFPT"] = milepoint;
+				
+				var tmpElem2:Object = new Object();
+				tmpElem2 = GlobalComponents.assetManager.getBarElementInvProperties(elem, currentRouteName);
+				tmpElem2["REFPT"] = milepoint;
+				tmpElem2["ID"] = -1;
+
+				var splitResp:mx.rpc.Responder = new mx.rpc.Responder(finishSplit, splitFault);
+				YesNoPrompt("Are you sure you want to split this element?", "Split Confirm", splitResp);
+
+				function finishSplit(data:Object):void
+				{
+					if(data)
+					{
+						// Create base assets from the new split elements and save them
+						savedEditMP = milepoint;
+						savedEditX = splitX;
+						elem1 = GlobalComponents.assetManager.mapDataToBaseAsset(tmpElem1, tmpElem1.ELEM_DESC, false);
+						elem2 = GlobalComponents.assetManager.mapDataToBaseAsset(tmpElem2, tmpElem2.ELEM_DESC, false);
+						GlobalComponents.assetManager.saveBarElement(elem1);
+						GlobalComponents.assetManager.saveBarElement(elem2, true);
+						elem.unhighlight();
+						redrawRoute();
+					}
+					else
+					{
+						elem.unhighlight();
+						savedEditMP = -1;
+						savedEditX = -1;					}
+				}
+				function splitFault(data:Object):void
+				{	
+					TSSAlert("Error in Splitting an Element.");
+				}
+			}
+			
+			// Send the request to merge one or more bar elements into one
+			private function mergeElements(elem:ElementSection):void
+			{
+				mergeInProgress = true;
+				elementsToMerge = new Array();
+				elementsToMerge.push(elem);
+				TSSAlert("Please select another element for the merge");
+			}
+			
+			// Send the request to merge one or more bar elements into one
+			public function completeElementMerge(e:ElementEditEvent):void
+			{
+				mergeInProgress = false;
+				var tmpElem:Object = new Object();
+				tmpElem = GlobalComponents.assetManager.getBarElementInvProperties(elementsToMerge[0], currentRouteName);
+				tmpElem["ENDREFPT"] = elementsToMerge[elementsToMerge.length-1].secEndMile;
+				tmpElem["STATUS"] = "EDITED";
+				
+				var mergeResp:mx.rpc.Responder = new mx.rpc.Responder(finishMerge, mergeFault);
+				YesNoPrompt("Are you sure you want to merge these elements?", "Merge Confirm", mergeResp);
+				
+				function finishMerge(data:Object):void
+				{
+					// Turn off the highlight for the selected elements
+					for(var i:int=0; i<elementsToMerge.length; i++)
+					{
+						elementsToMerge[i].unhighlight();
+					}
+					
+					if(data)
+					{
+						savedEditMP = Converter.scalePixelToMile(elementsToMerge[0].x1,sldDiagram.getScale()) + currentBeginMile;
+						savedEditX = elementsToMerge[0].x1;
+						// Create a base asset from the merged element and save it
+						var mergedElem:BaseAsset = GlobalComponents.assetManager.mapDataToBaseAsset(tmpElem, tmpElem.ELEM_DESC, false);
+						GlobalComponents.assetManager.saveBarElement(mergedElem);
+						
+						// Create base assets from the elements in the merge array, set their status to 'Retired' and save them
+						var tmpAsset:BaseAsset;
+						for(var i:int=1; i<elementsToMerge.length; i++)
+						{
+							tmpElem = new Object();
+							tmpElem = GlobalComponents.assetManager.getBarElementInvProperties(elementsToMerge[i], currentRouteName);
+							tmpAsset = new BaseAsset();
+							tmpAsset = GlobalComponents.assetManager.mapDataToBaseAsset(tmpElem, tmpElem.ELEM_DESC, false);
+							tmpAsset.status = "RETIRED";
+							GlobalComponents.assetManager.saveBarElement(tmpAsset, false, true);
+						}
+						redrawRoute();
+					}
+					else
+					{
+						savedEditMP = -1;
+						savedEditX = -1;
+						elementsToMerge = new Array();
+					}
+				
+				}
+				function mergeFault(data:Object):void
+				{	
+					TSSAlert("Error in Merging Elements.");
+				}
+				
+			}
+			
+			// Redraw the route - used after edits or other changes have been made to the route that affect the display
+			public function redrawRoute():void{
+				// get route info and pass with new scale as new Route Selection Event - model will handle redraw/query logic
+				var rte:Route = sldDiagram.getRoute();
+				var scale:Number = sldDiagram.getScale();
+				var rsEvent:RouteSelectorEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTION_COMPLETE, rte, scale);
+				rsEvent.routeName = currentRouteName;
+				rsEvent.serviceURL = GlobalComponents.ConfigManager.serviceURL + "LatLong/"+rte.routeName+"/"+rte.beginMi+"/"+rte.endMi;
+				rsEvent.fromStorage = false;
+				dispatchEvent(rsEvent); //(see event handler in MainEventMap)
+			}
+
+
+			private function metaDataHandler(infoObject:Object):void {
+				trace(infoObject.duration);
+			}
+			
+			private function streamHandler(event:NetStatusEvent):void{
+				
+				trace(event.info.toString());
+				
+			}
+			
+			public function showVoiceControl(event:VoiceEvent):void{
+				
+				
+				var audioRecord:TitleWindow=PopUpManager.createPopUp(this,VoiceMemo,false)as TitleWindow;
+				audioRecord.x=800;
+				audioRecord.y=500;
+				/*var tssVoiceMemo:TSSVoiceMemo = new TSSVoiceMemo();
+				PopUpManager.addPopUp(tssVoiceMemo, this.parent, false);*/
+			}
+			
+			public function showTextMemoControl(event:TextMemoEvent):void{
+				
+				
+				var txtMemo:TitleWindow=PopUpManager.createPopUp(this,TextMemo,false)as TitleWindow;
+				
+				txtMemo.x=800;
+				txtMemo.y=500;
+				
+			}
+			
+			protected function closeImagePopup(e:Event):void{
+				var img:Image = e.currentTarget as Image;
+				PopUpManager.removePopUp(img);
+			}
+			
+			private function closeTextMemo(e:MouseEvent):void{
+				var memo:SkinnablePopUpContainer=e.currentTarget as SkinnablePopUpContainer;
+				PopUpManager.removePopUp(memo);
+				
+			}
+			
+			public function printPDF(event:ContextMenuEvent):void 
+			{
+				//				if (printOptWindow)
+				//					PopUpManager.removePopUp(printOptWindow);
+				//				printOptWindow = PrintOptions(PopUpManager.createPopUp(this,PrintOptions,false));
+				//				PopUpManager.centerPopUp(printOptWindow);
+			}
+			
+			private function closePopUp(event:MouseEvent):void{
+				currentState="NoMaps";
+				//video.visible=false;
+			}
+			
+			protected function busyIndicator_initializeHandler(event:FlexEvent):void
+			{
+//				busyIndicator.setStyle("source", "images/loading2.swf");
+				busyIndicator.setStyle("scale", false);
+				busyIndicator.busy = false;
+			}
+			
+			public function setBusyStatus(status:Boolean):void
+			{
+				if(!busyIndicator)
+					return;
+				
+				busyIndicator.busy = status;
+			}
+			
+			// Global Alert function 
+			public function TSSAlert(msg:String, owner:DisplayObjectContainer = null):void
+			{
+				var alertMsg:AlertMsg = new AlertMsg();
+				var ttlWindow:TitleWindow = alertMsg.getElementAt(0) as TitleWindow;
+				var ttlGroup:VGroup = ttlWindow.getElementAt(0) as VGroup;
+				var txtLabel:Label = ttlGroup.getElementAt(0) as Label;
+				
+				txtLabel.text = msg;
+				
+				alertMsg.open(this, true);
+				
+				alertMsg.x = this.width / 2 - alertMsg.width /2;
+				alertMsg.y = this.height / 2 - alertMsg.height /2;
+			}
+			
+			public function YesNoPrompt(msg:String, title:String, resp:mx.rpc.Responder, x:Number = NaN, y:Number = NaN):void
+			{
+				var prompt:YesNoDialog = new YesNoDialog();
+				prompt.open(this, false);
+				prompt.responder = resp;
+				prompt.title = title;
+				prompt.message = msg;
+			}
+			
+			// Cache maps function 
+			public function CacheMapPrompt():void
+			{
+				var alertMsg:AlertMsg = new AlertMsg();
+				var ttlWindow:TitleWindow = alertMsg.getElementAt(0) as TitleWindow;
+				var ttlGroup:VGroup = ttlWindow.getElementAt(0) as VGroup;
+				var txtLabel:Label = ttlGroup.getElementAt(0) as Label;
+				
+				//txtLabel.text = msg;
+				alertMsg.x = (this.width / 2) - (alertMsg.width /2);
+				alertMsg.y = (this.height / 2) - (alertMsg.height /2);
+				
+				alertMsg.open(this, true);
+			}
+			
+			public function editAsset(culv:BaseAsset, useCustomForm0:String):void
+			{
+				//var formName:String = useCustomForm0.substring(useCustomForm0.lastIndexOf("."));
+				var useCustomForm:Class = flash.utils.getDefinitionByName(useCustomForm0) as Class;
+				
+				this.edittingCulvert = culv;
+				if (useCustomForm != AssetEditForm)
+				{
+					customize = false;
+					inForm = PopUpManager.createPopUp(this, useCustomForm, true) as BaseAssetTitleWindow ;
+					PopUpManager.centerPopUp(inForm);
+				}
+				else
+				{
+					customize = true;
+					var popup : IFlexDisplayObject = PopUpManager.createPopUp(this,AssetEditForm,true);
+					inForm = popup as AssetEditForm;
+					PopUpManager.centerPopUp(popup);
+				}
+				
+			}
+			
+			
+			public function passCulvertInfo(evt:Event):void
+			{
+				if (inForm != null && edittingCulvert != null)
+					inForm.setBaseAsset(edittingCulvert);
+				
+				edittingCulvert = null;
+			}
+			
+			public function get platform():String
+			{
+				return _platform;
+			}
+			
+			public function set platform(value:String):void
+			{
+				_platform = value;
+			}
+			
+			public function get connected():Boolean
+			{
+				return _connected;
+			}
+			
+			public function set connected(value:Boolean):void
+			{
+				_connected = value;
+			}
+			
+			public function set keepRunning(value:Boolean):void
+			{
+				_keepRunning = value;
+			}
+			public function get keepRunning():Boolean
+			{
+				return _keepRunning
+			}
+			
+			public function handlePicture(event:CameraEvent):void
+			{
+				trace(GlobalComponents.capturEventSource);
+				if (GlobalComponents.capturEventSource == "ControlBar")
+				{
+					sldDiagram.sldDiagram.handlePicture(event);
+				}
+				else if (inForm != null)
+				{
+					inForm.handlePicture(event); 
+				}
+			}
+			public function handleVideo(event:videoEvent):void
+			{
+				if (GlobalComponents.capturEventSource == "ControlBar")
+				{
+					sldDiagram.sldDiagram.handleVideo(event);
+				}
+				else if (inForm != null)
+				{
+					inForm.handleVideo(event); 
+				}
+			}
+			public function handleVoiceMemo(event:VoiceEvent):void
+			{
+				if (GlobalComponents.capturEventSource == "ControlBar")
+				{
+					sldDiagram.sldDiagram.handleVoiceMemo(event);
+				}
+				else if(inForm != null)
+				{
+					inForm.handleVoiceMemo(event);
+				}
+			}
+			public function handleTextMemo(event:TextMemoEvent):void
+			{
+				if (GlobalComponents.capturEventSource == "ControlBar")
+				{
+					sldDiagram.sldDiagram.handleTextMemo(event);
+				}
+				else if(inForm != null)
+				{
+					
+					inForm.handleTextMemo(event);
+				}
+			}
+
+
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Style source="css/sldStyle.css"></fx:Style>
+	<fx:Style source="css/vidStyle.css"></fx:Style>
+	
+	<s:states>
+		<s:State name="Init"/>
+		<s:State name="FullUI"/>
+		<s:State name="NoMaps" />
+		<s:State name="OVMapOnly"/>
+		<s:State name="DriveMapOnly"/>
+		<s:State name="VideoOnly"/>
+		
+	</s:states>
+	
+	<tssutils:TSSBusy id="busyIndicator" busy="true" width="100%" height="100%" 
+					  initialize="busyIndicator_initializeHandler(event)">
+		
+		<s:Panel id="rdAnalyzer" height="100%" width="100%"  
+				 skinClass="skins.HeaderlessPanelSkin" 
+				 backgroundColor="0xc0c0c0" backgroundAlpha="0.50" 
+				 backgroundColor.Init="#E1DEDE" backgroundAlpha.Init="1.0">
+			
+			<s:layout>
+				<s:VerticalLayout gap="10" horizontalAlign="center" paddingLeft="0" paddingRight="0" paddingTop="0" paddingBottom="0" verticalAlign="top" />
+			</s:layout>
+			
+			<views:MenuBar id="menuBar" width="100%" height="40" />
+			<s:VGroup id="camGroup" visible="false">
+				<s:VideoDisplay id="vidHolder" height="0" visible="false"/>
+				<s:HGroup >
+					<s:Button id="camGo" label="Capture" height="0"/>
+					<s:Button id="camCancel" label="Cancel" click="cancelCam()" height="0"/>
+				</s:HGroup>
+			</s:VGroup>
+			
+			<s:VGroup id="vPanelGroup" gap="10" height="100%" verticalAlign="top">
+				<s:HGroup height="30%" width="100%" gap="10"  includeIn="FullUI,OVMapOnly,DriveMapOnly">
+					<!--<views:OverviewMap id="overViewMap" height="100%" width="50%" includeIn="FullUI,OVMapOnly" width.OVMapOnly="100%" />-->
+					<!--<views:ThreeDMap height="100%" width="50%" includeIn="FullUI,DriveMapOnly" width.DriveMapOnly="100%"/>-->
+					<views:VideoLog id="videoLog" height="100%" width="50%" includeIn="FullUI,DriveMapOnly" width.DriveMapOnly="100%" />
+				</s:HGroup>
+				
+				<views:SLDDiagram id="sldDiagram" height="70%" height.NoMaps="100%" width="100%" includeIn="FullUI,NoMaps,OVMapOnly,DriveMapOnly" />
+			</s:VGroup>
+			
+			<views:ControlBar id="appCntrlBar"  height="60" width="100%" />
+		</s:Panel>
+	</tssutils:TSSBusy>
+	
+</s:Application>
+

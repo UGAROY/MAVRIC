@@ -1,0 +1,2496 @@
+﻿[
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "DISTRICTS",
+      "LIST": [
+        {
+          "ID": "4",
+          "DESCRIPTION": "District 1"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "LANE",
+      "LIST": [
+        {
+          "ID": "EB",
+          "DESCRIPTION": "East Bound"
+        },
+        {
+          "ID": "WB",
+          "DESCRIPTION": "West Bound"
+        },
+        {
+          "ID": "SB",
+          "DESCRIPTION": "South Bound"
+        },
+        {
+          "ID": "NB",
+          "DESCRIPTION": "North Bound"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "GDB_VERSION",
+      "LIST": [
+        {
+          "ID": "VDOT_LRS.DEFAULT",
+          "DESCRIPTION": "VDOT_LRS.DEFAULT"
+        },
+        {
+          "ID": "VDOT_LRS.TEST_EDITS",
+          "DESCRIPTION": "VDOT_LRS.TEST_EDITS"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "CRS_LOC",
+      "LIST": [
+        {
+          "ID": "LEFT",
+          "DESCRIPTION": "Left"
+        },
+        {
+          "ID": "RIGHT",
+          "DESCRIPTION": "Right"
+        },
+        {
+          "ID": "MEDIAN",
+          "DESCRIPTION": "Median"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "SUPPORT_MATERIAL_ID",
+      "LIST":[
+		  {
+		    "ID": "2",
+		    "DESCRIPTION": "I-Beam"
+		  },
+		  {
+		    "ID": "1",
+		    "DESCRIPTION": "Metal"
+		  },
+		  {
+		    "ID": "4",
+		    "DESCRIPTION": "Unknown"
+		  },
+		  {
+		    "ID": "3",
+		    "DESCRIPTION": "Wood"
+		  }
+		] 
+      }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "CGRDRL_DSGN_TYPE",
+      "LIST": [
+        {
+          "ID": "BOX BEAM",
+          "DESCRIPTION": "Box Beam"
+        },
+        {
+          "ID": "CONCRETE BARRIER",
+          "DESCRIPTION": "Concrete Barrier"
+        },
+        {
+          "ID": "GR-1",
+          "DESCRIPTION": "GR-1"
+        },
+        {
+          "ID": "GR-2",
+          "DESCRIPTION": "GR-2"
+        },
+        {
+          "ID": "GR-8",
+          "DESCRIPTION": "GR-8"
+        },
+        {
+          "ID": "MB-3",
+          "DESCRIPTION": "MB-3"
+        },
+        {
+          "ID": "MB-5",
+          "DESCRIPTION": "MB-5"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "CGRDRL_POST_MATL",
+      "LIST": [
+        {
+          "ID": "CONCRETE",
+          "DESCRIPTION": "Concrete"
+        },
+        {
+          "ID": "METAL",
+          "DESCRIPTION": "Metal"
+        },
+        {
+          "ID": "WOOD",
+          "DESCRIPTION": "Wood"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "CGRDRL_MATL",
+      "LIST": [
+        {
+          "ID": "METAL",
+          "DESCRIPTION": "Metal"
+        },
+        {
+          "ID": "RUSTICATED STEEL",
+          "DESCRIPTION": "Rusticated Steel"
+        },
+        {
+          "ID": "UNKNOWN",
+          "DESCRIPTION": "Unknown"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_INCIDENT_TY",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Pothole"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Roadkill"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Drainage Obstruction"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Roadway Obstruction"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_COUNTY_ID",
+      "LIST": [
+        {
+          "ID": "20",
+          "DESCRIPTION": "Chesterfield"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "USERS",
+      "LIST": [
+       {
+          "ID": "1",
+          "DESCRIPTION": "USER 1",
+          "BUSINESS_UNIT":"District 1"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "USER 2",
+          "BUSINESS_UNIT":"District 1"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "USER 3",
+          "BUSINESS_UNIT":"District 1"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_CULV_COND_ID",
+      "LIST": [
+        {
+          "ID": "2",
+          "DESCRIPTION": "Adequate"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Critical"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Inaccessible"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Inadequate"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Severe"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_CULV_MAT_ID",
+      "LIST": [
+        {
+          "ID": "9",
+          "DESCRIPTION": "Comb Conc Pipe/Metal Pipe"
+        },
+        {
+          "ID": "10",
+          "DESCRIPTION": "Comb Conc Pipe/Plastic"
+        },
+        {
+          "ID": "11",
+          "DESCRIPTION": "Comb Metal Pipe/Plastic"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Concrete"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Concrete Pipe"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Corrugated Metal Pipe"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Metal Sheet Pile"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Plastic"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Steel"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "Unknown"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Wood Walls"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_CULV_PLACEMENT_TY_ID",
+      "LIST": [
+        {
+          "ID": "2",
+          "DESCRIPTION": "Entrance Culvert Right"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Crossing Culvert"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Entrance Culvert Left"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Median Culvert"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Off-Ramp Culvert Opposite"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Off-Ramp Culvert Primary"
+        },
+        {
+          "ID": "9",
+          "DESCRIPTION": "On-Ramp Culvert Opposite"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "On-Ramp Culvert Primary"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Other"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_CULV_SHAPE_ID",
+      "LIST": [
+        {
+          "ID": "2",
+          "DESCRIPTION": "Arch"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Box"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Other"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Round"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_BEAM_MAT_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Concrete"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Not Applicable"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Steel"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_ABUTMENT_MAT_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Concrete"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Not Applicable"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Wood"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_BARL_RMK_ID",
+      "LIST": [
+        {
+          "ID": "6",
+          "DESCRIPTION": "CMP has light pitting and surface rust"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "CMP has light to moderate rust with some minor section loss"
+        },
+        {
+          "ID": "9",
+          "DESCRIPTION": "CMP has rusted to the point there is areas of erosion"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "CMP has sever rust with large areas of section loss"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Dip in road way and or shoulders over the culvert"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Satisfactory no problems noted"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Spalling and scalling of concrete with exposed reinforcing bars"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Spalling and scalling of concrete without exposed reinforcing bars"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Spalls opening allowing dirt into culvert"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_CHNL_RMK_ID",
+      "LIST": [
+        {
+          "ID": "3",
+          "DESCRIPTION": "Clean ditch around culvert"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Remove flood debris from culvert ends"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Remove trees"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Satisfactory no problems noted"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_FLOW_RMK_ID",
+      "LIST": [
+        {
+          "ID": "2",
+          "DESCRIPTION": "Clean inside of culvert"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Satisfactory no problems noted"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_ENDS_RMK_ID",
+      "LIST": [
+        {
+          "ID": "4",
+          "DESCRIPTION": "Erosion around culvert end or ends"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Needs Culvert Marker"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Reset end sections"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Safety Grate Missing"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Safety Grates damaged"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Satisfactory no problems noted"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Wing walls tipping"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_JOINT_RMK_ID",
+      "LIST": [
+        {
+          "ID": "2",
+          "DESCRIPTION": "Joint opening 1 inch to 2 inches"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Joint opening 2 inches to 4 inches"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Joint opening allowing dirt into culvert"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Joint opening greater then 4 inches"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Satisfactory no problems noted"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_JOINT_SEP_LOC_ID",
+      "LIST": [
+        {
+          "ID": "5",
+          "DESCRIPTION": "Not Applicable"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Other"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Under Foreslope"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Under Shoulder"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Under Slab"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_MAINT_EQUIP_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Dozer"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Excavator"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Mini Excavator"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Skid Loader"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Tractor Backhoe"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Tractor with 3 Point Backhoe"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Wheel Loader"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_MAINT_WORK_TY_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Standard"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "DIRECTION",
+      "LIST": [
+        {
+          "ID": "3",
+          "DESCRIPTION": "E"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "N"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "NE"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "NW"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "S"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "SE"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "SW"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "W"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_SHEETING_MAT_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Diamond Grade"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Engineering Grade"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "High Intensity"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Prismatic High Intensity"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_BLANK_MAT_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Extruded Aluminum"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Metal"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Wood"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_DIR_TRAVEL_ID",
+      "LIST": [
+        {
+          "ID": "2",
+          "DESCRIPTION": "Against Milepost (decreasing in number)"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "With Milepost (increasing in number)"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_POST_TY_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "I-Beam Steel Breakaway"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Square Steel Tubing"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Structure"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Truss/Cantilever"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "U-Shaped Delineator"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Utility/Signal Pole"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Wood Posts"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_SIDE_ROAD_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Left"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Median"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Overhead"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Right"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_POST_SIZE_ID",
+      "LIST": [
+        {
+          "ID": "9",
+          "DESCRIPTION": "1.5 in x 12 ft"
+        },
+        {
+          "ID": "10",
+          "DESCRIPTION": "1.75 in x 12 ft"
+        },
+        {
+          "ID": "28",
+          "DESCRIPTION": "10 in"
+        },
+        {
+          "ID": "29",
+          "DESCRIPTION": "12 in"
+        },
+        {
+          "ID": "21",
+          "DESCRIPTION": "12 in"
+        },
+        {
+          "ID": "30",
+          "DESCRIPTION": "16 in"
+        },
+        {
+          "ID": "22",
+          "DESCRIPTION": "16 in"
+        },
+        {
+          "ID": "23",
+          "DESCRIPTION": "18 in"
+        },
+        {
+          "ID": "11",
+          "DESCRIPTION": "2.00 in x 12 ft"
+        },
+        {
+          "ID": "12",
+          "DESCRIPTION": "2.25 in x 12 ft"
+        },
+        {
+          "ID": "13",
+          "DESCRIPTION": "2.50 in x 12 ft"
+        },
+        {
+          "ID": "24",
+          "DESCRIPTION": "24 in"
+        },
+        {
+          "ID": "25",
+          "DESCRIPTION": "4 in"
+        },
+        {
+          "ID": "19",
+          "DESCRIPTION": "6 in"
+        },
+        {
+          "ID": "26",
+          "DESCRIPTION": "6 in"
+        },
+        {
+          "ID": "20",
+          "DESCRIPTION": "8 in"
+        },
+        {
+          "ID": "27",
+          "DESCRIPTION": "8 in"
+        },
+        {
+          "ID": "14",
+          "DESCRIPTION": "N/A"
+        },
+        {
+          "ID": "15",
+          "DESCRIPTION": "N/A"
+        },
+        {
+          "ID": "16",
+          "DESCRIPTION": "Type 1 (2 lbs/ft – Galvanized)"
+        },
+        {
+          "ID": "17",
+          "DESCRIPTION": "Type 2 (1.12/ft – Galvanized)"
+        },
+        {
+          "ID": "18",
+          "DESCRIPTION": "Type 3 (1.12/ft – Painted)"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "W10x22"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "W10x26"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "W12x26"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "W6x12"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "W6x15"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "W6x9"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "W8x18"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "W8x21"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_SIGN_RATING_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Excellent"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Good"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Poor"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "DIMENSION_ID",
+      "LIST": [
+        {
+          "ID": "55",
+          "DESCRIPTION": "108x36"
+        },
+        {
+          "ID": "56",
+          "DESCRIPTION": "108x48"
+        },
+        {
+          "ID": "57",
+          "DESCRIPTION": "108x60"
+        },
+        {
+          "ID": "54",
+          "DESCRIPTION": "114x54"
+        },
+        {
+          "ID": "59",
+          "DESCRIPTION": "120x18"
+        },
+        {
+          "ID": "60",
+          "DESCRIPTION": "120x60"
+        },
+        {
+          "ID": "58",
+          "DESCRIPTION": "120x90"
+        },
+        {
+          "ID": "61",
+          "DESCRIPTION": "126x60"
+        },
+        {
+          "ID": "76",
+          "DESCRIPTION": "12x12"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "12x18"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "12x30"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "12x36"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "12x6"
+        },
+        {
+          "ID": "85",
+          "DESCRIPTION": "12x72"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "12x9"
+        },
+        {
+          "ID": "62",
+          "DESCRIPTION": "132x54"
+        },
+        {
+          "ID": "86",
+          "DESCRIPTION": "132x72"
+        },
+        {
+          "ID": "63",
+          "DESCRIPTION": "138x54"
+        },
+        {
+          "ID": "94",
+          "DESCRIPTION": "144x48"
+        },
+        {
+          "ID": "64",
+          "DESCRIPTION": "156x60"
+        },
+        {
+          "ID": "65",
+          "DESCRIPTION": "162x24"
+        },
+        {
+          "ID": "66",
+          "DESCRIPTION": "168x30"
+        },
+        {
+          "ID": "67",
+          "DESCRIPTION": "186x30"
+        },
+        {
+          "ID": "77",
+          "DESCRIPTION": "18x12"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "18x18"
+        },
+        {
+          "ID": "9",
+          "DESCRIPTION": "18x24"
+        },
+        {
+          "ID": "73",
+          "DESCRIPTION": "18x30"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "18x6"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "18x9"
+        },
+        {
+          "ID": "68",
+          "DESCRIPTION": "222x36"
+        },
+        {
+          "ID": "70",
+          "DESCRIPTION": "24x12"
+        },
+        {
+          "ID": "12",
+          "DESCRIPTION": "24x18"
+        },
+        {
+          "ID": "13",
+          "DESCRIPTION": "24x24"
+        },
+        {
+          "ID": "14",
+          "DESCRIPTION": "24x30"
+        },
+        {
+          "ID": "17",
+          "DESCRIPTION": "24x36"
+        },
+        {
+          "ID": "88",
+          "DESCRIPTION": "24x42"
+        },
+        {
+          "ID": "15",
+          "DESCRIPTION": "24x48"
+        },
+        {
+          "ID": "16",
+          "DESCRIPTION": "24x6"
+        },
+        {
+          "ID": "18",
+          "DESCRIPTION": "24x9"
+        },
+        {
+          "ID": "19",
+          "DESCRIPTION": "30x12"
+        },
+        {
+          "ID": "81",
+          "DESCRIPTION": "30x15"
+        },
+        {
+          "ID": "20",
+          "DESCRIPTION": "30x18"
+        },
+        {
+          "ID": "74",
+          "DESCRIPTION": "30x24"
+        },
+        {
+          "ID": "21",
+          "DESCRIPTION": "30x30"
+        },
+        {
+          "ID": "96",
+          "DESCRIPTION": "30x30x30"
+        },
+        {
+          "ID": "22",
+          "DESCRIPTION": "30x36"
+        },
+        {
+          "ID": "23",
+          "DESCRIPTION": "30x42"
+        },
+        {
+          "ID": "24",
+          "DESCRIPTION": "36x12"
+        },
+        {
+          "ID": "79",
+          "DESCRIPTION": "36x18"
+        },
+        {
+          "ID": "25",
+          "DESCRIPTION": "36x24"
+        },
+        {
+          "ID": "26",
+          "DESCRIPTION": "36x30"
+        },
+        {
+          "ID": "27",
+          "DESCRIPTION": "36x36"
+        },
+        {
+          "ID": "97",
+          "DESCRIPTION": "36x36x36"
+        },
+        {
+          "ID": "28",
+          "DESCRIPTION": "36x42"
+        },
+        {
+          "ID": "29",
+          "DESCRIPTION": "36x48"
+        },
+        {
+          "ID": "30",
+          "DESCRIPTION": "36x54"
+        },
+        {
+          "ID": "89",
+          "DESCRIPTION": "36x60"
+        },
+        {
+          "ID": "31",
+          "DESCRIPTION": "36x72"
+        },
+        {
+          "ID": "91",
+          "DESCRIPTION": "36x8"
+        },
+        {
+          "ID": "101",
+          "DESCRIPTION": "40x40x30"
+        },
+        {
+          "ID": "32",
+          "DESCRIPTION": "42x24"
+        },
+        {
+          "ID": "33",
+          "DESCRIPTION": "42x30"
+        },
+        {
+          "ID": "34",
+          "DESCRIPTION": "42x42"
+        },
+        {
+          "ID": "35",
+          "DESCRIPTION": "45x36"
+        },
+        {
+          "ID": "36",
+          "DESCRIPTION": "48x15"
+        },
+        {
+          "ID": "37",
+          "DESCRIPTION": "48x24"
+        },
+        {
+          "ID": "75",
+          "DESCRIPTION": "48x30"
+        },
+        {
+          "ID": "38",
+          "DESCRIPTION": "48x36"
+        },
+        {
+          "ID": "39",
+          "DESCRIPTION": "48x48"
+        },
+        {
+          "ID": "100",
+          "DESCRIPTION": "48x48x36"
+        },
+        {
+          "ID": "98",
+          "DESCRIPTION": "48x48x48"
+        },
+        {
+          "ID": "40",
+          "DESCRIPTION": "48x60"
+        },
+        {
+          "ID": "90",
+          "DESCRIPTION": "48x84"
+        },
+        {
+          "ID": "41",
+          "DESCRIPTION": "48x96"
+        },
+        {
+          "ID": "42",
+          "DESCRIPTION": "54x18"
+        },
+        {
+          "ID": "78",
+          "DESCRIPTION": "54x36"
+        },
+        {
+          "ID": "43",
+          "DESCRIPTION": "60x24"
+        },
+        {
+          "ID": "44",
+          "DESCRIPTION": "60x30"
+        },
+        {
+          "ID": "45",
+          "DESCRIPTION": "60x36"
+        },
+        {
+          "ID": "80",
+          "DESCRIPTION": "60x48"
+        },
+        {
+          "ID": "82",
+          "DESCRIPTION": "60x60"
+        },
+        {
+          "ID": "99",
+          "DESCRIPTION": "60x60x60"
+        },
+        {
+          "ID": "46",
+          "DESCRIPTION": "60x72"
+        },
+        {
+          "ID": "102",
+          "DESCRIPTION": "64x64x48"
+        },
+        {
+          "ID": "47",
+          "DESCRIPTION": "66x18"
+        },
+        {
+          "ID": "48",
+          "DESCRIPTION": "72x18"
+        },
+        {
+          "ID": "49",
+          "DESCRIPTION": "72x24"
+        },
+        {
+          "ID": "50",
+          "DESCRIPTION": "72x54"
+        },
+        {
+          "ID": "87",
+          "DESCRIPTION": "78x24"
+        },
+        {
+          "ID": "51",
+          "DESCRIPTION": "78x36"
+        },
+        {
+          "ID": "83",
+          "DESCRIPTION": "78x48"
+        },
+        {
+          "ID": "84",
+          "DESCRIPTION": "78x60"
+        },
+        {
+          "ID": "69",
+          "DESCRIPTION": "90x24"
+        },
+        {
+          "ID": "95",
+          "DESCRIPTION": "90x48"
+        },
+        {
+          "ID": "52",
+          "DESCRIPTION": "96x30"
+        },
+        {
+          "ID": "53",
+          "DESCRIPTION": "96x72"
+        },
+        {
+          "ID": "10",
+          "DESCRIPTION": "9x12"
+        },
+        {
+          "ID": "11",
+          "DESCRIPTION": "9x15"
+        },
+        {
+          "ID": "93",
+          "DESCRIPTION": "Variesx15"
+        },
+        {
+          "ID": "71",
+          "DESCRIPTION": "Variesx30"
+        },
+        {
+          "ID": "72",
+          "DESCRIPTION": "Variesx36"
+        },
+        {
+          "ID": "92",
+          "DESCRIPTION": "Variesx8"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "COLOR_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Black"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Blue"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Brown"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Coral"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Flourescent Pink"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Flourescent Yellow-Green"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Green"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "Light Blue"
+        },
+        {
+          "ID": "9",
+          "DESCRIPTION": "Orange"
+        },
+        {
+          "ID": "10",
+          "DESCRIPTION": "Purple"
+        },
+        {
+          "ID": "11",
+          "DESCRIPTION": "Red"
+        },
+        {
+          "ID": "12",
+          "DESCRIPTION": "White"
+        },
+        {
+          "ID": "13",
+          "DESCRIPTION": "Yellow"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_URGENCY_ID",
+      "LIST": [
+        {
+          "ID": "3",
+          "DESCRIPTION": "1 Month"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "1 Week"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "1 Year"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "24 Hours"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "3 Months"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "6 Months"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_GRAIL_MATERIAL_ID",
+      "LIST": [
+        {
+          "ID": "2",
+          "DESCRIPTION": "Beam"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Cable-High Tension"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Cable-Low Tension"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Concrete"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_GRAIL_LOC_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Left"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Median"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Right"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "D_GRAIL_PURPOSE_ID",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Protect Bridge"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Protect Sign Structure"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Protect Slope"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "SIGNCONDITION",
+      "LIST": [
+        {
+          "ID": "2",
+          "DESCRIPTION": "Basic maintenance needed"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Needs to be replaced"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "No problems identified"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "SIGN_MAJOR_CAT_ID",
+      "LIST": [
+        {
+          "ID": "5",
+          "DESCRIPTION": "Emergency Management Signs"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Guide Signs"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Recreational Signs"
+        },
+        {
+          "ID": "1",
+          "DESCRIPTION": "Regulatory Signs"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "School Signs"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Warning Signs"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "SIGN_SUB_CATEGORY_ID",
+      "LIST": [
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 47,
+          "DESCRIPTION": "Acknowledgement (D14)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 19,
+          "DESCRIPTION": "Advanced Warning (W3 & W18)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 28,
+          "DESCRIPTION": "Advisory Speed (W13)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 30,
+          "DESCRIPTION": "Children (W15)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 27,
+          "DESCRIPTION": "Clearance (W12-2*)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 32,
+          "DESCRIPTION": "Construction (W20-24)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 29,
+          "DESCRIPTION": "Dead End, Outlet, No Passing (W14)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 35,
+          "DESCRIPTION": "Destination (D1)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 7,
+          "DESCRIPTION": "Directional (R6)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 36,
+          "DESCRIPTION": "Distance (D2)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 9,
+          "DESCRIPTION": "Emergency (R8)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 6,
+          "DESCRIPTION": "Entry Prohibit (R5)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 51,
+          "DESCRIPTION": "Exit, HOV & Auxiliary (All E)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 46,
+          "DESCRIPTION": "Freeway Access (D13)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 52,
+          "DESCRIPTION": "General Information (All I)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 42,
+          "DESCRIPTION": "General Services (D9)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 17,
+          "DESCRIPTION": "Horizontal Alignment (W1)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 18,
+          "DESCRIPTION": "Intersection (W2, W4-4 & W25)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 3,
+          "DESCRIPTION": "Lane & Movement Direction (R3)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 48,
+          "DESCRIPTION": "Lane Use (D15 & D17)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 50,
+          "DESCRIPTION": "Lane and Arrows (M5-6)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 20,
+          "DESCRIPTION": "Merging and Lanes (W4, W6, W9 & W19)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 44,
+          "DESCRIPTION": "Mode Specific (D11)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 45,
+          "DESCRIPTION": "Motorist Assist (D12)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 21,
+          "DESCRIPTION": "Narrow Road (W5)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 40,
+          "DESCRIPTION": "National Scenic Byways (D6)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 5,
+          "ID": 54,
+          "DESCRIPTION": "No Subcategory"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 6,
+          "ID": 55,
+          "DESCRIPTION": "No Subcategory"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 4,
+          "ID": 53,
+          "DESCRIPTION": "No Subcategory"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 34,
+          "DESCRIPTION": "Object Markers (OM)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 38,
+          "DESCRIPTION": "Parking (D4)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 8,
+          "DESCRIPTION": "Parking and Emergency (R7)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 5,
+          "DESCRIPTION": "Passing (R4)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 23,
+          "DESCRIPTION": "Pavement Irregularity (W8 & W17)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 10,
+          "DESCRIPTION": "Pedestrian (R9)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 15,
+          "DESCRIPTION": "Railroad (R15)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 25,
+          "DESCRIPTION": "Railroad (W10)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 43,
+          "DESCRIPTION": "Reference Location (D10)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 39,
+          "DESCRIPTION": "Rest Area (D5)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 12,
+          "DESCRIPTION": "Road/Median Closed (R11)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 49,
+          "DESCRIPTION": "Route Signs (M1 thru M4)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 16,
+          "DESCRIPTION": "Safety Reminders (R16)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 2,
+          "DESCRIPTION": "Speed (R2)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 1,
+          "DESCRIPTION": "Stop & Yield (R1)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 37,
+          "DESCRIPTION": "Street Names (D3)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 31,
+          "DESCRIPTION": "Supplemental Plagues (W16)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 4,
+          "DESCRIPTION": "Toll (R3-28,29,30)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 33,
+          "DESCRIPTION": "Toll Road (W9-6)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 24,
+          "DESCRIPTION": "Toll Road (W9-6)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 11,
+          "DESCRIPTION": "Traffic Signal (R10)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 14,
+          "DESCRIPTION": "Truck Route & Haz Mat (R14)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 26,
+          "DESCRIPTION": "Vehicular and Non-Vehicular (W11)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 2,
+          "ID": 22,
+          "DESCRIPTION": "Vertical Alignment (W7)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 3,
+          "ID": 41,
+          "DESCRIPTION": "Weigh Station (D8)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 1,
+          "ID": 13,
+          "DESCRIPTION": "Weight and Weigh Station (R12 & R13)"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "BARCODEID",
+      "LIST": [
+    {
+        "ID": "D1-1",
+        "DESCRIPTION": "D1-1",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-1a",
+        "DESCRIPTION": "D1-1a",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-1b",
+        "DESCRIPTION": "D1-1b",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-1c",
+        "DESCRIPTION": "D1-1c",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-1d",
+        "DESCRIPTION": "D1-1d",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-1e",
+        "DESCRIPTION": "D1-1e",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-2",
+        "DESCRIPTION": "D1-2",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-2a",
+        "DESCRIPTION": "D1-2a",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-2b",
+        "DESCRIPTION": "D1-2b",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-2c",
+        "DESCRIPTION": "D1-2c",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-2d",
+        "DESCRIPTION": "D1-2d",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-3",
+        "DESCRIPTION": "D1-3",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-3a",
+        "DESCRIPTION": "D1-3a",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-3b",
+        "DESCRIPTION": "D1-3b",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-3c",
+        "DESCRIPTION": "D1-3c",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-3d",
+        "DESCRIPTION": "D1-3d",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-5",
+        "DESCRIPTION": "D1-5",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D1-5a",
+        "DESCRIPTION": "D1-5a",
+        "SIGN_SUB_CATEGORY_ID": 35
+    },
+    {
+        "ID": "D10-1",
+        "DESCRIPTION": "D10-1",
+        "SIGN_SUB_CATEGORY_ID": 43
+    },
+    {
+        "ID": "D10-1a",
+        "DESCRIPTION": "D10-1a",
+        "SIGN_SUB_CATEGORY_ID": 43
+    },
+    {
+        "ID": "D10-2",
+        "DESCRIPTION": "D10-2",
+        "SIGN_SUB_CATEGORY_ID": 43
+    },
+    {
+        "ID": "D10-2a",
+        "DESCRIPTION": "D10-2a",
+        "SIGN_SUB_CATEGORY_ID": 43
+    },
+    {
+        "ID": "D10-3",
+        "DESCRIPTION": "D10-3",
+        "SIGN_SUB_CATEGORY_ID": 43
+    },
+    {
+        "ID": "D10-3a",
+        "DESCRIPTION": "D10-3a",
+        "SIGN_SUB_CATEGORY_ID": 43
+    },
+    {
+        "ID": "D10-4",
+        "DESCRIPTION": "D10-4",
+        "SIGN_SUB_CATEGORY_ID": 43
+    },
+    {
+        "ID": "D10-5",
+        "DESCRIPTION": "D10-5",
+        "SIGN_SUB_CATEGORY_ID": 43
+    },
+    {
+        "ID": "D11-1",
+        "DESCRIPTION": "D11-1",
+        "SIGN_SUB_CATEGORY_ID": 44
+    },
+    {
+        "ID": "D11-1a",
+        "DESCRIPTION": "D11-1a",
+        "SIGN_SUB_CATEGORY_ID": 44
+    },
+    {
+        "ID": "D11-1bP",
+        "DESCRIPTION": "D11-1bP",
+        "SIGN_SUB_CATEGORY_ID": 44
+    },
+    {
+        "ID": "D11-1c",
+        "DESCRIPTION": "D11-1c",
+        "SIGN_SUB_CATEGORY_ID": 44
+    },
+    {
+        "ID": "D11-2",
+        "DESCRIPTION": "D11-2",
+        "SIGN_SUB_CATEGORY_ID": 44
+    },
+    {
+        "ID": "D11-3",
+        "DESCRIPTION": "D11-3",
+        "SIGN_SUB_CATEGORY_ID": 44
+    },
+    {
+        "ID": "D11-4",
+        "DESCRIPTION": "D11-4",
+        "SIGN_SUB_CATEGORY_ID": 44
+    },
+    {
+        "ID": "D12-1",
+        "DESCRIPTION": "D12-1",
+        "SIGN_SUB_CATEGORY_ID": 45
+    },
+    {
+        "ID": "D12-2",
+        "DESCRIPTION": "D12-2",
+        "SIGN_SUB_CATEGORY_ID": 45
+    },
+    {
+        "ID": "D12-3",
+        "DESCRIPTION": "D12-3",
+        "SIGN_SUB_CATEGORY_ID": 45
+    },
+    {
+        "ID": "D12-4",
+        "DESCRIPTION": "D12-4",
+        "SIGN_SUB_CATEGORY_ID": 45
+    },
+    {
+        "ID": "D12-5",
+        "DESCRIPTION": "D12-5",
+        "SIGN_SUB_CATEGORY_ID": 45
+    },
+    {
+        "ID": "D12-5a",
+        "DESCRIPTION": "D12-5a",
+        "SIGN_SUB_CATEGORY_ID": 45
+    },
+    {
+        "ID": "D13-1",
+        "DESCRIPTION": "D13-1",
+        "SIGN_SUB_CATEGORY_ID": 46
+    },
+    {
+        "ID": "D13-2",
+        "DESCRIPTION": "D13-2",
+        "SIGN_SUB_CATEGORY_ID": 46
+    },
+    {
+        "ID": "D14-1",
+        "DESCRIPTION": "D14-1",
+        "SIGN_SUB_CATEGORY_ID": 47
+    },
+    {
+        "ID": "D14-2",
+        "DESCRIPTION": "D14-2",
+        "SIGN_SUB_CATEGORY_ID": 47
+    },
+    {
+        "ID": "D14-3",
+        "DESCRIPTION": "D14-3",
+        "SIGN_SUB_CATEGORY_ID": 47
+    },
+    {
+        "ID": "D15-1",
+        "DESCRIPTION": "D15-1",
+        "SIGN_SUB_CATEGORY_ID": 48
+    },
+    {
+        "ID": "D15-1-1",
+        "DESCRIPTION": "D15-1-1",
+        "SIGN_SUB_CATEGORY_ID": 48
+    },
+    {
+        "ID": "D15-1-2",
+        "DESCRIPTION": "D15-1-2",
+        "SIGN_SUB_CATEGORY_ID": 48
+    },
+    {
+        "ID": "D17-1",
+        "DESCRIPTION": "D17-1",
+        "SIGN_SUB_CATEGORY_ID": 48
+    },
+    {
+        "ID": "D17-2",
+        "DESCRIPTION": "D17-2",
+        "SIGN_SUB_CATEGORY_ID": 48
+    },
+    {
+        "ID": "D17-7",
+        "DESCRIPTION": "D17-7",
+        "SIGN_SUB_CATEGORY_ID": 48
+    },
+    {
+        "ID": "D2-1",
+        "DESCRIPTION": "D2-1",
+        "SIGN_SUB_CATEGORY_ID": 36
+    },
+    {
+        "ID": "D2-2",
+        "DESCRIPTION": "D2-2",
+        "SIGN_SUB_CATEGORY_ID": 36
+    },
+    {
+        "ID": "D2-3",
+        "DESCRIPTION": "D2-3",
+        "SIGN_SUB_CATEGORY_ID": 36
+    },
+    {
+        "ID": "D3-1",
+        "DESCRIPTION": "D3-1",
+        "SIGN_SUB_CATEGORY_ID": 37
+    },
+    {
+        "ID": "D3-1a",
+        "DESCRIPTION": "D3-1a",
+        "SIGN_SUB_CATEGORY_ID": 37
+    },
+    {
+        "ID": "D3-2",
+        "DESCRIPTION": "D3-2",
+        "SIGN_SUB_CATEGORY_ID": 37
+    },
+    {
+        "ID": "D3-2-1",
+        "DESCRIPTION": "D3-2-1",
+        "SIGN_SUB_CATEGORY_ID": 37
+    },
+    {
+        "ID": "D3-2-2",
+        "DESCRIPTION": "D3-2-2",
+        "SIGN_SUB_CATEGORY_ID": 37
+    },
+    {
+        "ID": "D3-2-3",
+        "DESCRIPTION": "D3-2-3",
+        "SIGN_SUB_CATEGORY_ID": 37
+    },
+    {
+        "ID": "D3-2-4",
+        "DESCRIPTION": "D3-2-4",
+        "SIGN_SUB_CATEGORY_ID": 37
+    },
+    {
+        "ID": "D4-1",
+        "DESCRIPTION": "D4-1",
+        "SIGN_SUB_CATEGORY_ID": 38
+    },
+    {
+        "ID": "D4-2",
+        "DESCRIPTION": "D4-2",
+        "SIGN_SUB_CATEGORY_ID": 38
+    },
+    {
+        "ID": "D4-3",
+        "DESCRIPTION": "D4-3",
+        "SIGN_SUB_CATEGORY_ID": 38
+    },
+    {
+        "ID": "D5-1",
+        "DESCRIPTION": "D5-1",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-11",
+        "DESCRIPTION": "D5-11",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-12",
+        "DESCRIPTION": "D5-12",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-12P",
+        "DESCRIPTION": "D5-12P",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-13",
+        "DESCRIPTION": "D5-13",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-14",
+        "DESCRIPTION": "D5-14",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-15",
+        "DESCRIPTION": "D5-15",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-16",
+        "DESCRIPTION": "D5-16",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-1a",
+        "DESCRIPTION": "D5-1a",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-2",
+        "DESCRIPTION": "D5-2",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-2a",
+        "DESCRIPTION": "D5-2a",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-5",
+        "DESCRIPTION": "D5-5",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-6",
+        "DESCRIPTION": "D5-6",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-7",
+        "DESCRIPTION": "D5-7",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D5-8",
+        "DESCRIPTION": "D5-8",
+        "SIGN_SUB_CATEGORY_ID": 39
+    },
+    {
+        "ID": "D6-4",
+        "DESCRIPTION": "D6-4",
+        "SIGN_SUB_CATEGORY_ID": 40
+    },
+    {
+        "ID": "D6-4a",
+        "DESCRIPTION": "D6-4a",
+        "SIGN_SUB_CATEGORY_ID": 40
+    },
+    {
+        "ID": "D9-1",
+        "DESCRIPTION": "D9-1",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-10",
+        "DESCRIPTION": "D9-10",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-11",
+        "DESCRIPTION": "D9-11",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-11a",
+        "DESCRIPTION": "D9-11a",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-11b",
+        "DESCRIPTION": "D9-11b",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-11bP",
+        "DESCRIPTION": "D9-11bP",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-11c",
+        "DESCRIPTION": "D9-11c",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-12",
+        "DESCRIPTION": "D9-12",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-13",
+        "DESCRIPTION": "D9-13",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-13aP",
+        "DESCRIPTION": "D9-13aP",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-13bP",
+        "DESCRIPTION": "D9-13bP",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-13cP",
+        "DESCRIPTION": "D9-13cP",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-13dP",
+        "DESCRIPTION": "D9-13dP",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-14",
+        "DESCRIPTION": "D9-14",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-15",
+        "DESCRIPTION": "D9-15",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-16",
+        "DESCRIPTION": "D9-16",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-17P",
+        "DESCRIPTION": "D9-17P",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-18",
+        "DESCRIPTION": "D9-18",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-18a",
+        "DESCRIPTION": "D9-18a",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-18b",
+        "DESCRIPTION": "D9-18b",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-18b_2",
+        "DESCRIPTION": "D9-18b_2",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-18c",
+        "DESCRIPTION": "D9-18c",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-18c_2",
+        "DESCRIPTION": "D9-18c_2",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-2",
+        "DESCRIPTION": "D9-2",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-20",
+        "DESCRIPTION": "D9-20",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-20aP",
+        "DESCRIPTION": "D9-20aP",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-20withD9-20aP",
+        "DESCRIPTION": "D9-20withD9-20aP",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-21",
+        "DESCRIPTION": "D9-21",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-22",
+        "DESCRIPTION": "D9-22",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-3",
+        "DESCRIPTION": "D9-3",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-3a",
+        "DESCRIPTION": "D9-3a",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-4",
+        "DESCRIPTION": "D9-4",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-6",
+        "DESCRIPTION": "D9-6",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-6P",
+        "DESCRIPTION": "D9-6P",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-7",
+        "DESCRIPTION": "D9-7",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-8",
+        "DESCRIPTION": "D9-8",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "D9-9",
+        "DESCRIPTION": "D9-9",
+        "SIGN_SUB_CATEGORY_ID": 42
+    },
+    {
+        "ID": "E1",
+        "DESCRIPTION": "E1",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E1-5P",
+        "DESCRIPTION": "E1-5P",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E1-5PwithD9-18",
+        "DESCRIPTION": "E1-5PwithD9-18",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E1-5PwithD9-18a",
+        "DESCRIPTION": "E1-5PwithD9-18a",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E1-5PwithD9-18withD5-12P",
+        "DESCRIPTION": "E1-5PwithD9-18withD5-12P",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E1-5aP",
+        "DESCRIPTION": "E1-5aP",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E1-5bP",
+        "DESCRIPTION": "E1-5bP",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E11-1",
+        "DESCRIPTION": "E11-1",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E11-1a",
+        "DESCRIPTION": "E11-1a",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E11-1b",
+        "DESCRIPTION": "E11-1b",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E11-1c",
+        "DESCRIPTION": "E11-1c",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E11-1d",
+        "DESCRIPTION": "E11-1d",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E11-1e",
+        "DESCRIPTION": "E11-1e",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E11-1f",
+        "DESCRIPTION": "E11-1f",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E11-2",
+        "DESCRIPTION": "E11-2",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E5-1",
+        "DESCRIPTION": "E5-1",
+        "SIGN_SUB_CATEGORY_ID": 51
+    },
+    {
+        "ID": "E5-1a",
+        "DESCRIPTION": "E5-1a",
+        "SIGN_SUB_CATEGORY_ID": 51
+    }
+]
+      
+    }
+  }
+]

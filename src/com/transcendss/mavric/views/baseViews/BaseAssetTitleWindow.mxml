@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   >
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.util.FileUtility;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.TextMemoEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			import com.transcendss.transcore.sld.models.components.GeoTag;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			protected var fileUtility:FileUtility = new FileUtility();
+			protected var geoTagsArr:ArrayCollection=new ArrayCollection();
+			
+			//Child Classes must override these method
+			public function removeGeoTag(tssmedia:Object):void{
+				FlexGlobals.topLevelApplication.TSSAlert("Method not implemented");
+			}
+			public function setBaseAsset(legacyValues:BaseAsset):void{
+				trace("setBaseAsset");
+				FlexGlobals.topLevelApplication.TSSAlert("Method not implemented");
+			}
+			public function handlePicture(event:CameraEvent):void{
+				FlexGlobals.topLevelApplication.TSSAlert("Method not implemented");
+			}
+			public function handleVideo(event:videoEvent):void{
+				FlexGlobals.topLevelApplication.TSSAlert("Method not implemented");
+			}
+			public function handleVoiceMemo(event:VoiceEvent):void{
+				FlexGlobals.topLevelApplication.TSSAlert("Method not implemented");
+			}
+			public function handleTextMemo(event:TextMemoEvent):void{
+				FlexGlobals.topLevelApplication.TSSAlert("Method not implemented");
+			}
+			public function handleCloseEvent(event:Event = null):void{
+				FlexGlobals.topLevelApplication.TSSAlert("Method not implemented");
+			}
+			
+			protected function findID(objArrayC:ArrayCollection, desc:String):String
+			{
+				for each (var item:Object in objArrayC)
+				{
+					if (item.DESCRIPTION == desc)
+						return String(item.ID);
+				}
+				return '';
+			}
+			
+			protected function findValue(objArrayC:ArrayCollection, id:String):String
+			{
+				for each (var item:Object in objArrayC)
+				{
+					if (item.ID == id)
+						return item.DESCRIPTION;
+				}
+				return "";
+			}
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				handleCloseEvent();
+			}
+			
+			protected function assetGTFaultHandler(event:Event=null):void{
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
+				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining asset attachments");
+			}
+			
+			protected function deleteUnsavedGeotagFiles():void
+			{
+				
+				//In case of close without save, delete the geotags in the array and remove from the file system
+				for each(var gt:GeoTag in geoTagsArr)
+				{
+					var fileName:String ="";
+					
+					if (gt.image_file_name != null && gt.image_file_name != "")
+					{
+						fileName = gt.image_file_name;
+					}
+					else if (gt.video_file_name != null && gt.video_file_name != "")
+					{
+						fileName = gt.video_file_name;
+					}
+					else if (gt.voice_file_name != null && gt.voice_file_name != "")
+					{
+						fileName = gt.voice_file_name;
+					}
+					if(fileName != "")
+						fileUtility.deleteFiles(fileName);
+				}	
+			}
+		]]>
+	</fx:Script>
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10" paddingTop="10" paddingRight="10" paddingBottom="10"/>
+	</s:layout>
+</s:TitleWindow>

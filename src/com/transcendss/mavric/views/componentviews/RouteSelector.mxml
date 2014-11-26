@@ -1,0 +1,475 @@
+<?xml version="1.0"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:Validators="Validators.*" 
+			   close="handleCloseEvent();" 
+			   title="Route Selector" width="480"
+			   xmlns:mate="http://mate.asfusion.com/" xmlns:addOns="MAVRIC2.views.addOns.*"
+			   height.ready="{RouteSelForm.height + 45}"
+			   backgroundColor="0xFFFFCC"
+			   creationComplete="init()"
+			   skinClass="skins.MavricTitleWindowSkin">
+	
+	<s:layout>
+		<s:VerticalLayout paddingTop="10" paddingBottom="10" paddingRight="10" paddingLeft="10"/>
+	</s:layout>
+	
+	<s:states>
+		<!--Set to this state once the file load is complete and just before the service call to obtain Routes-->
+		<mx:State id="loading" name="loading"/>
+		<!--Set to this state once the service results are obtained and processed-->
+		<mx:State id="ready" name="ready"/> 
+		<!--Set to this state when this popup is created in RoadAnalyzer.mxml-->
+		<mx:State id="preload" name="preload"/>
+	</s:states>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.util.PopUpUtils;
+			import com.transcendss.transcore.events.RouteSelectorEvent;
+			import com.transcendss.transcore.sld.models.components.Route;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.PopUpEvent;
+			
+			
+			
+			
+			
+			[Bindable]
+			[Embed(source="../../../../../images/list.png")] 
+			protected var ilist:Class
+			
+			[Bindable]
+			public var dp:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var minMaxDp:ArrayCollection;
+			[Bindable]
+			public var scaleDP:ArrayCollection;
+			[Bindable]
+			private var begTxt:String;
+			[Bindable]
+			private var endTxt:String;
+			
+			[Bindable]
+			private var selectedRoute:String;
+			
+			[Bindable]
+			private var selectedScale:String;
+			
+			[Bindable]
+			private var editable:Boolean = false;
+			
+			private var serviceURL:String;
+			private var rsEvent:RouteSelectorEvent;
+			private var curRoute:Route = null;
+			private var curScale:Number = -1;
+			//private var scales:ArrayCollection = new  ArrayCollection(app.GlobalComponents.ConfigManager.scaleValues);
+//			[Bindable]
+//			private var scaleRepresentatives:ArrayCollection = new ArrayCollection([
+//				{scaleID: 1 , scaleVal:"1\" = 0.02 mi"},
+//				{scaleID: 2 , scaleVal:"1\" = 0.05 mi"},
+//				{scaleID: 3 , scaleVal:"1\" = 0.10 mi"},
+//				{scaleID: 4 , scaleVal:"1\" = 0.20 mi"},
+//				{scaleID: 5 , scaleVal:"1\" = 0.50 mi"},
+//				{scaleID: 6 , scaleVal:"1\" = 1.00 mi"},
+//				{scaleID: 7 , scaleVal:"1\" = 2.00 "},
+//				{scaleID: 8 , scaleVal:"1\" = 5.00 mi"},
+//				{scaleID: 9 , scaleVal:"1\" = 10.00 mi"}]);
+			
+			[Bindable]
+			private var app:MAVRIC2 = FlexGlobals.topLevelApplication as MAVRIC2;
+			
+			public function init():void
+			{
+				PopUpUtils.closeAll(this);
+				//comboBoxValidator.source = RouteList;
+				//comboBoxValidator.prompt = RouteList.prompt;
+			}
+			
+			//gets called when the event RouteSelectorEvent.ROUTE_SELECTOR_POPULATE is fired from external file manager(see injector in MainEventMap)
+			//or frm RoadAnalyzer.mxml when control bar btn is clicked (rteSelectBtnClick)
+			public function rteSelectorPopulate(event:RouteSelectorEvent):void
+			{
+				event.stopPropagation();
+				this.visible = true;
+				
+				if (currentState != "ready")
+					currentState = "loading";
+				rsEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_LIST_REQUESTED, event.route, event.scale);
+				rsEvent.routeName = event.route? event.route.routeName:"";
+				if (app.GlobalComponents.ConfigManager.serviceURL == null)
+				{
+					app.GlobalComponents.ConfigManager.serviceURL = ConfigUtility.get("serviceURL");
+				}
+					
+				rsEvent.serviceURL = app.GlobalComponents.ConfigManager.serviceURL+"Routes";
+				dispatchEvent(rsEvent); //(see event handler in MainEventMap)
+			}
+			
+			//gets called when the HttpService results are obtained and processed to arraycollection (see injector in MainEventMap)
+			public function setRouteList(event:RouteSelectorEvent):void
+			{
+				try
+				{
+					event.stopPropagation();
+					dp = event.dataProviderAC;
+					
+					app.GlobalComponents.routeList=dp;
+//					RouteList.dataProvider = dp;
+//					addEventListener(RouteSelectorEvent.ROUTE_SELECTION_CHANGED, getMinMax);
+					
+					curRoute = event.route;
+					curScale = event.scale;
+					setSelectedScale(curScale!=-1?curScale:app.GlobalComponents.ConfigManager.defaultScale);
+//					setRtSelectorValues();
+				}
+				catch (e:Error)
+				{
+					trace(e);
+				}
+			}
+			
+			//sets the default values from settings in the config manager 
+			//or if returning from a preivous route populates form with the route's values
+			private function setRtSelectorValues():void
+			{
+				if (app.GlobalComponents.ConfigManager != null)
+				{
+					scaleDP = app.GlobalComponents.ConfigManager.scaleValues;
+					ScaleList.dataProvider = scaleDP;
+					ScaleList.labelField = "scaleLabel";
+					setSelectedScale(app.GlobalComponents.ConfigManager.defaultScale);
+				}
+				
+				if (curRoute != null)
+				{
+					for(var i:int=0;i<RouteList.dataProvider.length;i++)
+					{
+						var rName:String = RouteList.dataProvider.getItemAt(i).ROUTE_NAME as String;
+						if (rName == curRoute.routeName)
+						{
+							var old:int = RouteList.selectedIndex;
+							RouteList.selectedIndex=i;
+							dispatchEvent(new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTION_CHANGED));
+						}
+					}
+					if(RouteList.selectedIndex ==-1 && curRoute.routeName != "no_rte")
+					{
+						
+							PopUpManager.removePopUp(this);
+							FlexGlobals.topLevelApplication.TSSAlert("No Route found with the name: " + curRoute.routeName);
+						
+					}
+				}
+				
+				if (curScale!=0)
+				{
+					setSelectedScale(curScale);
+				}
+				RouteList.addEventListener(FlexEvent.VALUE_COMMIT,formValidator.validateForm);
+				this.currentState = "ready";
+			}	
+			
+			//sets either the default scale or the previous scale as selected 
+			private function setSelectedScale(selectedScale:Number):void
+			{
+				for(var j:int = 0; j < ScaleList.dataProvider.length; j++)
+				{
+					var scale:Number = new Number(ScaleList.dataProvider.getItemAt(j).scaleValue as String);
+					if(scale == selectedScale)
+					{
+						ScaleList.selectedIndex = j;
+					}
+				}
+			}
+			
+			//when the route changes sends request for min and max miles for that route
+			private function getMinMax(event:Event):void
+			{
+				event.stopPropagation();
+				this.currentState = "loading";
+				rsEvent = new RouteSelectorEvent(RouteSelectorEvent.MIN_MAX_REQUESTED);
+				
+				try
+				{
+					var drop:List = List(event.target);
+					selectedRoute = drop.selectedItem.ROUTE_NAME;
+					selectedRoute = RouteList.selectedItem.ROUTE_NAME;
+					rsEvent.serviceURL = app.GlobalComponents.ConfigManager.serviceURL+ "MinMaxValues/" + RouteList.selectedItem.valueOf().ROUTE_NAME;
+					rsEvent.routeName = RouteList.selectedItem.valueOf().ROUTE_NAME;
+					dispatchEvent(rsEvent); //(see event handler in MainEventMap)
+					
+				}
+				catch (e:Error)
+				{
+					trace(e.message);
+				}
+			}
+			
+			//gets called when the the service results for min/max is returned and processed (see injector in MainEventMap)
+			//sets the min and max mile values for the selected route
+			public function setMinMax(event:RouteSelectorEvent):void
+			{
+				event.stopPropagation();
+				minMaxDp= event.dataProviderAC;
+				BegMileMin.text = "Min: " + new Number(minMaxDp.getItemAt(0).MIN).toFixed(2);
+				EndMileMax.text = "Max: " + new Number(minMaxDp.getItemAt(0).MAX).toFixed(2);
+				//this.width = 450;
+				if (curRoute == null || curRoute.routeName != selectedRoute)
+				{
+					begTxt = new Number(minMaxDp.getItemAt(0).MIN).toFixed(2);
+					endTxt= new Number(minMaxDp.getItemAt(0).MAX).toFixed(2);
+				}
+				else
+				{
+					begTxt = new Number(curRoute.beginMilepost).toFixed(2);
+					endTxt = new Number(curRoute.endMilepost).toFixed(2);
+				}
+				this.currentState = "ready";
+				editable = true;
+			}	
+			
+			private function handleCloseEvent():void 
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+				//dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			private function setNewRoute(e:Event):void
+			{
+				if(!sroute.text || sroute.text === "") 
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Please select a route.", this);
+					return;
+				}
+				if (BegMileInpValidator.validate().type == "invalid" || EndMileInpValidator.validate().type == "invalid")
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Invalid mile input.", this);
+					return;
+				}
+				if(new Number(BegMileInp.text) > new Number(EndMileInp.text))
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Beginning milepost must be less than the ending milepost.", this);
+					return;
+				}
+				if (app.GlobalComponents.stkDiagram != null &&
+					app.GlobalComponents.stkDiagram.route.routeName == sroute.text &&
+					app.GlobalComponents.stkDiagram.route.beginMilepost == Number(BegMileInp.text) && app.GlobalComponents.stkDiagram.route.endMilepost == Number(EndMileInp.text))
+				{
+					app.TSSAlert("This route and extent is already loaded. Try another.");
+					return;
+				}
+					
+					
+				try
+				{
+
+					
+					app.setBusyStatus(false);
+					var bmi:Number = new Number(BegMileInp.text);
+					var emi:Number = new Number(EndMileInp.text);
+					if(bmi == emi)
+					{
+						FlexGlobals.topLevelApplication.TSSAlert("The start and end points may not be equal.");
+						return;
+					}
+					
+					
+					var rteFName:String = RouteList.selectedItem.ROUTE_FULL_NAME?RouteList.selectedItem.ROUTE_FULL_NAME:"";
+					var rte:Route = new Route(RouteList.selectedItem.ROUTE_NAME,
+						bmi,
+						emi,0,rteFName);
+					
+					// Globals. Bad. Not good:
+					app.currentRouteName = RouteList.selectedItem.ROUTE_NAME;
+					app.currentBeginMile = new Number(BegMileInp.text);
+					app.currentEndMile = new Number(EndMileInp.text);
+					
+					var selectedScale:Number;
+					
+					if (ScaleList != null)
+					{
+						selectedScale = new Number(app.GlobalComponents.ConfigManager.scaleValues[ScaleList.selectedIndex].scaleValue);//ScaleList.selectedItem.valueOf();
+					} 
+					else
+					{
+						selectedScale = .1;
+					}
+					rsEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTION_COMPLETE, rte, selectedScale);
+					rsEvent.routeName = rte.routeName;
+					
+					rsEvent.serviceURL = app.GlobalComponents.ConfigManager.serviceURL + "LatLong/" + rte.routeName + "/" + rte.beginMi + "/" + rte.endMi;
+					FlexGlobals.topLevelApplication.keepRunning = false;
+					//app.runningEvents = 0;
+//					app.incrementEventStack();
+//					app.incrementEventStack();
+//					app.incrementEventStack();
+				
+					FlexGlobals.topLevelApplication.isCachedRoute = false;
+					dispatchEvent(rsEvent); 
+					//(see event handler in MainEventMap)
+					
+					// close this form
+					PopUpManager.removePopUp(this);
+				}
+				catch (e:Error)
+				{
+					trace(e);
+				}
+			}
+			
+			private function closeScalePop():void
+			{
+				var arrayC:ArrayCollection =app.GlobalComponents.ConfigManager.scaleValues;
+				scalePopUp.close(true, arrayC[ScaleList.selectedIndex].valueOf());
+				scale.text = ScaleList.selectedItem.scaleLabel;	
+			}
+			
+			private function closeRoutePop(event:Event):void
+			{
+				this.getMinMax(event);
+				sroute.text = RouteList.selectedItem.ROUTE_NAME;
+				rsPopUp.close(true, RouteList.selectedItem);	
+			}
+			
+			private function openRouteSelect(event:MouseEvent):void
+			{	
+				rsPopUp.open(this, false);
+				PopUpManager.centerPopUp(rsPopUp);
+			}
+			
+			
+			private function openScaleSelect(event:MouseEvent):void
+			{
+				scalePopUp.open(this, false);
+				PopUpManager.centerPopUp(scalePopUp);				
+			}
+			
+			protected function MileInp_focusInHandler(event:FocusEvent):void
+			{
+				BegMileInp.softKeyboardType = SoftKeyboardType.NUMBER;
+				EndMileInp.softKeyboardType = SoftKeyboardType.NUMBER;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="scalePopUp" width="300"  height="400"  name="Select Scale"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="ScaleList" width="100%" change="closeScalePop()" selectedIndex="{app.GlobalComponents.ConfigManager.getDefScaleIndex()}" labelField = "scaleLabel" dataProvider="{FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.scaleValues}" height="100%" fontSize="18" allowMultipleSelection="false"/> 
+					<!--valueCommit="this.formValidator.validateForm(event);"--> <!-- this went in the List tag before-->
+					<!-- <s:Button label="OK" click="closeScalePop()"/> -->
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<fx:Array id="RtSelectorValidators">
+			<mx:NumberValidator id="BegMileInpValidator" source="{BegMileInp}" property="text" domain="real"
+								minValue="{new Number(minMaxDp.getItemAt(0).MIN)}" maxValue="{new Number(new Number(minMaxDp.getItemAt(0).MAX).toFixed(2))}" 
+								trigger="{BegMileInp}" triggerEvent="change"/>
+			<mx:NumberValidator id="EndMileInpValidator" source="{EndMileInp}" property="text" domain="real"
+								minValue="{new Number(minMaxDp.getItemAt(0).MIN)}" maxValue="{new Number(new Number(minMaxDp.getItemAt(0).MAX).toFixed(2))}" 
+								trigger="{EndMileInp}" triggerEvent="change"/>
+			<mx:Validator id="reqBMileItem" required="true" source="{BegMileInp}"
+						  property="text" />
+			<mx:Validator id="reqEMileItem" required="true" source="{EndMileInp}"
+						  property="text" />
+			
+			<!--<mx:NumberValidator id="reqScaleItem" source="{ScaleList}"
+								property="selectedIndex"
+								minValue="0"/>-->
+			<!--<Validators:ComboBoxValidator id="comboBoxValidator" error="Please Select a Route" property="selectedItem"/>--> <!-- This does not specify a source and causes an error in FormValidator-->
+		</fx:Array>
+		
+		<!--validator with the above array as parameters. On change for each item, validates using the array-->
+		<Validators:FormValidator id="formValidator" validators="{this.RtSelectorValidators}"/>
+		<s:SkinnablePopUpContainer id="rsPopUp" width="300" height="400"  name="Select Route"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+			<s:VGroup width="100%" height="100%" horizontalAlign="center">
+	   <!-- <s:List id="RouteList"   change="this.getMinMax(event)" valueCommit="this.formValidator.validateForm(event)" dataProvider="{dp}" width="100%" height="100%" labelField="ROUTE_NAME" fontSize="18" allowMultipleSelection="false"/> -->
+			<s:List id="RouteList"   change="closeRoutePop(event)" dataProvider="{dp}" width="100%" height="100%" labelField="ROUTE_NAME" fontSize="18" allowMultipleSelection="false" valueCommit="this.formValidator.validateForm(event)"/>
+				<!---->
+		<!--	<s:Button label="OK" click="closeRoutePop()"/> -->
+			
+			</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+	</fx:Declarations>
+	
+	<s:VGroup gap="-30" width="100%" horizontalAlign="center">
+		<s:Form id ="RouteSelForm" width="100%"  includeIn="loading,ready" backgroundColor="0xFFFFCC">		
+			<s:FormItem label="Route:"  width="100%" backgroundColor="0xFFFFCC">
+				<s:HGroup horizontalAlign="center" verticalAlign="top">
+					<!--	<s:DropDownList id="RouteList" height="30"  width="200" labelField="ROUTE_NAME" skinClass="skins.CustomImageScrollerDropDownSkin" 
+					prompt="Select Route"  fontSize="18" dataProvider="{dp}"  change="getMinMax(event);" valueCommit="this.formValidator.validateForm(event);"/> -->
+					<!--
+					<s:List id="RouteList" width="200" height="50" labelField="ROUTE_NAME" fontSize="18" dataProvider="{dp}" allowMultipleSelection="false" change="getMinMax(event)" 
+							valueCommit="this.formValidator.validateForm(event);"/> -->
+					
+					<s:VGroup horizontalAlign="center">
+					 	<s:Image toolTip="Select Route" source="{ilist}" click="openRouteSelect(event)"/> 
+						<s:Label text="SELECT ROUTE"  fontSize="12">
+						</s:Label>
+					</s:VGroup>
+					<s:Label id="sroute" color="#000000" fontWeight="bold" textDecoration="underline"/>
+				</s:HGroup>
+			</s:FormItem>
+		
+				
+			
+			<s:FormItem label="Begin Milepost:" width="100%" backgroundColor="0xFFFFCC">
+				<s:HGroup horizontalAlign="center" verticalAlign="middle">
+					<s:TextInput  id="BegMileInp"  text="{begTxt}" enabled="{editable}"  softKeyboardType="number" width="150" focusIn="MileInp_focusInHandler(event)"/><!-- valueCommit="this.formValidator.validateForm(event);"/> -->
+					<s:Label id="BegMileMin" color="#6a6a6a"/>
+				</s:HGroup>
+			</s:FormItem>
+			<s:FormItem label="End Milepost:" width="100%" backgroundColor="0xFFFFCC">
+				<s:HGroup horizontalAlign="center" verticalAlign="middle">
+					<s:TextInput  id="EndMileInp" width="150" enabled="{editable}" text="{endTxt}" softKeyboardType="number" focusIn="MileInp_focusInHandler(event)"/><!-- valueCommit="this.formValidator.validateForm(event);"/> -->
+					<s:Label id ="EndMileMax" color="#6a6a6a"/>
+				</s:HGroup>
+			</s:FormItem>
+
+			<s:FormItem label="Scale:	1:" width="100%" backgroundColor="0xFFFFCC">
+				<s:HGroup horizontalAlign="center" verticalAlign="top">
+					<!--	<s:DropDownList id="ScaleList" width="200" height="30" skinClass="skins.CustomImageScrollerDropDownSkin"
+					prompt="Select Scale" fontSize="18" valueCommit="this.formValidator.validateForm(event);"/> 
+					<s:List id="ScaleList" width="200" height="50" fontSize="18" allowMultipleSelection="false" valueCommit="this.formValidator.validateForm(event);"/> 
+					-->
+					
+					<s:VGroup horizontalAlign="center" >
+						<s:Image toolTip="Get Scale" source="{ilist}" click="openScaleSelect(event)"/>
+						<s:Label text="SELECT SCALE"  fontSize="12">
+						</s:Label>
+					</s:VGroup>
+					<s:Label id="scale" text="{app.GlobalComponents.ConfigManager.getDefScaleIndexLabel()}" color="#000000" fontWeight="bold"/> <!--textDecoration="underline" />-->
+				</s:HGroup>
+				
+			
+			</s:FormItem>
+			
+			<!-- enabled="{this.formValidator.formIsValid}"--> 
+			<s:FormItem width="230" height="30" backgroundColor="0xFFFFCC">
+				<s:Button label="Get Route" id="getSldBtn" height="30" width="150" click="setNewRoute(event)"  horizontalCenter="0" /> 
+				
+			</s:FormItem>
+		</s:Form>
+		<!--	<mx:ProgressBar id="progressBar"  labelPlacement="top" label="Loading..." minimum="0" visible="true" maximum="100" 
+		indeterminateSkin="{skins.ProgressIndeterminateSkin}" color="0x323232" direction="right" mode="event"  
+		width="80%" indeterminate="true" includeIn="preload,loading" includeInLayout.ready="false"  /> -->
+	</s:VGroup>
+</s:TitleWindow>

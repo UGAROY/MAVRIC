@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnablePopUpContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						   xmlns:s="library://ns.adobe.com/flex/spark" width="200" height="200">
+	<fx:Script>
+		<![CDATA[
+			import mx.rpc.Responder;
+			private var _responder:mx.rpc.Responder;
+			private var _media:Object;
+			public function openGeo():void
+			{
+				_responder.result({choice:"open", tssmedia: _media});
+				close();
+			}
+			
+			public function deleteGeo():void
+			{
+				_responder.result({choice:"delete", tssmedia: _media});
+				close();
+			}
+			
+			public function get responder():mx.rpc.Responder
+			{
+				return _responder;
+			}
+
+			public function set responder(value:mx.rpc.Responder):void
+			{
+				_responder = value;
+			}
+
+			public function get media():Object
+			{
+				return _media;
+			}
+
+			public function set media(value:Object):void
+			{
+				_media = value;
+			}
+			
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:TitleWindow title="GeoTag Options" close="close()" width="100%" height="100%">
+		<s:VGroup horizontalAlign="center" paddingTop="8" paddingBottom="8" paddingLeft="8" paddingRight="8" gap="5" width="100%">
+			<s:Button label="Open" click="openGeo()"/>
+			<s:Spacer/>
+			<s:Spacer/>
+			<s:Button label="Delete" click="deleteGeo()"/>
+		</s:VGroup>
+	</s:TitleWindow>
+</s:SkinnablePopUpContainer>

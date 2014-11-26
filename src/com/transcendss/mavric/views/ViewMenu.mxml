@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<!-- containers\spark\myComponents\MyLoginForm.mxml -->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   title="View"
+			   skinClass="skins.MavricTitleWindowSkin"
+			   close="handleCloseEvent();">
+	<s:layout>
+		<s:VerticalLayout paddingTop="10" paddingBottom="10" paddingRight="10" paddingLeft="10"/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.asfusion.mate.events.Dispatcher;
+			import com.transcendss.mavric.managers.ConfigurationManager;
+			import com.transcendss.mavric.views.*;
+			import com.transcendss.mavric.views.componentviews.*;
+			import com.transcendss.transcore.events.*;
+			import com.transcendss.transcore.sld.models.components.Route;
+			
+			import mx.core.*;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.PopUpEvent;
+			
+			private var overviewMapWindow:OverviewMap;
+			private var loadRoutesWindow:LocalRoutesForm;
+			private var routeSelWindow:RouteSelector;
+			public var dispatcher:IEventDispatcher;
+			private var menuEvent:MenuBarEvent;
+			
+			[Bindable]
+			private var app:MAVRIC2 = FlexGlobals.topLevelApplication as MAVRIC2;
+			
+			// Handle the close button and Cancel button.
+			private function handleCloseEvent():void {
+				PopUpManager.removePopUp(this);
+			}            
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+			}
+			
+			//handle checkbox events
+//			private function handleFS(event:MouseEvent ):void{
+//			
+//				
+//				if(fsc.selected){
+//					trace("full sreen on");
+//					menuEvent=new MenuBarEvent(MenuBarEvent.FULL_SCREEN_ENABLED,null,true,true);
+//					menuEvent.itemToggled=true;
+//					dispatchEvent(menuEvent);
+//					FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.FullScreenSwitch=true;
+//					
+//				}
+//				else
+//				{
+//					trace("full sreen off");
+//					FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.FullScreenSwitch=false;
+//					menuEvent=new MenuBarEvent(MenuBarEvent.FULL_SCREEN_ENABLED,null,true,true);
+//					menuEvent.itemToggled=false;
+//					dispatchEvent(menuEvent);
+//				}
+//			}
+//			private function handleRS(event:MouseEvent):void{	
+//				if(rsc.selected){
+//					
+//					trace("route selector control");
+//					menuEvent=new MenuBarEvent(MenuBarEvent.ROUTE_SELECTOR_ENABLED,null,true,true);
+//					dispatchEvent(menuEvent);
+//					
+//				}
+//			}
+//			private function handleVL(event:MouseEvent):void{	
+//				if(vlc.selected){
+//					trace("video log on");
+//					FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.VideoLogSwitch=true;
+//					menuEvent=new MenuBarEvent(MenuBarEvent.DRIVEMAP_ENABLED,null,true,true);
+//					menuEvent.itemToggled=true;
+//					dispatchEvent(menuEvent);
+//				}
+//				else{
+//					trace("video log off");
+//					FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.VideoLogSwitch=false;
+//
+//					menuEvent=new MenuBarEvent(MenuBarEvent.DRIVEMAP_ENABLED,null,true,true);
+//					menuEvent.itemToggled=false;
+//					dispatchEvent(menuEvent);
+//				}
+//			}
+//			private function handleOM(event:MouseEvent):void{	
+//				
+//				if(omc.selected){
+//					trace("overview map on");
+//					FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.OverviewMapSwitch=true;
+//
+//					menuEvent=new MenuBarEvent(MenuBarEvent.OVERVIEW_ENABLED,null,true,true);
+//					menuEvent.itemToggled=true;
+//					dispatchEvent(menuEvent);
+//					
+//				
+//				}
+//				else{
+//					trace("overview map off");
+//					FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.OverviewMapSwitch=false;
+//
+//					menuEvent=new MenuBarEvent(MenuBarEvent.OVERVIEW_ENABLED,null,true,true);
+//					menuEvent.itemToggled=false;
+//					dispatchEvent(menuEvent);
+//				}
+//			}
+			private function handleCB(event:MouseEvent):void{
+				if(cbc.selected){
+					trace("control bar on");
+					FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.ControlBarSwitch=true;
+
+					menuEvent=new MenuBarEvent(MenuBarEvent.CONTROLBAR_ENABLED,null,true,true);
+					menuEvent.itemToggled=true;
+					dispatchEvent(menuEvent);
+				}
+				else
+				{
+					trace("control bar off");
+					FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.ControlBarSwitch=false;
+
+					menuEvent=new MenuBarEvent(MenuBarEvent.CONTROLBAR_ENABLED,null,true,true);
+					menuEvent.itemToggled=false;
+					dispatchEvent(menuEvent);
+				}
+					
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<s:VGroup> 
+		<!--<s:CheckBox label="Full Screen" id="fsc" selected="{app.GlobalComponents.ConfigManager.FullScreenSwitch}"
+				  	click="handleFS(event);" /> 
+		<s:CheckBox label="Route Selector" id="rsc" 
+				  	click="handleRS(event);"/> 
+		<s:CheckBox label="Video Log" id="vlc" selected="{FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.VideoLogSwitch}"
+					click="handleVL(event);"/> 
+		<s:CheckBox label="Overview Map" id="omc" selected="{FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.OverviewMapSwitch}"
+					click="handleOM(event);"/>--> 
+		<s:CheckBox label="Control Bar" id="cbc" selected="{app.GlobalComponents.ConfigManager.ControlBarSwitch}"
+					click="handleCB(event);"/> 
+	</s:VGroup> 
+</s:TitleWindow>

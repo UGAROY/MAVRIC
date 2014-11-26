@@ -1,0 +1,2389 @@
+<?xml version="1.0" encoding="utf-8"?>
+<baseViews:BaseAssetTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:components="spark.components.*"
+			   xmlns:views="com.transcendss.mavric.views.*"
+			   xmlns:baseViews="com.transcendss.mavric.views.baseViews.*"
+			   width="1000" height="749" close="handleCloseEvent()" creationComplete="init()"
+			   skinClass="skins.MavricTitleWindowSkin" title="Culvert Inventory">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.managers.AssetManager;
+			import com.transcendss.mavric.util.FileUtility;
+			import com.transcendss.mavric.util.GeoUtil;
+			import com.transcendss.mavric.util.MeasureSprite;
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.InventoryMenuEvent;
+			import com.transcendss.transcore.events.RouteSelectorEvent;
+			import com.transcendss.transcore.events.TextMemoEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			import com.transcendss.transcore.sld.models.components.GeoTag;
+			import com.transcendss.transcore.sld.models.components.Materials;
+			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
+			import com.transcendss.transcore.util.AssetSymbol;
+			import com.transcendss.transcore.util.Converter;
+			import com.transcendss.transcore.util.TSSAudio;
+			import com.transcendss.transcore.util.TSSMemo;
+			import com.transcendss.transcore.util.TSSPicture;
+			import com.transcendss.transcore.util.TSSVideo;
+			
+			import flash.events.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.core.*;
+			import mx.events.ValidationResultEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			import mx.utils.StringUtil;
+			import mx.validators.ValidationResult;
+			
+			import spark.core.SpriteVisualElement;
+			import spark.events.PopUpEvent;
+			import spark.formatters.DateTimeFormatter;
+			import spark.skins.mobile.StageTextInputSkin;
+			import spark.skins.mobile.TextInputSkin;
+
+			private static const SIZE_PRECISION:int = 3;
+			private var am:AssetManager = FlexGlobals.topLevelApplication.GlobalComponents.assetManager;
+			
+			[Bindable]
+			[Embed(source="../../../../images/culvert/elliptical.png")] protected var culvElliptical:Class
+			[Embed(source="../../../../images/culvert/arch.png")] protected var culvArch:Class
+			[Embed(source="../../../../images/culvert/rectangular.png")] protected var culvRectangular:Class
+			[Bindable]
+			[Embed(source="../../../../images/culvert/round.png")] protected var culvRound:Class
+			
+			
+			public var dp:ArrayCollection = new ArrayCollection();
+			public var sp:ArrayCollection = new ArrayCollection();
+			public var pp:ArrayCollection = new ArrayCollection();
+			public var jp:ArrayCollection = new ArrayCollection();
+			public var ap:ArrayCollection = new ArrayCollection();
+			public var bp:ArrayCollection = new ArrayCollection();
+			public var gp:ArrayCollection = new ArrayCollection();
+			public var fp:ArrayCollection = new ArrayCollection();
+			public var jpp:ArrayCollection = new ArrayCollection();
+			public var bpp:ArrayCollection = new ArrayCollection();
+			public var cp:ArrayCollection = new ArrayCollection();
+			public var cpp:ArrayCollection = new ArrayCollection();
+			public var mp:ArrayCollection = new ArrayCollection();
+			public var mep:ArrayCollection = new ArrayCollection();
+			[Bindable]
+			private var routeList:ArrayCollection=new ArrayCollection();
+		//	public var name:String = new String();
+			private var imEvent:InventoryMenuEvent;
+			private var curMat:Materials = null;
+			public var dispatcher:IEventDispatcher;
+			private var culType:ArrayCollection;
+			private var culEvent:AssetEvent;
+			private var culData:Object;
+			private var rsEvent:RouteSelectorEvent;
+			private var lastPressed:String=new String();
+			private var dbManager:MAVRICDBManager;
+			private var asset_base_id:String ="";
+			private var culvert_id:Number = -1;
+			private var milepost:Number =-1;
+			private var picArray:ArrayList = new ArrayList();
+			private var baseAsset:BaseAsset = null;
+			private var horizUnits:int=1; 	// 1=inches, 2=feet, default=1
+			private var vertUnits:int=1;	// 1=inches, 2=feet, default=1
+			
+			private var counter:int = 0;
+			private var sdlftx:int;
+			private var sdrtx: int;
+			private var culvx:int;
+			private var sdlfty:int;
+			private var sdrty:int;
+			private var culvy:int;
+			private var leftSprite:AssetSymbol;
+			private var rightSprite:AssetSymbol;
+			private var openedLists:ArrayCollection;
+			private static const listNum:int = 13; // # of lists in form
+			private var gtManager:GeotagsManager = new GeotagsManager();
+			
+			private var moveToLat:String="";
+			private var moveToLong:String="";
+			private var moveToPrec:String="";
+			private var moveToRefpt:Number;
+			private var assetMoved:Boolean = false;
+			
+			[Bindable]
+			private var inspectionValuesChanged:Boolean = false;
+			
+			protected function init():void
+			{
+				try
+				{
+					assetMoved = false;
+					dbManager = MAVRICDBManager.newInstance();
+					culData = new Object();
+					culType = new ArrayCollection();
+					openedLists = new ArrayCollection();
+					culType.addItem("Median");
+					culType.addItem("Crossing");
+					culType.addItem("Ditch");
+					routeList=FlexGlobals.topLevelApplication.GlobalComponents.routeList;
+					routeInput.text = new String("" + FlexGlobals.topLevelApplication.currentRouteName);
+					this.addEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_ACTIVATE,keyBoardOn);
+					this.addEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_DEACTIVATE,keyBoardOff);
+					asset_base_id ="";
+					culvert_id = -1;
+					geoTagsArr = new ArrayCollection();
+					
+					inspectionValuesChanged = false;
+//					inventoryGroup3.visible = false;
+//					inventoryGroup3Insp.visible = false;
+					//this.closeButton.visible=false;
+					
+//					Memo.source = gtManager.memo;
+//					Voice.source = gtManager.voice;
+//					Video.source = gtManager.video;
+//					Capture.source = gtManager.camera;
+//					
+////					Memo_INSP.source = gtManager.memo
+//					Voice_INSP.source = gtManager.voice;
+//					Video_INSP.source = gtManager.video;
+//					Capture_INSP.source = gtManager.camera;
+					
+					// Get the domains from the local table
+					dp = am.getDomain("D_CULV_MAT_ID");
+					sp=	am.getDomain("D_CULV_SHAPE_ID");
+					pp=	am.getDomain("D_CULV_PLACEMENT_TY_ID");
+					jp= am.getDomain("D_JOINT_SEP_LOC_ID");
+					ap=am.getDomain("D_ABUTMENT_MAT_ID");
+					bp=am.getDomain("D_BEAM_MAT_ID");
+					gp=am.getDomain("D_CULV_COND_ID");
+					fp=am.getDomain("D_FLOW_RMK_ID");
+					jpp=am.getDomain("D_JOINT_RMK_ID");
+					bpp=am.getDomain("D_BARL_RMK_ID");
+					cp=am.getDomain("D_ENDS_RMK_ID");
+					cpp=am.getDomain("D_CHNL_RMK_ID");
+					mp=am.getDomain("D_MAINT_WORK_TY_ID");
+					mep = am.getDomain("D_MAINT_EQUIP_ID");
+					var cEvent:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
+					dispatchEvent(cEvent);
+				} catch (err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
+				}
+				//lengthInput.softKeyboardType = "number";
+				
+				var attchViewInv:AddAttachments = new AddAttachments();
+				attchViewInv.init("InventoryForm",true,true,true);
+				inventoryGroup3.addElement(attchViewInv);
+				
+				var attchViewInsp:AddAttachments = new AddAttachments();
+				attchViewInsp.init("InspectionForm",true,true,true);
+				inventoryGroup3Insp.addElement(attchViewInsp);
+			}
+			
+			private function incrementCounter():void
+			{
+				counter++;
+				if(counter == listNum)
+				{
+					var cEvent:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
+					dispatchEvent(cEvent);
+				}
+			}
+	
+			private function getData(event:InventoryMenuEvent):void
+			{
+				dp=event.dataProviderAC;
+				trace(dp);
+			}				
+			
+			public override function handleCloseEvent(event:Event = null):void 
+			{
+				if(event != null)
+				{
+					dispatchEvent(event);
+				}
+				else if(baseAsset != null)
+				{
+					var culEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT, true, true);
+					culEvent.saveCulvert = false;
+					culEvent.culvert = baseAsset;
+					dispatchEvent(culEvent);
+					
+					deleteUnsavedGeotagFiles();
+				}
+				removeEventListeners();
+				closeAllPopUps();
+				PopUpManager.removePopUp(this);
+				//this = null;
+				
+			
+			}
+			
+			private function removeEventListeners():void
+			{
+				this.removeEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_ACTIVATE,keyBoardOn);
+				this.removeEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_DEACTIVATE,keyBoardOff);
+			}
+			
+			
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+				//dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+				
+	/*		protected function initMenu():void
+			{
+				this.closeButton.visible=false;
+				culData=new Object();
+				culType=new ArrayCollection();
+				culType.addItem("Median");
+				culType.addItem("Crossing");
+				culType.addItem("Ditch");
+			}*/
+			
+			private function culvertMaterial(event:MouseEvent):void
+			{	
+				closeAllPopUps();
+				materialPopUp.open(this,false);
+				PopUpManager.centerPopUp(materialPopUp);
+				MaterialList.dataProvider = dp;
+			}
+			
+			private function closeMaterialPop():void
+			{
+				materialPopUp.close(true, MaterialList.selectedItem);
+				matInput.text = MaterialList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culvertShape(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				shapePopUp.open(this,false);
+				PopUpManager.centerPopUp(shapePopUp);
+				ShapeList.dataProvider = sp;
+			}
+			
+			private function closeShapePop():void
+			{
+				shapePopUp.close(true, ShapeList.selectedItem);
+				shapeInput.text = ShapeList.selectedItem.DESCRIPTION;
+				setShapeAssociatedValues();
+			}
+			
+			private function showSizeInputs():void
+			{
+				horizInput.visible = true;
+				inch2.visible = true;
+				feet2.visible = true;
+				horizLabel.visible = true;
+				vertInput.visible = true;
+				inch.visible = true;
+				feet.visible = true;
+				
+			}
+			
+			private function closeAllOpenPopups():void
+			{
+				for each (var pop:SkinnablePopUpContainer in this.openedLists)
+				{
+					pop.close();
+				}
+			}
+			
+			private function setShapeAssociatedValues():void
+			{
+				//lengthInput should be enabled regardless of shapeInput. Correct?
+				if (shapeInput.text == "Box")
+				{
+					showSizeInputs();
+					lengthInput.visible = true;
+					//horizInput.visible = true;
+					horizReq.visible = true;
+					inch.visible = true;
+					feet.visible = true;
+					culvertImage.source = culvRectangular;
+					vertReq.visible = true;
+					vertLabel.visible = true;
+					//vertInput.visible = true;
+					inch2.visible = true;
+					feet2.visible = true;
+					horizLabel.text = "Size Horiz:";
+					this.barrelInput.setFocus();
+					horizLabel.setFocus();
+					
+				} else if (shapeInput.text == "Arch")
+				{
+					showSizeInputs();
+					lengthInput.visible = true;
+					//horizInput.visible = true;
+					horizReq.visible = true;
+					inch.visible = true;
+					feet.visible =true;
+					culvertImage.source = culvArch;
+					vertLabel.visible = true;
+					//vertInput.visible = true;
+					vertReq.visible = true;
+					inch2.visible=true;
+					feet2.visible=true;
+					horizLabel.text = "Size Horiz:";
+				} else if (shapeInput.text == "Round")
+				{
+					showSizeInputs();
+					lengthInput.visible = true;
+					//horizInput.visible = true;
+					horizReq.visible = true;
+					inch.visible = true;
+					feet.visible =true;
+					
+					culvertImage.source = culvRound;
+					
+					inch2.visible=false;
+					feet2.visible=false;
+					horizLabel.text = "Diameter:";
+					vertLabel.visible = false;
+					vertInput.visible = false;
+					vertReq.visible = false;
+				} 
+				else if(shapeInput.text == "Other")
+				{
+					showSizeInputs();
+					lengthInput.visible = true;
+					culvertImage.source = culvRound;
+					vertReq.visible = true;
+					vertLabel.visible = true;
+					//vertInput.visible = true;
+					inch2.visible=true;
+					feet2.visible=true;
+					horizLabel.text = "Size Horiz:";
+					horizReq.visible = true;
+				}
+				else if(shapeInput.text == null || shapeInput.text == "")
+				{	
+					horizInput.visible = false;
+					
+					inch.visible = false;
+					feet.visible = false;
+					
+					culvertImage.source = null;//culvRound;
+					vertReq.visible = false;
+					vertLabel.visible = false;
+					vertInput.visible = false;
+					inch2.visible=false;
+					feet2.visible=false;
+					horizLabel.text = "Size Horiz:";
+					horizReq.visible = false;
+				}
+			}
+			
+			private function culvertRoute(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				routePopUp.open(this,false);
+				PopUpManager.centerPopUp(routePopUp);
+			}
+			
+			private function closeRoutePop():void
+			{
+				
+			}
+			
+			private function culvertPlacement(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				placementPopUp.open(this,false);
+				PopUpManager.centerPopUp(placementPopUp);
+				PlacementList.dataProvider = pp;	
+			}
+			
+			private function culvertLength(event:MouseEvent):void
+			{
+				var distMiles:Number = 0;
+
+				var newLat:String = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Lat;
+				var oldLat:String = baseAsset.invProperties["LATITUDE"].value;
+				
+				var newLong:String = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Long;
+				var oldLong:String = baseAsset.invProperties["LONGITUDE"].value;
+				
+				if(oldLat ==null || oldLong == null || oldLat =="" || oldLong == "")
+					FlexGlobals.topLevelApplication.TSSAlert("Unable to obtain the Culvert begin Lat/Long values to calculate length");
+				else if (newLat ==null || newLong == null || newLat =="" || newLong == "")
+					FlexGlobals.topLevelApplication.TSSAlert("Unable to obtain the Culvert end Lat/Long values to calculate length. Please make sure the GPS is turned on");
+				else
+					distMiles= GeoUtil.distanceBetweenCoordinates(new Number(oldLat),new Number(oldLong),new Number(newLat),new Number(newLong),"feet");
+				lengthInput.text = Math.abs(distMiles).toFixed(0);
+				this.measured.selected = true;
+					
+			}
+			
+			// If size units have changed, recalculate the value for that size dimension to match
+			// the units desired.  Note: if a size units button is clicked but the units have not
+		    // changed, this calculation is not done.
+			private function setSizeUnits(event:MouseEvent):void
+			{
+				
+				var sizeValue:Number;
+				var txtInput:TextInput;
+				var btnId:String = event.target.id;
+				
+				// If last horizontal units does not equal this selection, then save the new
+				// units selection and continue
+				if((btnId == "feet" && horizUnits == 1)
+					|| (btnId == "inch" && horizUnits == 2))
+				{
+					txtInput = horizInput;
+					if(btnId == "feet")
+						horizUnits = 2;
+					else
+						horizUnits = 1;
+				}
+				// If last vertical units does not equal this selection, then save the new
+				// units selection and continue
+				else if((btnId == "feet2" && vertUnits == 1)
+					|| (btnId == "inch2" && vertUnits == 2))
+				{
+					txtInput = vertInput;
+					if(btnId == "feet2")
+						vertUnits = 2;
+					else
+						vertUnits = 1;
+				}
+				else
+				{
+					return; // No action is needed, as value did not change
+				}
+				
+				if(txtInput.text != null && txtInput.text != "")
+				{
+					try
+					{
+						sizeValue = parseFloat(txtInput.text);
+					}
+					catch(e:Error)
+					{
+						FlexGlobals.topLevelApplication.TSSAlert(e.message);
+					}
+
+					if(btnId == "feet" || btnId == "feet2"){
+						sizeValue /= 12;
+						//sizeValue = roundDecimal(sizeValue, 2);
+						sizeValue= Number(sizeValue.toFixed(2));
+					}
+					else
+					{
+						sizeValue *= 12;
+						sizeValue= Number(sizeValue.toFixed());
+					}
+					txtInput.text = sizeValue.toString();
+				}
+			}
+			
+			public function roundDecimal(num:Number, precision:int):Number{
+				
+				var decimal:Number = Math.pow(10, precision);
+				
+				return Math.round(decimal* num) / decimal;
+				
+			}
+			
+			private function closePlacementPop():void
+			{
+				culData.ctype=PlacementList.selectedItem.DESCRIPTION;
+				placementPopUp.close(true, PlacementList.selectedItem);
+				placeInput.text = PlacementList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culvertJoint(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				jointPopUp.open(this,false);
+				PopUpManager.centerPopUp(jointPopUp);
+				JointList.dataProvider = jp;
+			}
+			
+			private function closeJointPop():void
+			{
+				jointPopUp.close(true, JointList.selectedItem);
+				jointInput.text = JointList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culvertAbut(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				abutMatPopUp.open(this,false);
+				PopUpManager.centerPopUp(abutMatPopUp);
+				AbutMatList.dataProvider = ap;
+			}
+			
+			private function closeAbutPop():void
+			{
+				abutMatPopUp.close(true, AbutMatList.selectedItem);
+				abutInput.text = AbutMatList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culvertBeam(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				beamMatPopUp.open(this,false);
+				PopUpManager.centerPopUp(beamMatPopUp);
+				BeamMatList.dataProvider = bp;
+			}
+			
+			private function closeBeamPop():void
+			{
+				beamMatPopUp.close(true, BeamMatList.selectedItem);
+				beamInput.text = BeamMatList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culvertCondition(event:MouseEvent):void
+			{
+				var button:Button =event.target as Button;
+				
+				lastPressed=button.label;
+				
+				closeAllPopUps();
+				generalConPopUp.open(this,false);
+				PopUpManager.centerPopUp(generalConPopUp);
+				GeneralConList.dataProvider = gp;
+				
+			}
+			
+			private function closeGeneralPop():void
+			{
+			
+				generalConPopUp.close(true, GeneralConList.selectedItem);
+				
+				if(lastPressed == "Flow Line")
+				{
+					flowInput.text = GeneralConList.selectedItem.DESCRIPTION;
+				}
+				else if (lastPressed == "Joints")
+				{
+					jointInput2.text = GeneralConList.selectedItem.DESCRIPTION;
+				}
+				else if (lastPressed == "Barrel")
+				{
+					barrelInput.text = GeneralConList.selectedItem.DESCRIPTION;
+				}
+				else if (lastPressed == "Culvert Ends")
+				{
+					culvertInput.text = GeneralConList.selectedItem.DESCRIPTION;
+				}
+				else if (lastPressed == "Channel")
+				{
+					channelInput.text = GeneralConList.selectedItem.DESCRIPTION;
+				}	
+			}
+			
+			private function culvertFlow(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				flowRePopUp.open(this,false);
+				PopUpManager.centerPopUp(flowRePopUp);
+				FlowReList.dataProvider = fp;
+			}
+			
+			private function closeFlowPop():void
+			{
+				flowRePopUp.close(true, FlowReList.selectedItem);
+				flowRemark.text = FlowReList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culvertJoints(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				jointRePopUp.open(this,false);
+				PopUpManager.centerPopUp(jointRePopUp);
+				JointsReList.dataProvider = jpp;
+			}
+			
+			private function closeJointsPop():void
+			{
+				jointRePopUp.close(true, JointsReList.selectedItem);
+				jointRemark.text = JointsReList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culverBarrel(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				barrelRePopUp.open(this,false);
+				PopUpManager.centerPopUp(barrelRePopUp);
+				BarrelReList.dataProvider = bpp;
+			}
+			
+			private function closeBarrelPop():void
+			{
+				barrelRePopUp.close(true, BarrelReList.selectedItem);
+				barrelRemark.text = BarrelReList.selectedItem.DESCRIPTION;
+			}
+			
+			
+			private function culvertEnds(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				culvertEndRePopUp.open(this,false);
+				PopUpManager.centerPopUp(culvertEndRePopUp);
+				CulvertEndReList.dataProvider = cp;
+			}
+			
+			private function closeEndsPop():void
+			{
+				culvertEndRePopUp.close(true, CulvertEndReList.selectedItem);	
+				culvertRemark.text = CulvertEndReList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culvertChannel(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				channelRePopUp.open(this,false);
+				PopUpManager.centerPopUp(channelRePopUp);
+				ChannelReList.dataProvider = cpp;
+			}
+			
+			private function closeChannelPop():void
+			{
+				channelRePopUp.close(true, ChannelReList.selectedItem);
+				channelRemark.text = ChannelReList.selectedItem.DESCRIPTION;
+			}
+			
+			private function culvertMaintenance(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				maintRecPopUp.open(this,false);
+				PopUpManager.centerPopUp(maintRecPopUp);
+				MaintRecList.dataProvider = mp;
+			}
+			
+			private function culvertMaintEquipment1(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				maintEquipPopUp1.open(this, false);
+				PopUpManager.centerPopUp(maintEquipPopUp1);
+				MaintEquipList1.dataProvider = mep;
+			}
+			
+			private function culvertMaintEquipment2(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				maintEquipPopUp2.open(this, false);
+				PopUpManager.centerPopUp(maintEquipPopUp2);
+				MaintEquipList2.dataProvider = mep;
+			}
+			
+			private function culvertMaintEquipment3(event:MouseEvent):void
+			{
+				closeAllPopUps();
+				maintEquipPopUp3.open(this, false);
+				PopUpManager.centerPopUp(maintEquipPopUp3);
+				MaintEquipList3.dataProvider = mep;
+			}
+			
+			private function closeMaintPop():void
+			{
+				maintRecPopUp.close(true, MaintRecList.selectedItem);
+				mainInput.text = MaintRecList.selectedItem.DESCRIPTION;
+			}
+			
+			private function closeMaintEquipPop1():void
+			{
+				maintEquipPopUp1.close(true, MaintEquipList1.selectedItem);
+				mainEquipInput1.text = MaintEquipList1.selectedItem.DESCRIPTION;
+			}
+			
+			private function closeMaintEquipPop2():void
+			{
+				maintEquipPopUp2.close(true, MaintEquipList2.selectedItem);
+				mainEquipInput2.text = MaintEquipList2.selectedItem.DESCRIPTION;
+			}
+			
+			private function closeMaintEquipPop3():void
+			{
+				maintEquipPopUp3.close(true, MaintEquipList3.selectedItem);
+				mainEquipInput3.text = MaintEquipList3.selectedItem.DESCRIPTION;
+			}
+			
+			//Fired when the soft keyboard opens
+			private function keyBoardOn(e:Event):void
+			{
+				controlTextInputs(false);
+			}
+			
+			//Fired whenthe soft keyboard closes
+			private function keyBoardOff(e:Event):void
+			{
+				controlTextInputs(true);
+			}
+			
+			// function to control the accessibiltiy of all dropdowns
+			private function controlTextInputs(status:Boolean):void
+			{
+				this.btnAbut.enabled=status;
+				this.btnBarrel.enabled=status;
+				this.btnBarrelRemark.enabled=status;
+				this.btnBeam.enabled=status;
+				this.btnChannel.enabled=status;
+				this.btnChannelRemark.enabled=status;
+				this.btnCulvert.enabled=status;
+				this.btnCulvertRemark.enabled=status;
+				this.btnFlow.enabled=status;
+				this.btnFlowRemark.enabled=status;
+				this.btnJoint.enabled=status;
+				this.btnJoint2.enabled=status;
+				this.btnJointRemark.enabled=status;
+				this.btnMain.enabled=status;
+				this.btnMat.enabled=status;
+				this.btnPlace.enabled=status;
+				this.btnRoute.enabled=status;
+				this.btnShape.enabled=status;
+			}
+			
+			private function onSave():void
+			{
+	
+					culEvent = new AssetEvent(AssetEvent.NEWCULVERT, true, true);
+					culEvent.data = culData;
+					culEvent.geoTags = geoTagsArr; 
+					
+					//var mpoint:Number = Converter.scalePixelToMile(Application.application.GlobalComponents.stkDiagram.guideBar.x, Application.application.GlobalComponents.stkDiagram.scale())+ Application.application.GlobalComponents.sldRoute.beginMi;
+					
+					var cul:BaseAsset;
+					
+					if (baseAsset != null)
+					{
+						cul = baseAsset;
+					}
+					else
+					{
+						cul = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.createAsset( "CULV", -1, findID(pp, placeInput.text));
+						cul.setAssetLocation("LATITUDE","LONGITUDE");
+					}
+					
+					if(!this.retireChk.selected)
+					{
+						
+						
+						var vInpText:String;
+						var hInpText:String;
+						
+						if (vertInput.text != null && vertInput.text != "")
+						{
+							var vInpNum:Number;
+							vInpNum = parseFloat(vertInput.text);
+							
+							if (feet2.selected)
+								vInpNum = vInpNum * 12;
+							
+							vInpText = vInpNum.toFixed();
+						}
+						else
+							vInpText = "";
+						
+						if (horizInput.text != null && horizInput.text != "")
+						{
+							var hInpNum:Number;
+							hInpNum = parseFloat(horizInput.text);
+							if (feet.selected)
+								hInpNum = hInpNum * 12;
+							hInpText = hInpNum.toFixed();
+						}
+						else
+							hInpText = "";
+						
+						var barInpNum:Number = 0;
+						if (barrelInput1.text != null && barrelInput1.text != "")
+							barInpNum = parseInt(barrelInput1.text);
+						
+
+						
+						cul.invProperties[cul.routeIDColName].value =routeInput.text;
+						if(cul.invProperties["ASSET_BASE_ID"])
+						cul.invProperties["ASSET_BASE_ID"].value =asset_base_id;
+						cul.invProperties["CROSS_ST_NM"].value ="";
+						cul.invProperties["CROSS_ST_NUM"].value ="";
+						cul.invProperties["CULV_LENGTH_FLG"].value =measured.selected? 1 : 0;
+						if(cul.invProperties["CULV_LENGTH_FT"])
+						cul.invProperties["CULV_LENGTH_FT"].value =Number(lengthInput.text);
+						if(cul.invProperties["LENGTH_FT"])
+							cul.invProperties["LENGTH_FT"].value =Number(lengthInput.text);
+						
+						cul.invProperties["D_ORIG_DATA_SOURCE_ID"].value ='';
+						cul.invProperties["D_BEAM_MAT_ID"].value =findID(bp,beamInput.text); // --
+						cul.invProperties["D_ABUTMENT_MAT_ID"].value =findID(ap,abutInput.text); //
+						if(matInput.text != null && matInput.text !== "")
+						{
+							cul.invProperties["D_CULV_MAT_ID"].value =findID(dp,matInput.text); //
+						}else
+						{
+							noMaterialError();
+							return;
+						}
+						
+						cul.invProperties["D_CULV_MAT_ID_2"].value ='';//
+						if(shapeInput.text != null && shapeInput.text !== "")
+						{
+							cul.invProperties["D_CULV_SHAPE_ID"].value =findID(sp,shapeInput.text);//
+						}else
+						{
+							noShapeError();
+							return;
+						}
+						
+						
+						cul.invProperties["D_JOINT_SEP_LOC_ID"].value =findID(jp, jointInput.text);
+						if(placeInput.text != null && placeInput.text !== "")
+						{
+							cul.invProperties["D_CULV_PLACEMENT_TY_ID"].value = findID(pp, placeInput.text)
+						}else
+						{
+							noPlacementError();
+							return;
+						}
+						var vre:ValidationResultEvent = LengthValidator.validate();
+						if(vre.results !=null && vre.results.length>0 && vre.results[0] !=null)
+						{
+							if((vre.results[0] as ValidationResult).isError)
+							{
+								invalidLengthError();
+								return;
+							}
+						}
+
+						cul.invProperties["LOCATION_CMT"].value = encodeURI(locationInput.text);
+						cul.invProperties["NUM_BARRELS"].value =barInpNum;
+						cul.invProperties["STATION"].value ="";
+						cul.invProperties["D_GARAGE_ID"].value ='';
+						if(shapeInput.text != "Round")
+						{
+							if(vInpText != null && vInpText !== "")
+							{
+								cul.invProperties["CULV_SIZE_VERT_INCH"].value =vInpText;
+							}else
+							{
+								noSizeError();
+								return;
+							}
+						}
+						if(hInpText != null && hInpText !== "")
+						{
+							cul.invProperties["CULV_SIZE_HORIZ_INCH"].value =hInpText;
+						}else
+						{
+							noSizeError();
+							return;
+						}
+						
+						
+						cul.invProperties["CULV_SIZE3"].value ="";
+						cul.invProperties["SKEW_FLG"].value =yes.selected ? 1 : 0;
+						cul.invProperties["INV_CMT"].value =encodeURI(inventoryInput.text);
+						cul.invProperties["PROJECT_ID"].value =0;
+						
+						
+						cul.inspProperties["INSP_CMT"].value =encodeURI(generalInput.text);
+						cul.inspProperties["D_JOINT_COND_ID"].value =findID(gp,jointInput2.text);
+						cul.inspProperties["D_CHNL_COND_ID"].value =findID(gp,channelInput.text);
+						cul.inspProperties["D_BARL_COND_ID"].value =findID(gp,barrelInput.text);
+						cul.inspProperties["D_ENDS_COND_ID"].value =findID(gp,culvertInput.text);
+						cul.inspProperties["D_FLOW_COND_ID"].value =findID(gp,flowInput.text);
+						cul.inspProperties["D_JOINT_RMK_ID"].value =findID(jpp,jointRemark.text);
+						cul.inspProperties["D_CHNL_RMK_ID"].value =findID(cpp,channelRemark.text);
+						cul.inspProperties["D_BARL_RMK_ID"].value =findID(bpp,barrelRemark.text);
+						cul.inspProperties["D_ENDS_RMK_ID"].value =findID(cp,culvertRemark.text);
+						cul.inspProperties["D_FLOW_RMK_ID"].value =findID(fp,flowRemark.text);
+						cul.inspProperties["D_REFER_TO_ID"].value =findID(mp,mainInput.text);
+						cul.inspProperties["D_MAINT_EQUIP_ID1"].value = findID(mep, mainEquipInput1.text);
+						cul.inspProperties["D_MAINT_EQUIP_ID2"].value = findID(mep, mainEquipInput2.text);
+						cul.inspProperties["D_MAINT_EQUIP_ID3"].value = findID(mep, mainEquipInput3.text);
+						if(culvert_id == -1)
+						{
+							cul.inspProperties["CREATE_DT"].value = formatter.format((new Date()).toString());
+							cul.inspProperties["INSP_DT"].value = this.inspectionValuesChanged?saveformatter.format((new Date()).toString()):"";
+						}
+						else
+						{
+							cul.inspProperties["INSP_DT"].value = this.inspectionValuesChanged?saveformatter.format((new Date()).toString()):saveformatter.format(cul.inspProperties["INSP_DT"].value);
+						}
+						
+							
+						if(cul.inspProperties["D_USER_ID"])
+						cul.inspProperties["D_USER_ID"].value ="";
+						if(cul.inspProperties["RETIRE_DT"])
+						cul.inspProperties["RETIRE_DT"].value =null;
+						
+						if(assetMoved)
+							cul.setAssetLocation("LATITUDE","LONGITUDE",this.moveToRefpt, this.moveToLat, this.moveToLong,this.moveToPrec);
+					}
+					else
+					{
+						cul.invProperties["RETIRED"].value = 1;
+						cul.inspProperties["INSP_DT"].value = saveformatter.format(cul.inspProperties["INSP_DT"].value);
+						cul.inspProperties["CREATE_DT"].value = saveformatter.format(cul.inspProperties["CREATE_DT"].value);
+					}
+					
+					cul.id = culvert_id;
+					culEvent.culvert = cul;
+
+					handleCloseEvent(culEvent);
+				
+			}
+			
+
+			private function closeRouteList():void
+			{
+				
+				routePopUp.close(false);
+				routeInput.text=RouteList.selectedItem.ROUTE_NAME;
+			}
+			private function closeCuvertSelect():void
+			{
+				
+//				culData.ctype=culvert.selectedItem;
+		//		culTLabel.text=culData.ctype;
+	//			trace(culData.ctype);
+		//		culvertType.close(true,null);
+			}
+			
+			private function onCulvertShapeChange(evt:Event):void
+			{
+				 if (shapeInput.text == "Box")
+				 {
+					 culvertImage.source = culvRectangular;
+				 } else if (shapeInput.text == "Arch")
+				 {
+					 culvertImage.source = culvArch;
+				 } else if (shapeInput.text == "Round")
+				 {
+					culvertImage.source = culvRound;
+				 } else
+				 {
+					 culvertImage.source = culvRound;
+				 }
+			}
+			
+			private function closeAllPopUps():void
+			{
+				routePopUp.close(false);
+				materialPopUp.close(false);
+				shapePopUp.close(false);
+				placementPopUp.close(false);
+				jointPopUp.close(false);
+				beamMatPopUp.close(false);
+				abutMatPopUp.close(false);
+				generalConPopUp.close(false);
+				flowRePopUp.close(false);
+				jointRePopUp.close(false);
+				barrelRePopUp.close(false);
+				culvertEndRePopUp.close(false);
+				channelRePopUp.close(false);
+				maintRecPopUp.close(false);
+			}
+			
+			public override function setBaseAsset(legacyValues:BaseAsset):void
+			{
+				var milepostTI:String ="";
+				assetMoved = false;
+				baseAsset = legacyValues;
+				geoTagsArr = new ArrayCollection();
+				//legacyValues = culData;
+				if(legacyValues.invProperties["CULV_LENGTH_FT"])
+					lengthInput.text = legacyValues.invProperties["CULV_LENGTH_FT"].value;
+				if(legacyValues.invProperties["LENGTH_FT"])
+					lengthInput.text = legacyValues.invProperties["LENGTH_FT"].value;
+				placeInput.text = findValue(pp, legacyValues.invProperties["D_CULV_PLACEMENT_TY_ID"].value);
+				routeInput.text = legacyValues.invProperties[legacyValues.routeIDColName].value != null ? legacyValues.invProperties[legacyValues.routeIDColName].value : FlexGlobals.topLevelApplication.currentRouteName;
+				beamInput.text = findValue(bp,legacyValues.invProperties["D_BEAM_MAT_ID"].value);
+				abutInput.text = findValue(ap, legacyValues.invProperties["D_ABUTMENT_MAT_ID"].value);
+				matInput.text = findValue(dp, legacyValues.invProperties["D_CULV_MAT_ID"].value);
+				shapeInput.text  = findValue(sp, legacyValues.invProperties["D_CULV_SHAPE_ID"].value);
+				if (legacyValues.invProperties["D_CULV_SHAPE_ID"].value)
+					showSizeInputs();
+				jointInput.text = findValue(jp, legacyValues.invProperties["D_JOINT_SEP_LOC_ID"].value);
+				locationInput.text = legacyValues.invProperties["LOCATION_CMT"].value?decodeURI(legacyValues.invProperties["LOCATION_CMT"].value):"";
+				barrelInput1.text = legacyValues.invProperties["NUM_BARRELS"].value;
+				vertInput.text = legacyValues.invProperties["CULV_SIZE_VERT_INCH"].value;
+				inch2.selected = true;
+				horizInput.text = legacyValues.invProperties["CULV_SIZE_HORIZ_INCH"].value;
+				inch.selected = true;
+				measured.selected = legacyValues.invProperties["CULV_LENGTH_FLG"].value==1?true:false;
+				approximated.selected = legacyValues.invProperties["CULV_LENGTH_FLG"].value==1?false:true;
+				yes.selected = legacyValues.invProperties["SKEW_FLG"].value==1?true:false;
+				inventoryInput.text = legacyValues.invProperties["INV_CMT"].value?decodeURI(legacyValues.invProperties["INV_CMT"].value):"";
+				
+				generalInput.text = legacyValues.inspProperties["INSP_CMT"].value?decodeURI(legacyValues.inspProperties["INSP_CMT"].value):"";
+				jointInput2.text = findValue(gp, legacyValues.inspProperties["D_JOINT_COND_ID"].value);
+				channelInput.text=findValue(gp,legacyValues.inspProperties["D_CHNL_COND_ID"].value);
+				barrelInput.text=findValue(gp,legacyValues.inspProperties["D_BARL_COND_ID"].value);
+				culvertInput.text=findValue(gp,legacyValues.inspProperties["D_ENDS_COND_ID"].value);
+				flowInput.text=findValue(gp,legacyValues.inspProperties["D_FLOW_COND_ID"].value);
+				jointRemark.text=findValue(jpp,legacyValues.inspProperties["D_JOINT_RMK_ID"].value);
+				channelRemark.text=findValue(cpp,legacyValues.inspProperties["D_CHNL_RMK_ID"].value);
+				barrelRemark.text=findValue(bpp,legacyValues.inspProperties["D_BARL_RMK_ID"].value);
+				culvertRemark.text=findValue(cp,legacyValues.inspProperties["D_ENDS_RMK_ID"].value);
+				flowRemark.text=findValue(fp,legacyValues.inspProperties["D_FLOW_RMK_ID"].value);
+				mainInput.text=findValue(mp,legacyValues.inspProperties["D_REFER_TO_ID"].value);
+				mainEquipInput1.text = findValue(mep, legacyValues.inspProperties["D_MAINT_EQUIP_ID1"].value);
+				mainEquipInput2.text = findValue(mep, legacyValues.inspProperties["D_MAINT_EQUIP_ID2"].value);
+				mainEquipInput3.text = findValue(mep, legacyValues.inspProperties["D_MAINT_EQUIP_ID3"].value);
+				var inspEdit:String;
+//				
+				if (legacyValues.inspProperties["INSP_DT"].value)
+				{
+					inspEdit = formatter.format(legacyValues.inspProperties["INSP_DT"].value);
+				}
+				else if (legacyValues.inspProperties["CREATE_DT"].value)
+				{
+					inspEdit = formatter.format(legacyValues.inspProperties["CREATE_DT"].value);
+				}
+				else
+					inspEdit = "";
+				inspTime.text = inspEdit;
+				
+				asset_base_id =legacyValues.invProperties["ASSET_BASE_ID"]? legacyValues.invProperties["ASSET_BASE_ID"].value:"-1";
+				culvert_id = new Number(legacyValues.invProperties[legacyValues.primaryKey].value);
+			
+				if(legacyValues.invProperties[legacyValues.fromMeasureColName].value)//if already has location data parse and set.
+				{
+					milepostTI= legacyValues.invProperties[legacyValues.fromMeasureColName].value;
+					milepostTxtInput.text= parseFloat(milepostTI).toFixed(3);
+					milepost =parseFloat(milepostTI);
+				}
+				
+				
+				if(culvert_id != -1)
+				{
+					inventoryGroup3.visible = true;
+					inventoryGroup3Insp.visible = true;
+				}
+				else //capture locaiton for new culverts
+				{
+					baseAsset.setAssetLocation("LATITUDE","LONGITUDE");
+					milepostTI= baseAsset.invProperties[baseAsset.fromMeasureColName].value;
+					milepostTxtInput.text= parseFloat(milepostTI).toFixed(3);
+					milepost =parseFloat(milepostTI);
+				}
+				
+				
+				setShapeAssociatedValues();
+	
+				
+				// load local geotags
+				if (culvert_id != -1)
+				{
+					var gtArray:Array = dbManager.getLocalGeoTags(culvert_id, baseAsset.assetType);
+					//"/sdcard/geotags/" + aName
+					//var tmpFile:File = File.applicationStorageDirectory;
+					for (var gti:int=0;gti<gtArray.length;gti++)
+					{
+						var tmpMedia:Object = new Object();
+						var tmpGT:GeoTag = gtArray[gti] as GeoTag;	
+						tmpGT.asset_ty_id = baseAsset.assetType;
+						var viE:* = new GeotagsManager().ConvertGeotags(tmpGT,"","local");
+						if(viE)
+						{
+							if(viE is TSSPicture)
+								picArray.addItem(viE);
+							if (tmpGT.is_insp == 0)
+								InvAttachments.addElement(viE);
+							else
+								InspAttachments.addElement(viE);
+						}
+						//FlexGlobals.topLevelApplication.addListenersToGeoTag(tmpMedia);
+						tmpMedia.geoTag = tmpGT;
+						tmpMedia.geoLocalId = tmpGT.id;
+					}
+					
+				}
+				
+				if(FlexGlobals.topLevelApplication.connected  && baseAsset.id!=-1 && baseAsset.status!='NEW')
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(true);
+					var httpServ:HTTPService = new HTTPService();
+					httpServ.method = "GET";
+					httpServ.resultFormat = "text";
+					httpServ.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+					
+					if(FlexGlobals.topLevelApplication.useAgsService  )
+					{
+						var layerID:String =FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerID(baseAsset.description);
+						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String( baseAsset.id));
+						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							var attachments:Object = JSON.parse(event.result as String);
+							
+							setGeotagsFromServer(attachments.attachmentInfos as Array, layerID );
+						});
+						
+					}
+					else if(baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !=""  && baseAsset.invProperties["ASSET_BASE_ID"].value !=null )
+					{
+						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL+"Geotags/"+String(baseAsset.invProperties["ASSET_BASE_ID"].value);
+						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							setGeotagsFromServer(JSON.parse(event.result as String) as Array);
+						});
+					}
+					if(httpServ.url)
+						httpServ.send();
+				}
+				
+				
+				//if editing an asset from server
+				if((baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !="") )
+					//|| (String(baseAsset.invProperties["STATUS"].value) =='EDITED'))
+					this.retireChk.enabled = true;
+				else
+					this.retireChk.enabled = false;
+				
+				setMilePostDiagram(baseAsset.invProperties[baseAsset.fromMeasureColName].value?Number(baseAsset.invProperties[baseAsset.fromMeasureColName].value):FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP());
+				
+				inspectionValuesChanged = false;
+				
+				if(legacyValues.invProperties["RETIRED"].value==1)
+				{
+					this.retireChk.selected = true;
+					this.retireOkay(true);
+					
+				}
+				
+				
+			}
+			
+			
+			
+			private function setMilePostDiagram(cmp:Number):void
+			{
+				//var cmp:Number =!(milepost==-1)?milepost:FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+				var mileposts:Object = binarySearch(cmp);
+				var culvertSprite:AssetSymbol;
+				
+				var mpSprite:SpriteVisualElement = new SpriteVisualElement();
+				var dummy:BaseAsset = am.createAsset("CULV", -1, ""+1);
+				dummy.invProperties[dummy.typeKey].value = 1;
+				var ratio:Number;
+				var diff:Number;
+				var lmp:Number;
+				var rmp:Number;
+				var leftMS:MeasureSprite;
+				var rightMS:MeasureSprite;
+				
+				//create a dummy culvert as a means of creating the symbol
+				am.assignAssetSymbol(dummy, dummy.description);
+				culvertSprite = dummy.symbol;
+				culvertSprite.scaleStd(0.75);
+				culvertSprite.selectRect = null;
+				if(mileposts.leftPost != null && mileposts.rightPost != null)
+				{
+					leftSprite = AssetSymbol.clone(mileposts.leftPost.symbol);
+					rightSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
+					lmp = mileposts.leftPost.invProperties[mileposts.leftPost.fromMeasureColName].value;
+					rmp =  mileposts.rightPost.invProperties[mileposts.rightPost.fromMeasureColName].value;
+					
+					diff = rmp - lmp;
+					ratio = milepostDiagram.width/(5280 * diff); // pixels per foot
+					culvertSprite.x = (cmp - lmp) * 5280  * ratio + culvertSprite.stdWidth/2;
+					
+					sdlftx = leftSprite.x;
+					sdlfty = leftSprite.y;
+					leftSprite.x = -5;
+					leftSprite.y = 40;
+					mpSprite.addChild(leftSprite);
+					
+					culvertSprite.y = 30;
+					mpSprite.addChild(culvertSprite);
+				
+					sdrtx = rightSprite.x;
+					sdrty = rightSprite.y;
+					rightSprite.x = milepostDiagram.width - 5;
+					rightSprite.y = 40;
+					mpSprite.addChild(rightSprite);
+					
+					// measure bars
+					leftMS = new MeasureSprite(lmp, cmp, ratio);
+					leftMS.x = 0;
+					leftMS.y = 0;
+					
+					rightMS = new MeasureSprite(cmp, rmp, ratio);											
+					rightMS.x = (cmp - lmp)*5280 * ratio;
+					rightMS.y =0;
+					mpSprite.addChild(leftMS);
+					mpSprite.addChild(rightMS);
+				}
+				else if(mileposts.leftPost != null)
+				{
+					lmp = mileposts.leftPost.invProperties[mileposts.leftPost.fromMeasureColName].value;
+					leftSprite = AssetSymbol.clone(mileposts.leftPost.symbol);
+					sdlftx = leftSprite.x;
+					sdlfty = leftSprite.y;
+					leftSprite.x = 0 - 5;
+					leftSprite.y = 40;
+					mpSprite.addChild(leftSprite);
+					
+					diff = cmp - lmp;
+					ratio = milepostDiagram.width/(5280 * diff); // pixels per foot;
+					culvertSprite.x += culvertSprite.stdWidth/2;
+					culvertSprite.x += milepostDiagram.width - culvertSprite.stdWidth;
+					culvertSprite.y = 30;
+					mpSprite.addChild(culvertSprite);
+					
+					leftMS = new MeasureSprite(lmp, cmp, ratio);
+					leftMS.x = 0;
+					leftMS.y = 0;
+					mpSprite.addChild(leftMS);
+				}
+				else if(mileposts.rightPost != null)
+				{
+					rmp =  mileposts.rightPost.invProperties[mileposts.rightPost.fromMeasureColName].value;
+					diff = rmp - cmp;
+					ratio = milepostDiagram.width/Converter.mileToFeet(diff);
+					culvertSprite.x += culvertSprite.stdWidth/2;
+					culvertSprite.y = 30;
+					mpSprite.addChild(culvertSprite);
+					
+					rightSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
+					sdrtx = rightSprite.x;
+					sdrty = rightSprite.y;
+					rightSprite.x = (rmp - cmp) * 5280 * ratio-6;
+					rightSprite.y = 40;
+					mpSprite.addChild(rightSprite);
+					
+					rightMS = new MeasureSprite(cmp, rmp, ratio);											
+					rightMS.x = 0;
+					rightMS.y =0;
+					mpSprite.addChild(rightMS);
+				}
+				else
+				{
+					trace("You have no nearby reference points");
+				}
+				milepostDiagram.addElement(mpSprite);
+			}
+			
+
+			
+			/**
+			 * Returns an object with the two milepost objects, complete with images.
+			 */
+			private function binarySearch(target:Number):Object
+			{
+				var array:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.milepostArray;
+				var left:int = 0;
+				var right:int = array.length - 1;
+				var middle:int;
+				if(array == null || array.length == 0)
+					return {leftPost:null, rightPost:null};
+				if(target <  new Number(array[left].invProperties[array[left].fromMeasureColName].value))
+					return {leftPost:null, rightPost:array[left]};
+				if(target >  new Number(array[right].invProperties[array[right].fromMeasureColName].value))
+					return {leftPost:array[right], rightPost:null};
+				while(left < right - 1)
+				{
+					middle = (left + right)/2;
+					if(target == new Number(array[middle].invProperties[array[middle].fromMeasureColName].value))
+						return {leftPost:array[left], rightPost:array[right]};
+					else if(target < new Number(array[middle].invProperties[array[middle].fromMeasureColName].value))
+						right  = middle;
+					else
+						left = middle;
+				}
+				
+				return {leftPost:array[left], rightPost:array[right]};
+			}
+			// load remote geotags
+//			public function setGeotagsFromServer(event:InventoryMenuEvent):void
+//			{
+//				event.stopPropagation();
+//				var gtArray:Array = event.dataProviderAC.source;
+////				for (var gti:int=0;gti<gtArray.length;gti++)
+////				{
+////					var insp:Number = (String(gtArray[gti].IS_INSP)=="0")?0:1;
+////					var tmpGT:GeoTag = new GeoTag(Number(gtArray[gti].ATTACH_ID),String(gtArray[gti].ASSET_TYPE)!=""?String(gtArray[gti].ASSET_TYPE):"1", String(gtArray[gti].ROUTE_NAME),String(gtArray[gti].ASSET_BASE_ID),""
+////						,(String(gtArray[gti].IS_INSP)=="0")?0:1,Number(gtArray[gti].BEGIN_MILE),Number(gtArray[gti].END_MILE),String(gtArray[gti].IMAGE_FILENAME),String(gtArray[gti].VIDEO_FILENAME),String(gtArray[gti].VOICE_FILENAME),String(gtArray[gti].TEXT_MEMO));
+////					
+////					var viE:* = gtManager.ConvertGeotags(tmpGT, String(gtArray[gti].URL));
+////					if(viE)
+////					{
+////						if(viE is TSSPicture)
+////							picArray.addItem(viE);
+////						
+////						if (insp == 0)
+////							InvAttachments.addElement(viE);
+////						else
+////							InspAttachments.addElement(viE);
+////					}
+////					
+////				}
+//			}
+			
+			public function setGeotagsFromServer(gtArray:Array, layerID:String = ""):void
+			{
+				
+				gtManager.setGeotags(
+				    InvAttachments,
+					gtArray,
+					baseAsset.assetType,
+					String(baseAsset.id),
+					baseAsset.routeName,
+					Number(baseAsset.invProperties[baseAsset.fromMeasureColName].value),
+					"",
+					baseAsset.invProperties[baseAsset.toMeasureColName]?Number(baseAsset.invProperties[baseAsset.toMeasureColName].value):0,layerID, InspAttachments);
+				
+				
+			}
+	
+			/*
+			private function showSettingsMenu(event:MouseEvent):void {
+			// Create a non-modal TitleWindow container.
+			var settingsMenu:TitleWindow=
+			PopUpManager.createPopUp(this,SettingsMenu, false) as TitleWindow;
+			PopUpManager.centerPopUp(settingsMenu);
+			}
+			
+			*/
+			
+			
+			
+			
+			public override function handlePicture(event:CameraEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm" ||FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InspectionForm")
+				{
+					var bmp:Bitmap = event.bitmap;
+					var tmpImage:TSSPicture = new TSSPicture();
+					tmpImage.source = bmp; //icon is now the captured image itself
+					tmpImage.bitmap = bmp;
+//					tmpImage.x = stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+//					tmpImage.y =getIconY("image");
+					tmpImage.width = 40;//120;
+					tmpImage.height = 40;//120;
+					
+					
+					var fileName:String = new Date().time + ".png";
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = routeInput.text;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					if(asset_base_id != null && asset_base_id !="")
+					{
+						tmpGT.asset_base_id = asset_base_id;
+						tmpGT.local_asset_id = ""+culvert_id;
+					}
+					else if (culvert_id !=-1)
+					{
+						tmpGT.local_asset_id = culvert_id.toString();
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					}
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = fileName;
+					tmpGT.text_memo = event.memo;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+						tmpGT.is_insp = 0;
+					else
+						tmpGT.is_insp = 1;
+					
+					tmpGT.asset_ty_id = baseAsset!=null?baseAsset.assetType:"1";
+//					if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+						geoTagsArr.addItem(tmpGT);
+//					else
+//						tmpImage.geoLocalId = "" + dbManager.addGeoTag(tmpGT);
+						tmpImage.geoTag = tmpGT;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+						InvAttachments.addElement(tmpImage);
+					else
+						InspAttachments.addElement(tmpImage);
+				}
+				try
+				{
+				FlexGlobals.topLevelApplication.setBusyStatus(true);
+				fileUtility.WritePicture(fileName, bmp);
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
+				} catch (er:Error)
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+					FlexGlobals.topLevelApplication.TSSAlert(er.message);
+				}
+			}
+			
+			//function to handle VideoEvent
+			public override function handleVideo(event:videoEvent):void{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm" ||FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InspectionForm")
+				{
+					var vid:TSSVideo=new TSSVideo();
+					vid.source=gtManager.video;
+					vid.video=event.video;
+//					vid.x=stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+//					vid.y=getIconY("video");
+					vid.width=40;
+					vid.height=40;
+					
+					try
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						var fileName:String=new Date().time +".3gp";
+						fileUtility.WriteVideo(vid.video, fileName, event.path);
+						//vid.filePath="file:///mnt/sdcard/geotags/" + fileName;
+						vid.filePath = fileName;
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						
+						
+						var tmpGT:GeoTag=new GeoTag();
+						tmpGT.cached_route_id=routeInput.text;
+						if(asset_base_id != null && asset_base_id !="")
+						{
+							tmpGT.asset_base_id = asset_base_id;
+							tmpGT.local_asset_id = ""+culvert_id;
+						}
+						else if (culvert_id != -1)
+						{
+							tmpGT.local_asset_id = culvert_id.toString();
+							tmpGT.asset_base_id = "";
+						}
+						else
+						{
+							tmpGT.local_asset_id = "";
+							tmpGT.asset_base_id = "";
+						}
+						if(milepost==-1)
+							milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+						tmpGT.begin_mile_point=milepost;
+						tmpGT.end_mile_point=0;
+						tmpGT.voice_file_name="";
+						tmpGT.image_file_name="";
+						//tmpGT.video_file_name = vid.filePath;
+						tmpGT.video_file_name = fileName;
+						tmpGT.text_memo = event.memo;
+						if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+							tmpGT.is_insp = 0;
+						else
+							tmpGT.is_insp = 1;
+						tmpGT.asset_ty_id = baseAsset!=null?baseAsset.assetType:"1";
+//						if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+							geoTagsArr.addItem(tmpGT);
+//						else
+//							vid.geoLocalId = ""+ dbManager.addGeoTag(tmpGT);
+						vid.geoTag = tmpGT;
+						if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+							InvAttachments.addElement(vid);
+						else
+							InspAttachments.addElement(vid);
+						
+					} catch (er:Error)
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert(er.message);
+					}
+					
+					
+				}
+				
+			}		
+			
+			public override function handleVoiceMemo(event:VoiceEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm" ||FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InspectionForm")
+				{
+					
+					var soundBytes:ByteArray=event.byteArray;
+					var tmpImage:TSSAudio = new TSSAudio();
+					tmpImage.source = gtManager.voice;
+					tmpImage.soundBytes = event.byteArray;
+//					tmpImage.x = stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+//					
+//					tmpImage.y =  getIconY("voice");
+					tmpImage.width = 40;
+					tmpImage.height = 40;
+					var fileName:String = new Date().time +".wav";
+					//saving the sound file
+					/*
+					var fTemp:File = new File("/sdcard/VoiceMemos/" + fileName);
+					var writer:WAVWriter = new WAVWriter();
+					writer.numOfChannels=1;
+					writer.sampleBitRate=16;
+					writer.samplingRate=8000;
+					soundBytes.position=0;
+					var stream:FileStream=new FileStream();
+					stream.open(fTemp,FileMode.WRITE);
+					writer.processSamples(stream, soundBytes, 8000, 1);
+					
+					stream.close();
+					*/
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = routeInput.text;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					if(asset_base_id != null && asset_base_id !="")
+					{
+						tmpGT.asset_base_id = asset_base_id;
+						tmpGT.local_asset_id = ""+culvert_id;
+					}
+					else if (culvert_id !=-1)
+					{
+						tmpGT.local_asset_id = culvert_id.toString();
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					}
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = "";
+					tmpGT.voice_file_name= fileName;
+					tmpGT.video_file_name="";
+					tmpGT.image_file_name="";
+					tmpGT.text_memo = "";
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+						tmpGT.is_insp = 0;
+					else
+						tmpGT.is_insp = 1;
+					tmpGT.asset_ty_id = baseAsset!=null?baseAsset.assetType:"1";
+//						if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+							geoTagsArr.addItem(tmpGT);
+//						else
+//							tmpImage.geoLocalId = "" + dbManager.addGeoTag(tmpGT);
+					tmpImage.geoTag = tmpGT;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+						InvAttachments.addElement(tmpImage);
+					else
+						InspAttachments.addElement(tmpImage);
+					
+					try{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						fileUtility.saveToWAV(event.byteArray, fileName);
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+					}
+					catch(e:Error){
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert(e.message);
+					}
+					
+					
+				}
+			}
+			
+			public override function handleTextMemo(event:TextMemoEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm"||FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InspectionForm")
+				{
+					var tmpMemo:TSSMemo = new TSSMemo();
+					
+					tmpMemo.source = gtManager.memo;
+					tmpMemo.memo=event.memo;
+					tmpMemo.label = event.memo;
+					
+					tmpMemo.width = 40;
+					tmpMemo.height = 40;
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = routeInput.text;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					if(asset_base_id != null && asset_base_id !="")
+					{
+						tmpGT.asset_base_id = asset_base_id;
+						tmpGT.local_asset_id = ""+culvert_id;
+					}
+					else if (culvert_id !=-1)
+					{
+						tmpGT.local_asset_id = culvert_id.toString();
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					}
+						
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = "";
+					tmpGT.text_memo = event.memo;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+						tmpGT.is_insp = 0;
+					else
+						tmpGT.is_insp = 1;
+					tmpGT.asset_ty_id = baseAsset!=null?baseAsset.assetType:"1";
+					//if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+						geoTagsArr.addItem(tmpGT);
+//					else
+//						tmpMemo.geoLocalId = "" + dbManager.addGeoTag(tmpGT);
+					
+					tmpMemo.geoTag = tmpGT;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+						InvAttachments.addElement(tmpMemo);
+					else
+						InspAttachments.addElement(tmpMemo);
+				}
+			}
+			
+			protected function retireChk_changeHandler(event:Event):void
+			{
+				if(this.retireChk.selected)
+				{	
+					var _retireResp:mx.rpc.Responder = new mx.rpc.Responder(retireOkay, fault);
+					
+					FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to retire this record? All the local changes made to the asset will be discarded on retirement.", "Retire Asset Confirmation", _retireResp);
+					
+					
+					function fault(data:Object):void
+					{	
+						FlexGlobals.topLevelApplication.TSSAlert("Error in Opening Retire Confirmation Dialog.");
+					}
+					
+				}
+				
+			}
+			protected function retireOkay(data:Object):void
+			{
+				if(data == true)
+				{
+					for (var forIndex:int = 0; forIndex < viewStack.numChildren; forIndex++)
+					{
+						var curr:DisplayObject = viewStack.getChildAt(forIndex);
+						if (curr is UIComponent)
+						{
+							var curr2:UIComponent = curr as UIComponent;
+							curr2.enabled = false;
+						}
+					}
+				}
+			}
+			
+			private function recursiveEnable(comp:UIComponent, enable:Boolean):void{
+				if(!comp){
+					return;
+				}
+				for(var i:int = 0; i < comp.numChildren; i++){
+					
+					recursiveEnable(comp.getChildAt(i) as UIComponent, enable);
+					
+				}
+				if(comp &&(comp is TextInput) && (comp as TextInput).softKeyboardType == "number"){
+					
+					//comp.enabled = enable;
+					var tfStyle:TextFormat = new TextFormat();
+					tfStyle.bold = enable;
+					comp.setStyle("textFormat", tfStyle);
+					/*if(comp is TextInput){
+						var tfStyle:TextFormat = new TextFormat();
+						tfStyle.bold = enable;
+						comp.setStyle("textFormat", tfStyle);
+						//if(enable && (comp as TextInput).editable)
+							//(comp as TextInput).softKeyboardType = SoftKeyboardType.NUMBER;
+					}*/
+				}
+					
+			}
+			
+			protected function skinnablePopUp_closeHandler(event:PopUpEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			public function noPlacementError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("You must select a Placement Type");	
+				
+			}
+			public function invalidLengthError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("Invalid Length. Only 2 decimal places are allowed if length is measured and no decimal places are allowed if length is approximated");	
+				
+			}
+			
+			public function noShapeError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("You must select a Shape");	
+				
+			}
+			
+			public function noMaterialError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("You must select a Material Type");	
+				
+			}
+			
+			public function noSizeError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("You must enter a value for Size");	
+				
+			}
+			
+			public override function removeGeoTag(tssmedia:Object):void
+			{
+				var elm:IVisualElement = tssmedia as IVisualElement;
+				if(InvAttachments.containsElement(elm))
+				{
+					InvAttachments.removeElement(elm);
+				}		
+				else if(InspAttachments.containsElement(elm))
+					InspAttachments.removeElement(elm);
+				if(geoTagsArr.getItemIndex(tssmedia.geoTag) != -1)
+					geoTagsArr.removeItemAt(geoTagsArr.getItemIndex(tssmedia.geoTag));
+			}
+			
+			protected function myfocusInHandler(event:FocusEvent):void
+			{
+				var numInput:TextInput = event.currentTarget as TextInput;
+				numInput.setStyle("skinClass", StageTextInputSkin);
+				
+				numInput.softKeyboardType = "number";
+				
+				//numInput.addEventListener(SoftKeyboardEvent. SOFT_KEYBOARD_DEACTIVATE, onSoftKeyBoardDeactivateEvent);
+					
+			}
+			
+			protected function myfocusOutHandler(event:FocusEvent):void
+			{
+				var numInput:TextInput = event.currentTarget as TextInput;
+				//numInput.removeEventListener(SoftKeyboardEvent.SOFT_KEYBOARD_DEACTIVATE, onSoftKeyBoardDeactivateEvent);
+				
+				var myStr:String = numInput.text;
+				
+				numInput.setStyle("skinClass", TextInputSkin);
+	
+				numInput.softKeyboardType = "default";
+				
+				numInput.text = myStr;
+				
+			}
+			
+			protected function moveBtn_changeHandler(event:Event):void
+			{
+				moveToLat=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Lat;
+				moveToLong=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Long;
+				moveToPrec =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Precision;
+				moveToRefpt = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+			    assetMoved = true;
+				setMilePostDiagram(moveToRefpt);
+			}
+			
+			protected function lengthGroup_changeHandler(event:Event):void
+			{
+				LengthValidator.validate();
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:DateTimeFormatter id="formatter" dateTimePattern="MM/dd/yyyy" errorText="" useUTC="false"/>
+		<s:DateTimeFormatter id="saveformatter" dateTimePattern="MM/dd/yyyy HH:mm:ss" errorText=""
+							 useUTC="false"/>
+		<mx:NumberValidator id="LengthValidator" domain="real" precision="{measured.selected?2:0}"
+							property="text" required="false" source="{lengthInput}"
+							trigger="{lengthInput}" triggerEvent="change"/>
+		<s:SkinnablePopUpContainer id="materialPopUp" width="300" height="400" name="Material"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="MaterialList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeMaterialPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+					
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="shapePopUp" width="300" height="400" name="Shape"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="ShapeList" width="100%" height="100%" allowMultipleSelection="false"
+							change="closeShapePop()" fontSize="18" labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="routePopUp" width="300" height="400" name="Route"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="RouteList" width="100%" height="100%" allowMultipleSelection="false"
+							change="closeRouteList()" dataProvider="{routeList}" fontSize="18"
+							labelField="ROUTE_NAME"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="placementPopUp" width="300" height="400" name="Placement"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="PlacementList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closePlacementPop()"
+							fontSize="18" labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="jointPopUp" width="300" height="400" name="Joint"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="JointList" width="100%" height="100%" allowMultipleSelection="false"
+							change="closeJointPop()" fontSize="18" labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="abutMatPopUp" width="300" height="400" name="Abut Mat"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="AbutMatList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeAbutPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="beamMatPopUp" width="300" height="400" name="Beam Mat"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="BeamMatList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeBeamPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="generalConPopUp" width="300" height="400"
+								   name="General Condition"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="GeneralConList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeGeneralPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="flowRePopUp" width="300" height="400" name="Flow Remark"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="FlowReList" width="100%" height="100%" allowMultipleSelection="false"
+							change="closeFlowPop()" fontSize="18" labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="jointRePopUp" width="300" height="400" name="Joint Remark"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="JointsReList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeJointsPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="barrelRePopUp" width="300" height="400" name="Barrel Remark"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="BarrelReList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeBarrelPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="culvertEndRePopUp" width="300" height="400"
+								   name="Culvert End Remark"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="CulvertEndReList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeEndsPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="channelRePopUp" width="300" height="400" name="Channel Remark"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="ChannelReList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeChannelPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="maintRecPopUp" width="300" height="400"
+								   name="Maintenance Recommendation"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="MaintRecList" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeMaintPop()" fontSize="18"
+							labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="maintEquipPopUp1" width="300" height="400"
+								   name="Maintenance Equipment 1"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="MaintEquipList1" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeMaintEquipPop1()"
+							fontSize="18" labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="maintEquipPopUp2" width="300" height="400"
+								   name="Maintenance Equipment 2"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="MaintEquipList2" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeMaintEquipPop2()"
+							fontSize="18" labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="maintEquipPopUp3" width="300" height="400"
+								   name="Maintenance Equipment 3"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="MaintEquipList3" width="100%" height="100%"
+							allowMultipleSelection="false" change="closeMaintEquipPop3()"
+							fontSize="18" labelField="DESCRIPTION"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="culvertType" width="50" height="200" name="Culvert Type"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+<!--					<s:List id="culvert" width="100%" height="100%" change="closeCuvertSelect()" dataProvider="{culType}" fontSize="18" allowMultipleSelection="false" /> -->
+					
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+	</fx:Declarations>
+	
+	
+	<s:HGroup>
+		<s:Button label="Inventory 1" click="{viewStack.selectedChild=Inventory_1}"
+				  enabled="{viewStack.selectedChild !=Inventory_1}"/>
+		<s:Button label="Inventory 2" click="{viewStack.selectedChild=Inventory_2}"
+				  enabled="{viewStack.selectedChild !=Inventory_2}"/>
+		<s:Button label="Inspection 1" click="{viewStack.selectedChild=Inspection_1}"
+				  enabled="{viewStack.selectedChild !=Inspection_1}"/>
+		<s:Button label="Inspection 2" click="{viewStack.selectedChild=Inspection_2}"
+				  enabled="{viewStack.selectedChild !=Inspection_2}"/>
+		<s:Button label="Attachments" click="{viewStack.selectedChild=Attachments}"
+				  enabled="{viewStack.selectedChild !=Attachments}"/>
+	</s:HGroup>
+			<views:CBViewStack id="viewStack" width="100%" height="100%"
+							   skinClass="skins.CBScrollableSkin">
+				<s:VGroup id="Inventory_1" paddingLeft="20" paddingTop="5">
+					<s:HGroup gap="50">
+						<s:VGroup id="inventoryGroup1" gap="20" paddingBottom="20" paddingTop="20">
+							
+							<s:HGroup gap="50">
+								<s:HGroup verticalAlign="middle">
+									<s:Label id="btnRoute" fontWeight="bold" text="Route:"/>
+									<s:TextInput id="routeInput" width="240" editable="false"
+												 skinClass="spark.skins.mobile.TextInputSkin"/>
+								</s:HGroup>
+								
+								<s:VGroup>
+									<s:HGroup verticalAlign="middle">
+										<s:Label id="milepostLbl" fontWeight="bold" text="Milepoint:"/>
+										<s:TextInput id="milepostTxtInput" width="100"
+													 editable="false"
+													 skinClass="spark.skins.mobile.TextInputSkin"/>
+									</s:HGroup>
+									<s:Spacer height="10"/>
+									<s:HGroup id="milepostDiagram" width="200">
+										
+									</s:HGroup>	
+								</s:VGroup>
+								
+							</s:HGroup>
+							
+							
+							<s:HGroup verticalAlign="bottom">
+								<s:Button id="btnPlace" label="Placement"
+										  click="culvertPlacement(event)"/>
+								<s:Label width="270" color="0xFF0000" fontSize="8" text="(Required)"/>	
+							</s:HGroup>
+							<s:TextInput id="placeInput" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"/>
+							
+							
+							<s:HGroup paddingBottom="20">
+								<s:VGroup>
+									<s:HGroup verticalAlign="middle"> 
+										<s:Label fontWeight="bold" text="Length:"/>
+										<s:TextInput id="lengthInput" width="235"
+													 focusIn="myfocusInHandler(event)"
+													 focusOut="myfocusOutHandler(event)"
+													 needsSoftKeyboard="true" restrict="0-9 ."
+													 skinClass="spark.skins.mobile.TextInputSkin"
+													 softKeyboardType="number"/> 
+										<s:Label text="FT"/>
+									</s:HGroup>
+									
+									<s:Button label="Calculate Length" click="culvertLength(event)"/>
+									
+								</s:VGroup>
+								<s:VGroup>
+									
+									<s:RadioButton id="measured" label="Measured"
+												   change="lengthGroup_changeHandler(event)"
+												   groupName="lengthGroup" selected="true"/>
+									<s:RadioButton id="approximated" label="Approximated"
+												   change="lengthGroup_changeHandler(event)"
+												   groupName="lengthGroup"/>
+								</s:VGroup>
+							</s:HGroup>
+							
+							<s:HGroup verticalAlign="bottom">
+								<s:Label id="horizLabel" visible="false" fontWeight="bold"
+										 text="Size Horiz:"/>
+								<s:Label id="horizReq" visible="false" color="0xFF0000" fontSize="8"
+										 text="(Required)"/>	
+							</s:HGroup>
+							<s:HGroup>
+								<s:TextInput id="horizInput" visible="true"
+											 focusIn="myfocusInHandler(event)"
+											 focusOut="myfocusOutHandler(event)" maxChars="4"
+											 needsSoftKeyboard="true" restrict="0-9"
+											 softKeyboardType="number"/>
+								<s:VGroup>
+									<s:RadioButton id="inch" visible="false" label="IN"
+												   click="setSizeUnits(event)"
+												   groupName="horizGroup" selected="true"/>
+									<s:RadioButton id="feet" visible="false" label="FT"
+												   click="setSizeUnits(event)"
+												   groupName="horizGroup"/>
+								</s:VGroup>
+							</s:HGroup>
+							
+							<s:HGroup verticalAlign="bottom">
+								<s:Label id="vertLabel" visible="false" fontWeight="bold"
+										 text="Size Vert:"/>
+								<s:Label id="vertReq" visible="false" color="0xFF0000" fontSize="8"
+										 text="(Required)"/>	
+							</s:HGroup>
+							<s:HGroup>
+								<s:TextInput id="vertInput" visible="false"
+											 focusIn="myfocusInHandler(event)"
+											 focusOut="myfocusOutHandler(event)" maxChars="4"
+											 needsSoftKeyboard="true" restrict="0-9"
+											 softKeyboardType="number"/>
+								<s:VGroup>
+									<s:RadioButton id="inch2" visible="false" label="IN"
+												   click="setSizeUnits(event)" groupName="vertGroup"
+												   selected="true"/>
+									<s:RadioButton id="feet2" visible="false" label="FT"
+												   click="setSizeUnits(event)" groupName="vertGroup"/>
+								</s:VGroup>
+							</s:HGroup>
+							
+						</s:VGroup>
+					
+						
+						<s:VGroup id="inventoryGroup2" gap="10">
+							<s:HGroup verticalAlign="bottom">
+								<s:Button id="btnMat" label="Material" click="culvertMaterial(event)"/>
+								<s:Label color="0xFF0000" fontSize="8" text="(Required)"/>	
+							</s:HGroup>
+							<s:TextInput id="matInput" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:HGroup verticalAlign="bottom">
+								<s:Button id="btnShape" label="Shape" click="culvertShape(event)"/>
+								<s:Label color="0xFF0000" fontSize="8" text="(Required)"/>	
+							</s:HGroup>
+							<s:TextInput id="shapeInput" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin" text=""/>
+							<s:Spacer/>
+							<s:HGroup visible="{StringUtil.trim(shapeInput.text.toLowerCase())=='box'}"
+									  includeInLayout="{StringUtil.trim(shapeInput.text.toLowerCase())=='box'}"
+									  verticalAlign="middle">
+								<s:Label fontWeight="bold" text="Number of Barrels:"/>
+								<s:TextInput id="barrelInput1" width="50"
+											 focusIn="myfocusInHandler(event)"
+											 focusOut="myfocusOutHandler(event)" maxChars="3"
+											 needsSoftKeyboard="true" restrict="0-9"
+											 softKeyboardType="number"/>
+							</s:HGroup>
+							<s:Spacer/>
+							<s:HGroup verticalAlign="middle">
+								<s:Label fontWeight="bold" text="Skewed:"/>
+								<s:RadioButton id="yes" label="Yes" groupName="skewedGroup"/>
+								<s:RadioButton id="no" label="No" groupName="skewedGroup"
+											   selected="true"/>
+							</s:HGroup>
+							<s:Spacer/>
+							<s:Image id="culvertImage" width="225" height="225" depth="1"
+									 source="{culvRound}"/>
+						</s:VGroup>
+						</s:HGroup>
+				</s:VGroup>
+				
+				<s:VGroup id="Inventory_2" width="100%" gap="20" paddingLeft="20" paddingTop="5">
+					<s:HGroup>
+						<s:VGroup>
+							
+							<s:Button id="btnAbut" label="Abut Mat" click="culvertAbut(event)"/>
+							<s:TextInput id="abutInput" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnBeam" label="Beam Mat" click="culvertBeam(event)"/>
+							<s:TextInput id="beamInput" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Label fontWeight="bold" text="General Inventory Comments:"/>
+							<s:TextArea id="inventoryInput" width="600" height="200"
+										skinClass="spark.skins.mobile.TextAreaSkin"/>
+						</s:VGroup>
+						<s:VGroup>
+							<s:Label fontWeight="bold" text="Location Description:"/>
+							<s:TextArea id="locationInput" width="325" height="100"
+										skinClass="spark.skins.mobile.TextAreaSkin"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							
+						</s:VGroup>
+						
+					</s:HGroup>
+					<s:VGroup id="inventoryGroup3" right="0" width="90%" gap="10">
+						<!--<s:Image id="Memo" buttonMode="true" width="40" height="40" click="memoCapture('InventoryForm',event)"/>-->
+						<!--<s:Image id="Voice" buttonMode="true" width="40" height="40" click="voiceCapture('InventoryForm',event)"/>
+						<s:Image id="Video" buttonMode="true" width="40" height="40" click="videoCapture('InventoryForm',event)"/>
+						<s:Image id="Capture"  buttonMode="true" width="40" height="40" click="imageCapture('InventoryForm',event)"/>--> 
+					</s:VGroup>
+				</s:VGroup>
+				
+				<s:VGroup id="Inspection_1" paddingLeft="20" paddingTop="5">
+					<s:HGroup gap="15" verticalAlign="bottom">
+						<s:VGroup id="generalStatement">
+							<s:Label fontWeight="bold" text="General Condition Statement"/>
+							<s:Button id="btnFlow" label="Flow Line" click="culvertCondition(event)"/>
+							<s:TextInput id="flowInput" change="{inspectionValuesChanged = true;}"
+										 editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+							
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnBarrel" label="Barrel" click="culvertCondition(event)"/>
+							<s:TextInput id="barrelInput" change="{inspectionValuesChanged = true;}"
+										 editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnCulvert" label="Culvert Ends"
+									  click="culvertCondition(event)"/>
+							<s:TextInput id="culvertInput" change="{inspectionValuesChanged = true;}"
+										 editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnChannel" label="Channel" click="culvertCondition(event)"/>
+							<s:TextInput id="channelInput" change="{inspectionValuesChanged = true;}"
+										 editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>	
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnJoint2" label="Joints" click="culvertCondition(event)"/>
+							<s:TextInput id="jointInput2" change="{inspectionValuesChanged = true;}"
+										 editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+						</s:VGroup>
+						<s:VGroup height="100%" verticalAlign="top">
+							<s:Label fontWeight="bold" text="Last Inspection: "/>
+							<s:Label id="inspTime" text=""/>
+								
+							
+							<s:VGroup height="100%" verticalAlign="bottom">
+								<s:Button id="btnJoint" label="Joint Loc" click="culvertJoint(event)"/>
+								<s:TextInput id="jointInput"
+											 change="{inspectionValuesChanged = true;}"
+											 editable="false"
+											 skinClass="spark.skins.mobile.TextInputSkin"
+											 valueCommit="{inspectionValuesChanged = true;}"/>
+							</s:VGroup>
+			
+						</s:VGroup>
+						<s:VGroup id="conditionRemarks">
+							<s:Label fontWeight="bold" text="Condition Remarks"/>
+							<s:Button id="btnFlowRemark" label="Flow Line Remark"
+									  click="culvertFlow(event)"/>
+							<s:TextInput id="flowRemark" change="{inspectionValuesChanged = true;}"
+										 editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnBarrelRemark" label="Barrel Remark"
+									  click="culverBarrel(event)"/>
+							<s:TextInput id="barrelRemark" change="{inspectionValuesChanged = true;}"
+										 editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnCulvertRemark" label="Culvert End Remark"
+									  click="culvertEnds(event)"/>
+							<s:TextInput id="culvertRemark"
+										 change="{inspectionValuesChanged = true;}" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnChannelRemark" label="Channel Remark"
+									  click="culvertChannel(event)"/>
+							<s:TextInput id="channelRemark"
+										 change="{inspectionValuesChanged = true;}" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Button id="btnJointRemark" label="Joint Remark"
+									  click="culvertJoints(event)"/>
+							<s:TextInput id="jointRemark" change="{inspectionValuesChanged = true;}"
+										 editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"
+										 valueCommit="{inspectionValuesChanged = true;}"/>
+						</s:VGroup>
+					</s:HGroup>
+				</s:VGroup>
+				
+				<s:VGroup id="Inspection_2" gap="15" paddingLeft="20" paddingTop="5">
+					<s:HGroup gap="5">
+						<s:VGroup>
+							<s:HGroup gap="50">
+								<s:VGroup>
+									<s:Button id="btnMain" label="Maintenance Recommendation"
+											  click="culvertMaintenance(event)"/>
+									<s:TextInput id="mainInput"
+												 change="{inspectionValuesChanged = true;}"
+												 editable="false"
+												 skinClass="spark.skins.mobile.TextInputSkin"
+												 valueCommit="{inspectionValuesChanged = true;}"/>
+									<s:Spacer/>
+									<s:Spacer/>
+									<s:Button id="btnMainEquip1" label="Maintenance Equipment 1"
+											  click="culvertMaintEquipment1(event)"/>
+									<s:TextInput id="mainEquipInput1"
+												 change="{inspectionValuesChanged = true;}"
+												 editable="false"
+												 skinClass="spark.skins.mobile.TextInputSkin"
+												 valueCommit="{inspectionValuesChanged = true;}"/>
+								</s:VGroup>
+	
+								<s:VGroup>
+									<s:Button id="btnMainEquip2" label="Maintenance Equipment 2"
+											  click="culvertMaintEquipment2(event)"/>
+									<s:TextInput id="mainEquipInput2"
+												 change="{inspectionValuesChanged = true;}"
+												 editable="false"
+												 skinClass="spark.skins.mobile.TextInputSkin"
+												 valueCommit="{inspectionValuesChanged = true;}"/>
+									<s:Spacer/>
+									<s:Spacer/>
+									<s:Button id="btnMainEquip3" label="Maintenance Equipment 3"
+											  click="culvertMaintEquipment3(event)"/>
+									<s:TextInput id="mainEquipInput3"
+												 change="{inspectionValuesChanged = true;}"
+												 editable="false"
+												 skinClass="spark.skins.mobile.TextInputSkin"
+												 valueCommit="{inspectionValuesChanged = true;}"/>
+								</s:VGroup>
+							</s:HGroup>
+							
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Label fontWeight="bold" text="General Inspection Comments:"/>
+							<s:TextArea id="generalInput" width="900" height="200"
+										change="{inspectionValuesChanged = true;}"
+										valueCommit="{inspectionValuesChanged = true;}"/>
+						</s:VGroup>
+						<s:Spacer/>
+						<s:Spacer/>
+						
+					</s:HGroup>
+					<s:VGroup id="inventoryGroup3Insp" width="90%" gap="10">
+						
+						<!--<s:Image id="Memo_INSP" buttonMode="true" width="40" height="40" click="memoCapture('InspectionForm',event)"/>-->
+						<!--<s:Image id="Voice_INSP" buttonMode="true" width="40" height="40" click="voiceCapture('InspectionForm',event)"/>
+						<s:Image id="Video_INSP" buttonMode="true" width="40" height="40" click="videoCapture('InspectionForm',event)"/>
+						<s:Image id="Capture_INSP"  buttonMode="true" width="40" height="40" click="imageCapture('InspectionForm',event)"/>--> 
+					</s:VGroup>
+				</s:VGroup>
+				<s:VGroup id="Attachments" paddingLeft="20" paddingTop="5">
+					<s:Label fontWeight="bold" text="Inventory Attachments"/>
+					<s:Group id="InvAttachments" height="49%">
+						<s:layout>
+							<s:TileLayout/>
+							
+						</s:layout>
+					</s:Group>
+					<s:Spacer/>
+					<s:Label fontWeight="bold" text="Inspection Attachments"/>
+					<s:Group id="InspAttachments" height="49%">
+						<s:layout>
+							<s:TileLayout/>
+						</s:layout>
+					</s:Group>
+				</s:VGroup>
+			</views:CBViewStack>
+			<s:HGroup width="100%">
+				<s:HGroup width="100%" horizontalAlign="center">
+					<s:Button label="Save" click="onSave();"/>
+					<s:Button id="clbtn" label="Close" click="handleCloseEvent();"/>
+				</s:HGroup>
+				
+				<s:CheckBox id="retireChk" label="Retire" change="retireChk_changeHandler(event);"/>
+			    <s:Button id="moveBtn" label="Move to Current Location"
+						  click="moveBtn_changeHandler(event)"/>
+			</s:HGroup>
+			
+	
+		
+	
+</baseViews:BaseAssetTitleWindow>

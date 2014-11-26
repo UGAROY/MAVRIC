@@ -1,0 +1,492 @@
+[
+    {
+        "DATA_ENTRY_TEMPLATE": {
+            "TITLE": "Incident",
+            "SUBTITLE": "",
+            "ASSET_TYPE": "7",
+            "HEIGHT": "640",
+            "WIDTH": "550",
+            "TABS": [
+                {
+                    "ID": "Inspection 1",
+                    "TYPE": "Inspection",
+                    "ENABLEGEOTAGS": "True",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "20",
+                            "Y": "0",
+                            "HEIGHT": "480",
+                            "WIDTH": "500",
+                            "CONTROLS": [
+                                {
+                                    "ID": "D_INCIDENT_TY",
+                                    "TYPE": "DropDownButton",
+                                    "LAYOUT": "Vert",
+                                    "TIWidth": "6",
+                                    "Column": "INCIDENT_TY",
+                                    "EDITABLE": "False",
+                                    "LABEL": "Incident Type",
+                                    "LABEL_FIELD": "DESCRIPTION"
+                                },
+                                {
+                                    "ID": "INCIDENT_CMT",
+                                    "TYPE": "TextArea",
+                                    "LAYOUT": "Vert",
+                                    "EDITABLE": "True",
+                                    "TIWidth": "30",
+                                    "NumLines": "2",
+                                    "LABEL": "Incident Description",
+                                    "Column": "INCIDENT_CMT"
+                                },
+                                {
+                                    "ID": "D_URGENCY_ID",
+                                    "TYPE": "DropDownButton",
+                                    "TIWidth": "6",
+                                    "LABEL": "Urgency",
+                                    "LAYOUT": "Vert",
+                                    "EDITABLE": "False",
+                                    "Column": "600",
+                                    "D_TYPE": "UrgencyGrades",
+                                    "LABEL_FIELD": "URGENCY_NAME"
+                                },
+                                {
+                                    "ID": "INC_DT",
+                                    "TYPE": "TextInput",
+                                    "LAYOUT": "Vert",
+                                    "EDITABLE": "False",
+                                    "TIWidth": "6",
+                                    "LABEL": "Incident Create Date"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": "Attachments",
+                    "TYPE": "Attachments",
+                    "ENABLEGEOTAGS": "False",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "InvAttach",
+                            "X": "50",
+                            "Y": "10",
+                            "HEIGHT": "400",
+                            "WIDTH": "500",
+                            "CONTROLS": []
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "DATA_ENTRY_TEMPLATE": {
+            "TITLE": "Edit Guardrail",
+            "SUBTITLE": "",
+            "ASSET_TYPE": "8",
+            "HEIGHT": "700",
+            "WIDTH": "1020",
+            "RETIRE_AVAILABLE": "True",
+            "MOVE_AVAILABLE": "True",
+            "TABS": [
+                {
+                    "ID": "Inventory 1",
+                    "TYPE": "Inventory",
+                    "ENABLEGEOTAGS": "True",
+                    "GROUPS": [
+                        {
+                            "TYPE": "hgroup",
+                            "TITLE": "",
+                            "X": "0",
+                            "Y": "10",
+                            "GAP": "10",
+                            "HEIGHT": "50",
+                            "WIDTH": "150",
+                            "CONTROLS": [
+                                {
+                                    "ID": "RID",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Route Name",
+                                    "COLUMN": "RID",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "FMEAS",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Begin Milepoint",
+                                    "COLUMN": "FMEAS",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "TMEAS",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "End Milepoint",
+                                    "COLUMN": "TMEAS",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "10",
+                            "Y": "80",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "CGRDRL_POST_MATL",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Post Material",
+                                    "COLUMN": "CGRDRL_POST_MATL",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "CGRDRL_MATL",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Guardrail Material",
+                                    "COLUMN": "CGRDRL_MATL",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "CGRDRL_DSGN_TYPE",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Design Type",
+                                    "COLUMN": "CGRDRL_DSGN_TYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "345",
+                            "Y": "73",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "CRS_LOC",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Location",
+                                    "COLUMN": "CRS_LOC",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "NGRDRL_LEN",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Length (Ft)",
+                                    "COLUMN": "NGRDRL_LEN",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": "Attachments",
+                    "TYPE": "Attachments",
+                    "ENABLEGEOTAGS": "False",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "InvAttach",
+                            "X": "50",
+                            "Y": "10",
+                            "HEIGHT": "400",
+                            "WIDTH": "500",
+                            "CONTROLS": []
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "DATA_ENTRY_TEMPLATE": {
+            "TITLE": "Edit Project",
+            "SUBTITLE": "",
+            "ASSET_TYPE": "13",
+            "HEIGHT": "700",
+            "WIDTH": "1020",
+            "RETIRE_AVAILABLE": "True",
+            "MOVE_AVAILABLE": "True",
+            "TABS": [
+                {
+                    "ID": "Inventory 1",
+                    "TYPE": "Inventory",
+                    "ENABLEGEOTAGS": "True",
+                    "GROUPS": [
+                        {
+                            "TYPE": "hgroup",
+                            "TITLE": "",
+                            "X": "0",
+                            "Y": "10",
+                            "GAP": "10",
+                            "HEIGHT": "50",
+                            "WIDTH": "150",
+                            "CONTROLS": [
+                                {
+                                    "ID": "ROUTE_NM",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Route Name",
+                                    "COLUMN": "ROUTE_NM",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SMP_FROM",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Milepoint",
+                                    "COLUMN": "SMP_FROM",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SMP_TO",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "End Milepoint",
+                                    "COLUMN": "SMP_TO",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "MODIFY_DT",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Last modified on",
+                                    "COLUMN": "MODIFY_DT",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "10",
+                            "Y": "80",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "D_COUNTY_ID",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "County",
+                                    "COLUMN": "D_COUNTY_ID",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "DISTRICTS",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "District",
+                                    "COLUMN": "DISTRICTS",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "LANE",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Lane Direction",
+                                    "COLUMN": "LANE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "345",
+                            "Y": "73",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "LENGTH_M",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Length (Mi)",
+                                    "COLUMN": "LENGTH_M",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "WIDTH_FT",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Width (ft)",
+                                    "COLUMN": "WIDTH_FT",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "NO_LANES",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Number of Lanes",
+                                    "COLUMN": "NO_LANES",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "LNMILES",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Lane Miles",
+                                    "COLUMN": "LNMILES",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "675",
+                            "Y": "73",
+                            "HEIGHT": "450",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "SCHEDULE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Schedule",
+                                    "COLUMN": "SCHEDULE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SYSTEM",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "System",
+                                    "COLUMN": "SYSTEM",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "YEAR",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Year",
+                                    "COLUMN": "YEAR",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "UPC",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "UPC",
+                                    "COLUMN": "UPC",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": "Inventory 2",
+                    "TYPE": "Inventory",
+                    "ENABLEGEOTAGS": "False",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "0",
+                            "Y": "10",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "FROM_INT",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "From Intersection",
+                                    "COLUMN": "FROM_INT",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "TO_INT",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "To Intersection",
+                                    "COLUMN": "TO_INT",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "LOC_ERROR",
+                                    "TYPE": "TextArea",
+                                    "LABEL": "Location Error",
+                                    "COLUMN": "LOC_ERROR",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert",
+                                    "NumLines": "3"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "345",
+                            "Y": "10",
+                            "HEIGHT": "50",
+                            "WIDTH": "150",
+                            "CONTROLS": [
+                                {
+                                    "ID": "MP_BDESC",
+                                    "TYPE": "TextArea",
+                                    "LABEL": "Begin MP Description",
+                                    "COLUMN": "MP_BDESC",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert",
+                                    "NumLines": "3"
+                                },
+                                {
+                                    "ID": "MP_EDESC",
+                                    "TYPE": "TextArea",
+                                    "LABEL": "End MP Description",
+                                    "COLUMN": "MP_EDESC",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert",
+                                    "NumLines": "3"
+                                },
+                                {
+                                    "ID": "INV_CMT",
+                                    "TYPE": "TextArea",
+                                    "LABEL": "Notes",
+                                    "COLUMN": "INV_CMT",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert",
+                                    "NumLines": "4"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": "Attachments",
+                    "TYPE": "Attachments",
+                    "ENABLEGEOTAGS": "False",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "InvAttach",
+                            "X": "50",
+                            "Y": "10",
+                            "HEIGHT": "400",
+                            "WIDTH": "500",
+                            "CONTROLS": []
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+]

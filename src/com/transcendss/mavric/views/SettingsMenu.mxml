@@ -1,0 +1,1015 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:Validators="Validators.*"
+			   xmlns:local="*"
+			   xmlns:views="com.transcendss.mavric.views.*"
+			   width="700" height="700" backgroundColor="0xFFFFCC" close="handleCloseEvent();"
+			   contentCreationComplete="init()" title="Settings"
+			   skinClass.appSettings="skins.MavricTitleWindowSkinSansTitleBar"
+			   skinClass.normal="skins.MavricTitleWindowSkin">
+	
+	
+	<s:layout>
+		<s:VerticalLayout paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
+	</s:layout>	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.managers.ConfigurationManager;
+			import com.transcendss.mavric.managers.SettingsManager;
+			import com.transcendss.mavric.util.FileUtility;
+			import com.transcendss.mavric.util.PopUpUtils;
+			import com.transcendss.transcore.util.Units;
+			
+			import deng.fzip.FZip;
+			import deng.fzip.FZipEvent;
+			import deng.fzip.FZipFile;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			
+			import spark.components.Group;
+			import spark.events.PopUpEvent;
+			
+			private var fileName:String;
+			//private var setting_key:String;
+			private var fileTextBox:TextInput;
+			[Bindable] private var colorValue:uint; 
+			
+			[Bindable]
+			private var configManager:ConfigurationManager;
+			private var newColor:String = new String();
+			
+			
+			[Bindable]
+			private var jump2ScaleItems:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var app:MAVRIC2 = FlexGlobals.topLevelApplication as MAVRIC2;
+			
+			[Bindable]
+			private var boundsDP:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			private var boundsIndex:int = -1;
+			
+			[Bindable]
+			private var barNamesDP:ArrayCollection = new ArrayCollection();
+
+			[Bindable]
+			private var lanesFieldIndex:int = -1;
+			
+			[Bindable]
+			private var gdbVerisonIndex:int = -1;
+
+			private var setMan:SettingsManager = new SettingsManager();
+			
+			private var _mdbm:MAVRICDBManager;
+			
+			private var fileUtil:FileUtility = new FileUtility();
+			
+			private var assetChkBoxes:Array = new Array();
+			
+			private var zip:FZip;
+			
+			private var tempTextInput:TextInput = null;
+			
+			protected function init():void
+			{
+				PopUpUtils.closeAll(this);
+				configManager = app.GlobalComponents.ConfigManager;
+				//				viewStack.width=parent.width/3;
+				//				viewStack.height=parent.height/2 +50;
+				viewStack.percentHeight = 100;
+				viewStack.percentWidth = 100;
+				_mdbm = MAVRICDBManager.newInstance();
+				//MavricTitleWindowSkin(this.skin).closeButton.visible=false;
+//				if(app.connected && !_mdbm.isAssetDomainAvailable("DISTRICTS"))
+//					setMan.requestDistricts(new mx.rpc.Responder(onDistricts, onFail));
+//				else
+//				{
+					boundsDP = app.GlobalComponents.assetManager.getDomain("DISTRICTS");					
+					var item:String = setMan.getSetting("DEFAULT_BOUNDRY");
+					boundsIndex =  item ? parseInt(item) : ConfigUtility.getInt("default_boundry");
+					defDistrictVal.text = boundsDP.getItemAt(boundsIndex).DESCRIPTION;
+				//}
+				
+				
+				
+				if (_mdbm.getKeys().length < 1)
+					loadDefaults();
+				else
+					loadSaved();
+				
+				var assetDef:Object = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs;
+				for each (var def:Object in assetDef) 
+				{
+					var chk:CheckBox = new CheckBox();
+					chk.label = def.UI_NAME;
+					chk.name = def.DESCRIPTION;
+					assetChks.addElement(chk);
+					if(setMan.getSetting(String(def.DESCRIPTION).toLowerCase()+ "_view")==null)
+					{
+						chk.selected = (String(def.VISIBLE_ON_STICK).toLowerCase()=="true");
+						//	setMan.saveSetting(String(def.DESCRIPTION).toLowerCase()+ "_view", String(def.VISIBLE_ON_STICK));
+					}
+					else
+						chk.selected = setMan.getSetting(String(def.DESCRIPTION).toLowerCase()+ "_view") == "true"; 
+					assetChkBoxes.push(chk);
+				}
+				
+				setElemNames();
+			}
+			
+			
+			protected function loadSaved():void
+			{
+				boundsIndex = int(setMan.getSetting("DEFAULT_BOUNDRY"));
+				guideBarOnCheck.selected = setMan.getSetting("GUIDEBAR_VIEW") == "true" ;
+				feetMarkerViewCheck.selected = setMan.getSetting("FEET_VIEW") == "true" ;
+				linearEditingEnabled.selected = app.GlobalComponents.ConfigManager.linearEditingSwitch;
+				linearEditFormEnabled.selected = app.GlobalComponents.ConfigManager.linearEditFormSwitch;
+				setMan.getSetting("DEFAULT_BP_CONTENT")=="bars"?this.barRadio.selected=true:mapRadio.selected=true;
+				measureBarRadioSelect.selectedValue = int(setMan.getSetting("TYPE_MEASURE"));
+				inspDays.text = setMan.getSetting("INSP_DAYS");
+				var tmpSync:String = setMan.getSetting("SYNC_ACTIVITY");
+				app.GlobalComponents.ConfigManager.syncActivity = parseInt(tmpSync);
+				if(parseInt(tmpSync) == ConfigurationManager.MC_SYNC)
+					oldSync.selected = true;
+				else if(parseInt(tmpSync) == ConfigurationManager.RH_SYNC)
+					newSync.selected = true;
+				else
+					exportChanges.selected = true;
+				
+				this.elemBarHeightTxt.text = String(app.GlobalComponents.ConfigManager.elementBarHeight);
+				defScale.text = String(app.GlobalComponents.ConfigManager.defaultScale);
+				defLanesFieldVal.text = String(app.GlobalComponents.ConfigManager.defaultLanesField);
+
+				serviceUrl.text = app.GlobalComponents.ConfigManager.serviceURL;
+				geotagUrl.text= app.GlobalComponents.ConfigManager.geotagUrl;
+				cachedMapUrl.text=app.GlobalComponents.ConfigManager.cachedMapUrl;
+				signImagesUrl.text=app.GlobalComponents.ConfigManager.signImagesUrl;
+				baseMapUrl.text=app.GlobalComponents.ConfigManager.baseMapUrl;
+				baseMapSR.text=app.GlobalComponents.ConfigManager.baseMapSR;
+				Asset_Def_Txt.text=app.GlobalComponents.ConfigManager.assetJsonDef;
+				Asset_Data_Template_Txt.text=app.GlobalComponents.ConfigManager.assetJsonTempl;
+				Data_Entry_Template_Txt.text=app.GlobalComponents.ConfigManager.assetTemplates;
+				this.Bar_Elements_Txt.text = app.GlobalComponents.ConfigManager.barElementDef;			
+				Domain_Def_Txt.text = app.GlobalComponents.ConfigManager.domainDef;
+				
+				this.useAgsCheck.selected =  app.GlobalComponents.ConfigManager.useAgsService;
+				this.useLatLongCheck.selected = app.GlobalComponents.ConfigManager.useAgsLatLong;
+				this.agsServiceUrl.text = app.GlobalComponents.ConfigManager.agsServiceURL;
+				this.rollbackCheck.selected = app.GlobalComponents.ConfigManager.rollbackOnFailure;
+				this.gdbVersionVal.text = app.GlobalComponents.ConfigManager.gdbVersion;
+				fireAllChanges();
+			}
+			
+			protected function loadDefaults():void
+			{	
+				boundsIndex = ConfigUtility.getInt("default_boundry");
+				
+				guideBarOnCheck.selected = ConfigUtility.getBool("guide_bool");
+				
+				feetMarkerViewCheck.selected = ConfigUtility.getBool("ruler_bool");
+				linearEditingEnabled.selected = ConfigUtility.getBool("linear_data_edit_enabled");
+				linearEditFormEnabled.selected = ConfigUtility.getBool("linear_edit_form_enabled");
+				var tmpSync:int = ConfigUtility.getInt("sync_activity");
+				if(tmpSync == ConfigurationManager.MC_SYNC)
+					oldSync.selected = true;
+				else if(tmpSync == ConfigurationManager.RH_SYNC)
+					newSync.selected = true;
+				else
+					exportChanges.selected = true;
+				serviceUrl.text = ConfigUtility.get("serviceURL");
+				this.defScale.text = ConfigUtility.get("default_scale");
+				 ConfigUtility.get("default_bp_content")=="bars"?this.barRadio.selected=true:mapRadio.selected=true;
+				measureBarRadioSelect.selectedValue = ConfigUtility.getInt("type_measure");
+				inspDays.text = ConfigUtility.get("inspect_days");
+				geotagUrl.text=	BaseConfigUtility.get('geotags_folder');
+				cachedMapUrl.text=	BaseConfigUtility.get('cached_map_folder');
+				signImagesUrl.text=	BaseConfigUtility.get('sign_images_folder');
+				baseMapUrl.text=	BaseConfigUtility.get('basemapLayer');
+				baseMapSR.text=	BaseConfigUtility.get('basemapSR');
+				Asset_Def_Txt.text= ConfigUtility.get('asset_def');
+				Asset_Data_Template_Txt.text= ConfigUtility.get('asset_data_template');
+				Data_Entry_Template_Txt.text= ConfigUtility.get('data_entry_template');
+				Bar_Elements_Txt.text = ConfigUtility.get('bar_elements');
+				Domain_Def_Txt.text = ConfigUtility.get('domain_def');
+				this.elemBarHeightTxt.text = String(ConfigUtility.getNumber("default_element_bar_height"));
+				
+				this.useAgsCheck.selected =  ConfigUtility.getBool('use_ags_service');
+				this.useLatLongCheck.selected = ConfigUtility.getBool('use_ags_latlong');
+				this.agsServiceUrl.text = ConfigUtility.get('ags_service_url');
+				this.rollbackCheck.selected = ConfigUtility.getBool('rollback_on_failure');
+				this.gdbVersionVal.text = ConfigUtility.get('gdb_version');
+				//fireAllChanges();
+			}
+			
+			protected function fireAllChanges():void
+			{
+				
+				
+				
+				if (feetMarkerViewCheck.selected)
+					measureChange();	
+				
+				//set all the urls in the configManager
+				
+			}
+			
+//			protected function onDistricts(ev:ResultEvent):void
+//			{
+//				
+//				boundsDP = new ArrayCollection(JSON.parse(ev.result as String) as Array);
+//				var testDomain:ArrayCollection = _mdbm.getAssetDomain("DISTRICTS"); 
+//				if(testDomain==null || testDomain.length<=0)
+//					_mdbm.insertAssetDomain(boundsDP,"DISTRICTS");
+//				
+//				var item:String = setMan.getSetting("DEFAULT_DISTRICT");
+//				boundsIndex =  item ? parseInt(item) : ConfigUtility.getInt("default_district");
+//				defDistrictVal.text = boundsDP.getItemAt(boundsIndex).DESCRIPTION;
+//				
+//				
+//			}
+			
+			protected function onFail(ev:Object):void
+			{
+				
+			}
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+			}
+			
+			private function handleCloseEvent():void 
+			{
+				PopUpManager.removePopUp(this);
+				
+				if (app.GlobalComponents.ConfigManager.invPanelContent == "settings" && this.parent is Group)
+					app.GlobalComponents.ConfigManager.invPanelContent = "bars";
+				
+				if (setMan.getKeys().length == 0)
+					onSave();
+			}
+			
+			private function checkLength(s:String):String
+			{
+				var str:String = s;
+				if (str.length < 2)
+				{
+					str = "0" + str;
+				}
+				return str;
+			}
+			
+			private function deleteDBCallback(del:Boolean):void
+			{
+				if (del)
+				{
+					MAVRICDBManager.deleteDatabaseFile();
+					app.sldDiagram.sldDiagram.clearRoute();
+					app.currentState = "NoMaps";
+				}
+			}
+			
+			//
+			private function onSave():void
+			{
+				//guidebar
+				app.GlobalComponents.ConfigManager.guideBarSwitch = guideBarOnCheck.selected;
+				setMan.saveSetting("GUIDEBAR_VIEW", guideBarOnCheck.selected.toString());
+				
+				//assets
+				
+				var switchObj:Object = new Object();;
+				for (var i:int =0; i<assetChkBoxes.length;i++)
+				{
+					var chkName:String = String(assetChkBoxes[i].name);
+					switchObj[chkName] = assetChkBoxes[i].selected;
+					
+					setMan.saveSetting(chkName.toLowerCase()+"_view",  assetChkBoxes[i].selected);
+				}
+				app.GlobalComponents.ConfigManager.assetSwitch = switchObj;
+				
+				//feet ruler
+				app.GlobalComponents.ConfigManager.feetMarkerSwitch = feetMarkerViewCheck.selected;
+				setMan.saveSetting("FEET_VIEW", feetMarkerViewCheck.selected.toString());
+				
+				//insp days
+				app.GlobalComponents.ConfigManager.inspDays = parseInt(inspDays.text);
+				setMan.saveSetting("INSP_DAYS", inspDays.text);
+				
+				// roadway lanes
+				app.GlobalComponents.ConfigManager.roadwayLanesSwitch = roadwayLanesOnCheck.selected;
+
+				//sync type
+				if(oldSync.selected)
+					app.GlobalComponents.ConfigManager.syncActivity = ConfigurationManager.MC_SYNC;
+				else if(newSync.selected)
+					app.GlobalComponents.ConfigManager.syncActivity = ConfigurationManager.RH_SYNC;
+				else
+					app.GlobalComponents.ConfigManager.syncActivity = ConfigurationManager.EXPORT_CHANGES;
+				setMan.saveSetting("SYNC_ACTIVITY", app.GlobalComponents.ConfigManager.syncActivity.toString());
+				
+				//linear editing enabled
+				app.GlobalComponents.ConfigManager.linearEditingSwitch = this.linearEditingEnabled.selected;
+				setMan.saveSetting("LINEAR_DATA_EDIT_ENABLED", this.linearEditingEnabled.selected.toString());
+				
+				
+				setMan.saveSetting("LINEAR_EDIT_FORM_ENABLED", this.linearEditFormEnabled.selected.toString());
+				
+				
+				app.GlobalComponents.ConfigManager.serviceURL = serviceUrl.text;
+				setMan.saveSetting("SERVICE_URL",serviceUrl.text);
+				
+				//settings only saved in DB
+				setMan.saveSetting("DEFAULT_BOUNDRY", "" + boundsIndex);
+				setMan.saveSetting("DEFAULT_ELEMENT_BAR_HEIGHT",elemBarHeightTxt.text);
+				setMan.saveSetting("GEOTAGS_FOLDER",geotagUrl.text);
+				setMan.saveSetting("CACHED_MAP_FOLDER",cachedMapUrl.text);
+				setMan.saveSetting("SIGN_IMAGES_FOLDER",signImagesUrl.text);
+				setMan.saveSetting("BASEMAPLAYER",baseMapUrl.text);
+				setMan.saveSetting("BASEMAPSR",baseMapSR.text);
+				setMan.saveSetting("ASSET_DEF",Asset_Def_Txt.text);
+				setMan.saveSetting("ASSET_DATA_TEMPLATE",Asset_Data_Template_Txt.text);
+				setMan.saveSetting("DATA_ENTRY_TEMPLATE",Data_Entry_Template_Txt.text);
+				setMan.saveSetting("BAR_ELEMENTS",Bar_Elements_Txt.text);
+				setMan.saveSetting("DOMAIN_DEF",Domain_Def_Txt.text);
+				setMan.saveSetting("GDB_VERSION", this.gdbVersionVal.text);
+				setMan.saveSetting("DEFAULT_BP_CONTENT",this.barRadio.selected?"bars":"map");
+				setMan.saveSetting("DEFAULT_SCALE",defScale.text);
+				if (measureBarRadioSelect.selectedValue)
+					setMan.saveSetting("TYPE_MEASURE", measureBarRadioSelect.selectedValue.toString());
+				else
+					setMan.saveSetting("TYPE_MEASURE", ConfigUtility.get("type_measure"));
+				
+				measureChange();
+				
+			
+			}	
+			
+			
+			
+			private function closeBounds():void
+			{
+				defDistrictVal.text = boundsDP.getItemAt(boundsList.selectedIndex).DESCRIPTION;
+				boundaryPopUp.close(true, boundsList.selectedIndex);
+				boundsIndex = boundsList.selectedIndex;
+			}
+
+			private function closeLanesField():void
+			{
+				defLanesFieldVal.text = barNamesDP.getItemAt(barNamesList.selectedIndex).DESCRIPTION as String;
+				lanesFieldPopUp.close(true, barNamesList.selectedIndex);
+				lanesFieldIndex = barNamesList.selectedIndex;
+				FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.lanesFieldValue = defLanesFieldVal.text;
+			}
+
+			private function closeScale():void
+			{
+				var newDefaultScale:Number = this.scaleList.dataProvider.getItemAt(scaleList.selectedIndex).scaleValue;
+				this.defScale.text = String(newDefaultScale);
+				scalePopUp.close(true, scaleList.selectedIndex);
+				
+			}
+			
+			private function closegdb():void
+			{
+				this.gdbVersionVal.text = this.gdbVersionList.dataProvider.getItemAt(gdbVersionList.selectedIndex).DESCRIPTION;
+				this.gdbversionPopUp.close(true, this.gdbVersionList.selectedIndex);
+				gdbVerisonIndex = gdbVersionList.selectedIndex;
+				
+			}
+			
+			public function setElemNames():void
+			{
+				if(barNamesDP == null || barNamesDP.length == 0)
+				{
+					var barArr:Array =configManager.getBarElemNames();
+					barNamesDP = new ArrayCollection();
+					for(var i:int=0; i<barArr.length; i++)
+					{
+						barNamesDP.addItem({ID:i, DESCRIPTION: barArr[i]});
+						if(barArr[i] == defLanesFieldVal.text)
+							lanesFieldIndex = i;
+					}
+				}
+			}
+			
+			public function hideExtras():void
+			{
+				viewStack.selectedChild =viewGroup;
+				btnGroup.visible= false;
+			}
+			
+			protected function testDeleteDB():void
+			{
+				FlexGlobals.topLevelApplication.YesNoPrompt("Really delete the Database File? This operation is irreversible.", "Delete?", new mx.rpc.Responder(deleteDBCallback, null));
+			}
+			
+			protected function downloadSigns():void
+			{
+				if (!FlexGlobals.topLevelApplication.connected)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("WiFi is off. Please turn on WiFi, connect to a network, and try again.");
+					return;
+				} 
+				FlexGlobals.topLevelApplication.setBusyStatus(true);
+				zip = new FZip();
+				zip.addEventListener( Event.COMPLETE, onZipDownloadComplete);
+				zip.addEventListener( FZipEvent.FILE_LOADED, onfileLoadComplete);
+				zip.load(new URLRequest(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL + "DownloadSignZip"));
+				
+			}
+			
+			private function onZipDownloadComplete(event:Event):void
+			{
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
+				FlexGlobals.topLevelApplication.TSSAlert("Sign image download complete.");
+			}
+			
+			private function onfileLoadComplete(event:FZipEvent):void{
+				
+				var path:String ;
+				if(_mdbm.getKeys().length<1)
+					path =BaseConfigUtility.get('sign_images_folder');
+				else
+					path = setMan.getSetting("SIGN_IMAGES_FOLDER");
+				
+				var file:FZipFile = event.file;
+				var newfl:File;
+				if(file.filename.lastIndexOf("/") == file.filename.length-1)
+				{
+					newfl = new File(path+file.filename);
+					newfl.createDirectory();
+				}
+				else
+				{
+					
+					newfl = new File(path+file.filename);
+					var fs:FileStream = new FileStream();
+					fs.open(newfl,FileMode.WRITE);
+					fs.writeBytes(file.content,0,file.content.length);
+					fs.close();
+					
+				}
+			}
+			
+			private function openBoundsSelect(event:MouseEvent):void
+			{
+				boundaryPopUp.open(this, false);
+				PopUpManager.centerPopUp(boundaryPopUp);
+			}
+			
+			private function opengdbSelect(event:MouseEvent):void
+			{
+				this.gdbversionPopUp.open(this, false);
+				PopUpManager.centerPopUp(gdbversionPopUp);
+			}
+			
+			private function openScaleSelect(event:MouseEvent):void
+			{
+				this.scalePopUp.open(this, false);
+				PopUpManager.centerPopUp(scalePopUp);
+			}
+			
+			private function openLanesFieldSelect(event:MouseEvent):void
+			{
+				this.lanesFieldPopUp.open(this, false);
+				PopUpManager.centerPopUp(lanesFieldPopUp);
+			}
+			
+			private function measureChange():void
+			{
+				if (app.GlobalComponents.stkDiagram && feetMarkerViewCheck.selected)
+				{
+					if (measureBarRadioSelect.selectedValue != null)	
+						app.GlobalComponents.ConfigManager.measureBarUnit = measureBarRadioSelect.selectedValue as Number;
+					else
+						app.GlobalComponents.ConfigManager.measureBarUnit = int(setMan.getSetting("TYPE_MEASURE"));
+				}
+			}
+			
+			private function bpContentChange():void
+			{
+				app.GlobalComponents.ConfigManager.invPanelContent = String(btmPanelRadioSelect.selectedValue);
+				
+			}
+			
+			// Clear Local Data Functions
+			private function clearAssets():void
+			{
+				FlexGlobals.topLevelApplication.YesNoPrompt("Clear all local assets?", "Clear Assets?", new mx.rpc.Responder(clearAssetsCallback, null));
+			}
+			
+			private function clearAssetsCallback(del:Boolean):void
+			{
+				if (del)
+				{
+					app.GlobalComponents.assetManager.clearAssets();
+				}
+			}
+			
+			private function clearDomains():void
+			{
+				FlexGlobals.topLevelApplication.YesNoPrompt("Clear all local domains?", "Clear Domains?", new mx.rpc.Responder(clearDomainsCallback, null));
+			}
+			
+			private function clearDomainsCallback(del:Boolean):void
+			{
+				if (del)
+				{
+					app.GlobalComponents.assetManager.mdbm.deleteDomains();
+				}
+			}
+			
+			private function clearGeotags():void
+			{
+				FlexGlobals.topLevelApplication.YesNoPrompt("Clear all local geotags?", "Clear Geotags?", new mx.rpc.Responder(clearGeotagsCallback, null));
+			}
+			
+			private function clearGeotagsCallback(del:Boolean):void
+			{
+				if (del)
+				{
+					app.GlobalComponents.assetManager.deleteNonCachedGeotagFiles();
+					app.GlobalComponents.assetManager.mdbm.clearGeotagsTable();
+					
+				}
+			}		
+			
+			private function clearMapImages():void
+			{
+				FlexGlobals.topLevelApplication.YesNoPrompt("Clear all map images?", "Clear Map Images?", new mx.rpc.Responder(clearMapImagesCallback, null));
+			}
+			
+			private function clearMapImagesCallback(del:Boolean):void
+			{
+				if (del)
+				{
+					app.GlobalComponents.assetManager.mdbm.clearMapImageTable();
+					fileUtil.deleteMapImages();
+				}
+			}		
+			
+			private function clearCachedRoutes():void
+			{
+				FlexGlobals.topLevelApplication.YesNoPrompt("Clear all cached routes?", "Clear Cached Routes?", new mx.rpc.Responder(clearCachedRoutesCallback, null));
+			}
+			
+			private function clearCachedRoutesCallback(del:Boolean):void
+			{
+				if (del)
+				{
+					app.GlobalComponents.assetManager.clearCachedRoutes();
+					app.GlobalComponents.assetManager.deleteCachedGeotagFiles();
+					app.GlobalComponents.assetManager.mdbm.clearCachedGeotagsTable();
+				}
+			}
+			
+			private function setSync(event:Event):void
+			{
+				if(event.target.id == "oldSync" && event.target.selected)
+					app.GlobalComponents.ConfigManager.syncActivity= ConfigurationManager.MC_SYNC;
+				else if(event.target.id == "newSync" && event.target.selected)
+					app.GlobalComponents.ConfigManager.syncActivity=ConfigurationManager.RH_SYNC;
+				else if(event.target.id == "exportChanges" && event.target.selected)
+					app.GlobalComponents.ConfigManager.syncActivity=ConfigurationManager.EXPORT_CHANGES;
+			}
+			
+			protected function updateAssetJsonBtn_clickHandler(event:MouseEvent, txtInp:TextInput):void
+			{
+				fileName = "Asset_Def.json";
+				tempTextInput = txtInp;
+				fileTextBox = this.Asset_Def_Txt;
+				//localPathToSave = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.assetJsonDef;
+				FlexGlobals.topLevelApplication.YesNoPrompt("Downloading new file will overwrite if the file exists on the device. Are you sure you want to download the file?" ,"", new mx.rpc.Responder(downloadFile,function():void{}));
+				
+			}
+			
+			protected function dataEntryTemplatesBtn_clickHandler(event:MouseEvent, txtInp:TextInput):void
+			{
+				fileName = "Data_Entry_Template.json";
+				tempTextInput = txtInp;
+				fileTextBox = this.Data_Entry_Template_Txt;
+				//localPathToSave = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.assetTemplates;
+				FlexGlobals.topLevelApplication.YesNoPrompt("Downloading new file will overwrite if the file exists on the device. Are you sure you want to download the file?" ,"", new mx.rpc.Responder(downloadFile,function():void{}));
+				
+			}
+			
+			protected function updateBarElementsBtn_clickHandler(event:MouseEvent, txtInp:TextInput):void
+			{
+				fileName = "Bar_Elements.json";
+				tempTextInput = txtInp;
+				fileTextBox = this.Bar_Elements_Txt;
+				//localPathToSave = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.barElementDef;
+				FlexGlobals.topLevelApplication.YesNoPrompt("Downloading new file will overwrite if the file exists on the device. Are you sure you want to download the file?" ,"", new mx.rpc.Responder(downloadFile,function():void{}));
+				
+			}
+			
+			protected function updateDomainDefBtn_clickHandler(event:MouseEvent, txtInp:TextInput):void
+			{
+				fileName = "Domain_Def.json";
+				tempTextInput = txtInp;
+				fileTextBox = this.Domain_Def_Txt;
+				//localPathToSave = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.barElementDef;
+				FlexGlobals.topLevelApplication.YesNoPrompt("Downloading new file will overwrite if the file exists on the device. Are you sure you want to download the file?" ,"", new mx.rpc.Responder(downloadFile,function():void{}));
+				
+			}
+			
+			protected function updateAssetJsonTemplBtn_clickHandler(event:MouseEvent, txtInp:TextInput):void
+			{
+				fileName = "Asset_Data_Template.json";
+				tempTextInput = txtInp;
+				fileTextBox = this.Asset_Data_Template_Txt;
+				//localPathToSave = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.assetJsonTempl;
+				FlexGlobals.topLevelApplication.YesNoPrompt("Downloading new file will overwrite if the file exists on the device. Are you sure you want to download the file?" ,"", new mx.rpc.Responder(downloadFile,function():void{}));
+				
+			}
+			
+			
+			public function downloadFile(download:Boolean):void{
+				if(download)
+				{
+					var URLLdr:URLLoader = new URLLoader();
+					URLLdr.dataFormat = URLLoaderDataFormat.BINARY;
+					//var tempInput:TextInput = this.getChildByName(fileName.replace(/.JSON/gi,"")+"_Txt") as TextInput;
+					URLLdr.addEventListener(Event.COMPLETE, 
+						function(e:Event):void { 
+							var fTemp:File = File.applicationStorageDirectory.resolvePath("JsonFiles/"+fileName);
+							
+							var fsTemp:FileStream = new FileStream();
+							fsTemp.open(fTemp, FileMode.WRITE);
+							
+							var fileData:ByteArray =URLLdr.data;
+							fsTemp.writeBytes(fileData, 0, 0);
+							fsTemp.close();
+							
+							tempTextInput.text = fTemp.url;
+							
+							setMan.saveSetting(fileName.toUpperCase().replace(".JSON",""),fTemp.url);
+							FlexGlobals.topLevelApplication.setBusyStatus(false);
+							FlexGlobals.topLevelApplication.TSSAlert(fileName + " saved locally. Restart the app to use settings in this file");
+							
+							
+						});
+					URLLdr.addEventListener(IOErrorEvent.IO_ERROR, 
+						function(e:Event):void { 
+							
+							FlexGlobals.topLevelApplication.TSSAlert("IO Error in downloading file:" + fileName);
+							
+						});
+					URLLdr.addEventListener(SecurityErrorEvent.SECURITY_ERROR, 
+						function(e:Event):void { 
+							
+							FlexGlobals.topLevelApplication.TSSAlert("Security Error in downloading file:" + fileName);
+							
+						});
+					URLLdr.load(new URLRequest(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL + "DownloadJsonFiles/" + fileName));
+				}
+			}
+			
+			protected function updateAllJsonFilesBtn_clickHandler(event:MouseEvent):void
+			{
+				//localPathToSave = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.assetJsonTempl;
+				FlexGlobals.topLevelApplication.YesNoPrompt("Downloading new files will overwrite if the files exists on the device. Are you sure you want to download the file?" ,"", new mx.rpc.Responder(function(cont:Boolean):void{
+					if(cont)
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						zip = new FZip();
+						zip.addEventListener( Event.COMPLETE, onJsonFilesZipDownloadComplete);
+						zip.addEventListener( FZipEvent.FILE_LOADED, onJsonFileLoadComplete);
+						zip.load(new URLRequest(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL + "DownloadJsonFiles/all"));	
+					}
+				},function():void{}));
+				
+			}
+			
+			
+			
+			private function onJsonFilesZipDownloadComplete(event:Event):void
+			{
+				this.Asset_Def_Txt.text = setMan.getSetting("ASSET_DEF");
+				this.Asset_Data_Template_Txt.text = setMan.getSetting("ASSET_DATA_TEMPLATE");
+				this.Data_Entry_Template_Txt.text = setMan.getSetting("DATA_ENTRY_TEMPLATE");
+				this.Bar_Elements_Txt.text = setMan.getSetting("BAR_ELEMENTS");
+				this.Domain_Def_Txt.text = setMan.getSetting("DOMAIN_DEF");
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
+				FlexGlobals.topLevelApplication.TSSAlert("Json files downloaded and saved locally. Restart the app to use settings in new files");
+			}
+			
+			private function onJsonFileLoadComplete(event:FZipEvent):void{
+				
+				var file:FZipFile = event.file;
+				var newfl:File= File.applicationStorageDirectory.resolvePath("JsonFiles/"+file.filename);
+				var fs:FileStream = new FileStream();
+				fs.open(newfl,FileMode.WRITE);
+				fs.writeBytes(file.content,0,file.content.length);
+				fs.close();
+				var fileNm:String = file.filename.replace(/.json/gi,"");
+				//TextInput(VGroup(urlGroup.getChildByName(fileNm+"_Grp")).getChildByName(fileNm+"_Txt")).text = newfl.url;
+				setMan.saveSetting(fileNm.toUpperCase(),newfl.url);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal"></s:State>
+		<s:State name="appSettings"></s:State>
+	</s:states>
+	
+	
+	<fx:Declarations>
+		<!-- validators array 
+		<fx:Array id="validators">
+		<mx:Validator id="reqScaleItem" required="true" source="{ScaleInp}"
+		property="text" />
+		</fx:Array>
+		validator with the above array as parameters. On change for each item, validates using the array
+		<Validators:FormValidator id="formValidator" validators="{this.validators}"/> -->
+		
+		<s:SkinnablePopUpContainer id="boundaryPopUp" width="300" height="400" name="Select Type"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="boundsList" width="100%" height="100%" allowMultipleSelection="false"
+							change="{closeBounds()}" dataProvider="{boundsDP}" fontSize="18"
+							labelField="DESCRIPTION" selectedIndex="{boundsIndex}"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+
+		<s:SkinnablePopUpContainer id="lanesFieldPopUp" width="300" height="400" name="Select Lanes Field"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="barNamesList" width="100%" height="100%" allowMultipleSelection="false"
+							change="{closeLanesField()}" dataProvider="{barNamesDP}" fontSize="18"
+							labelField="DESCRIPTION" selectedIndex="{lanesFieldIndex}"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+
+		<s:SkinnablePopUpContainer id="scalePopUp" width="300" height="400" name="Select Default Scale"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="scaleList" width="100%" height="100%" allowMultipleSelection="false"
+							change="{closeScale()}" dataProvider="{app.GlobalComponents.ConfigManager.scaleValues}" labelField="scaleLabel"  fontSize="18"
+							selectedIndex="{app.GlobalComponents.ConfigManager.getDefScaleIndex()}"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="gdbversionPopUp" width="300" height="400" name="gdbVersion"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="gdbVersionList" width="100%" height="100%" allowMultipleSelection="false"
+							change="{closegdb()}" dataProvider="{app.GlobalComponents.ConfigManager.gdbValues}" labelField="DESCRIPTION"  fontSize="18"
+							/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:RadioButtonGroup id="btmPanelRadioSelect"  />
+		<s:RadioButtonGroup id="measureBarRadioSelect"
+							selectedValue="{app.GlobalComponents.ConfigManager.measureBarUnit}"/>
+	</fx:Declarations>
+	
+	
+	<s:HGroup id="btnGroup" width="100%"
+			  visible.appSettings="false" includeInLayout.appSettings="false">
+		<s:Button id="appBtn" width="25%" label="Application"
+				  click="{viewStack.selectedChild = appGroup}"
+				  enabled="{viewStack.selectedChild != appGroup}"/>
+		<s:Button id="viewBtn" width="25%" label="View" click="{viewStack.selectedChild = viewGroup}"
+				  enabled="{viewStack.selectedChild != viewGroup}"/>
+		<s:Button id = "urlBtn" label="File Locations" enabled="{viewStack.selectedChild != urlGroup}" 
+				  click="{viewStack.selectedChild = urlGroup}" width="25%"/>
+		
+		<s:Button id = "agsBtn" label="ArcGIS Settings" enabled="{viewStack.selectedChild != agsGroup}" 
+				  click="{viewStack.selectedChild = agsGroup}" width="25%"/>
+	</s:HGroup>
+	<views:CBViewStack id="viewStack" width="100%" height="100%" backgroundColor="0xFFFFCC"
+					   skinClass="skins.CBScrollableSkin"
+					   selectedIndex.appSettings="1">
+		<s:VGroup id="appGroup" width="100%" paddingBottom="3" paddingLeft="3" paddingRight="3"
+				  paddingTop="3">
+			<s:HGroup gap="90">
+				<s:VGroup>
+					<s:HGroup>
+						<s:Label id="appNameLbl" fontWeight="bold" text="Application: "/>
+						<s:Label id="appNameVal" text="MAVRIC"/>
+					</s:HGroup>
+					<s:HGroup>
+						<s:Label id="buildNoLbl" fontWeight="bold" text="Build Number: "/>
+						<s:Label id="buildNoVal" text="{ConfigUtility.get('build_number')}"/>
+					</s:HGroup>
+					<s:Spacer height="1"/>
+					<s:VGroup id="defDistrictGrp">
+						<s:Button id="defDistrictBtn" label="Default District"
+								  click="{openBoundsSelect(event);}"/>
+						<s:TextInput id="defDistrictVal" editable="false"
+									 skinClass="spark.skins.spark.TextInputSkin" text=""/>
+					</s:VGroup>
+					
+					<s:Button label="Clear Asset Data"
+							  click="{clearAssets();}" width="250"/>
+					<!--<s:Spacer height="1"/>
+					<s:Button label="Clear Domains"
+							  click="{clearDomains();}" width="250"/>-->
+					<s:Spacer height="1"/>
+					<s:Button label="Clear Map Images"
+							  click="{clearMapImages();}" width="250"/>
+					<s:Spacer height="1"/>
+					<s:Button label="Clear Geotags"
+							  click="{clearGeotags();}" width="250"/>
+					<s:Spacer height="1"/>
+					<s:Button label="Clear Cached Routes"
+							  click="{clearCachedRoutes();}" width="250"/>
+					<s:Spacer height="1"/>
+					<s:Button label="Delete Database File" click="{this.testDeleteDB();}" width="250"/>
+					
+					
+					
+				</s:VGroup>
+				<s:VGroup>
+					<s:Spacer height="40"/>
+					<s:Label id="syncSetting" fontWeight="bold" text="Select Sync Activity:"/>
+					<s:RadioButton id="oldSync" label="MAVRIC Configured Sync" selected="false" change="{setSync(event)}"/>
+					<s:RadioButton id="newSync" label="R&amp;H Sync" selected="false" change="{setSync(event)}"/>
+					<s:RadioButton id="exportChanges" label="CSV Export" selected="false" change="{setSync(event)}"/>
+					
+					<s:Spacer height="3"/>
+					<s:Button label="Download Sign Images" click="{this.downloadSigns();}" width="250"/>
+					<s:Spacer height="1"/>
+					<s:Button label="Download All Json Settings Files" click="{this.updateAllJsonFilesBtn_clickHandler(event);}" width="250"/>
+					
+				</s:VGroup>
+				
+				
+			</s:HGroup>
+		</s:VGroup>
+		
+		<s:VGroup id="viewGroup" gap="15" height="100%" width="100%" paddingTop="3" paddingBottom="3" paddingLeft="3" paddingRight="3">
+			<s:HGroup  verticalAlign="middle">
+				<!--<s:Spacer width="50"/>-->
+				<s:Label text="Days Since Last Inspection: "/>
+				<s:TextInput id="inspDays" width="60" skinClass="spark.skins.mobile.TextInputSkin"/>
+			</s:HGroup>
+			<s:HGroup  verticalAlign="middle">
+				
+				<s:Label text="Default Inventory Bar Height: "/>
+				<s:TextInput id="elemBarHeightTxt" width="60" skinClass="spark.skins.mobile.TextInputSkin" text="{app.GlobalComponents.ConfigManager.elementBarHeight}"/>
+				<s:Label text="Min Value: 30"/>
+			</s:HGroup>
+			<s:HGroup  verticalAlign="middle">
+				<s:Button id="defScaleBtn" label="Default Scale"
+						  click="{openScaleSelect(event);}"/>
+				
+				<s:TextInput id="defScale" width="60" skinClass="spark.skins.mobile.TextInputSkin" text="{app.GlobalComponents.ConfigManager.defaultScale}"/>
+			</s:HGroup>
+			<s:HGroup verticalAlign="top" gap="40">
+				<s:VGroup id="assetChks">
+					
+				</s:VGroup>
+				<s:VGroup>
+					<s:CheckBox label="Guide Bar On" id="guideBarOnCheck" selected="{app.GlobalComponents.ConfigManager.guideBarSwitch}" />
+					<s:CheckBox id="feetMarkerViewCheck" label="Measure Bar Display On"
+								selected="{app.GlobalComponents.ConfigManager.feetMarkerSwitch}"/>
+					<s:CheckBox id="linearEditingEnabled" label="Linear Editing Enabled"
+								selected="{app.GlobalComponents.ConfigManager.linearEditingSwitch}"/>
+					<s:CheckBox id="linearEditFormEnabled" label="Use Form for Linear Edits"
+								selected="{app.GlobalComponents.ConfigManager.linearEditFormSwitch}"/>
+					<s:CheckBox label="Multiple Lanes On" id="roadwayLanesOnCheck" selected="{app.GlobalComponents.ConfigManager.roadwayLanesSwitch}" />
+				</s:VGroup>
+			</s:HGroup>
+			
+			<s:Label text="Default Bottom Panel Content:"/>
+			<s:HGroup>
+				
+				<s:RadioButton id="mapRadio" label="Overview Map" group="{btmPanelRadioSelect}" 
+							   value="map"></s:RadioButton>
+				<s:RadioButton id="barRadio" label="Attribute Bars" group="{btmPanelRadioSelect}" 
+							   value="bars"></s:RadioButton>
+			</s:HGroup>
+			<s:Label text="Data Unit:"/>
+			<s:HGroup>
+				<s:RadioButton label="Mile (MI)" groupName="dataUnitRadioSelect"
+							   value="{Units.MILE}"></s:RadioButton>
+				<s:RadioButton label="Meter (M)" groupName="dataUnitRadioSelect"
+							   value="{Units.METER}"></s:RadioButton>
+			</s:HGroup>
+			
+			<s:Label text="Measure Bar Unit:"/>
+			<s:HGroup>
+				<s:RadioButton label="Feet (FT)" groupName="measureBarRadioSelect"
+							   value="{Units.FEET}"></s:RadioButton>
+				<s:RadioButton label="Kilometer (KM)" groupName="measureBarRadioSelect"
+							   value="{Units.KILOMETER}"></s:RadioButton>
+				<s:RadioButton label="Mile (MI)" groupName="measureBarRadioSelect"
+							   value="{Units.MILE}"></s:RadioButton>
+				<s:RadioButton label="Meter (M)" groupName="measureBarRadioSelect"
+							   value="{Units.METER}"></s:RadioButton>
+			</s:HGroup>
+			
+			
+
+
+			<s:HGroup id="defLanesFieldGrp" verticalAlign="middle">
+				<s:Button id="defRoadwayLanesBtn" label="Multiple Lanes Field" enabled="{roadwayLanesOnCheck.selected}"
+						  click="{openLanesFieldSelect(event);}"/>
+				<s:TextInput id="defLanesFieldVal" text="{app.GlobalComponents.ConfigManager.lanesFieldValue}" minWidth="150" 
+							 skinClass="spark.skins.mobile.TextInputSkin" enabled="{roadwayLanesOnCheck.selected}"/>
+			</s:HGroup>
+			
+		</s:VGroup>  
+		<s:VGroup id="urlGroup" paddingTop="2" paddingBottom="2" paddingLeft="3" paddingRight="3" gap="4" width="100%" height="700" clipAndEnableScrolling="true">
+			
+			<s:Label fontWeight="bold" text="Service URL: " />
+			<s:TextInput id="serviceUrl" width="95%"   text="{ConfigUtility.get('serviceURL')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			
+			<s:Label fontWeight="bold" text="Geotags: " />
+			<s:TextInput id="geotagUrl" width="95%" text="{BaseConfigUtility.get('geotags_folder')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			
+			<s:Label fontWeight="bold" text="Cached Map Images: " />
+			<s:TextInput id="cachedMapUrl" width="95%" text="{BaseConfigUtility.get('cached_map_folder')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			
+			<s:Label fontWeight="bold" text="Sign Images: " />
+			<s:TextInput id="signImagesUrl" width="95%" text="{BaseConfigUtility.get('sign_images_folder')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			
+			<s:Label fontWeight="bold" text="Base Map Layer: " />
+			<s:TextInput id="baseMapUrl" width="95%" text="{BaseConfigUtility.get('basemapLayer')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			
+			<s:Label fontWeight="bold" text="Base Map SR: " />
+			<s:TextInput id="baseMapSR" width="95%" text="{BaseConfigUtility.get('basemapSR')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			
+			<s:Label fontWeight="bold" text="asset_def: " />
+			<s:HGroup name="Asset_Def_Grp" width="100%">
+				<s:TextInput id="Asset_Def_Txt" name="Asset_Def_Txt" width="90%" text="{ConfigUtility.get('asset_def')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:Button click="updateAssetJsonBtn_clickHandler(event,Asset_Def_Txt)" id="updateAssetJsonBtn" label="Update"/>
+			</s:HGroup>
+			
+			<s:Label fontWeight="bold" text="asset_data_template: " />
+			<s:HGroup name="Asset_Data_Template_Grp" width="100%">
+				<s:TextInput id="Asset_Data_Template_Txt" name="Asset_Data_Template_Txt" width="90%" text="{ConfigUtility.get('asset_data_template')}" skinClass="spark.skins.mobile.TextInputSkin" />
+				<s:Button click="updateAssetJsonTemplBtn_clickHandler(event,Asset_Data_Template_Txt)" id="updateAssetJsonTemplBtn" label="Update"/>
+			</s:HGroup>
+			
+			<s:Label fontWeight="bold" text="data_entry_template: " />
+			<s:HGroup name="Data_Entry_Template_Grp" width="100%">
+				<s:TextInput id="Data_Entry_Template_Txt" name="Data_Entry_Template_Txt" width="90%" text="{ConfigUtility.get('data_entry_template')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:Button click="dataEntryTemplatesBtn_clickHandler(event,Data_Entry_Template_Txt)" id="dataEntryTemplatesBtn" label="Update"/>
+			</s:HGroup>
+			
+			<s:Label fontWeight="bold" text="bar_elements: " />
+			<s:HGroup name="Bar_Elements_Grp" width="100%">
+				<s:TextInput id="Bar_Elements_Txt" name="Bar_Elements_Txt" width="90%" text="{ConfigUtility.get('bar_elements')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:Button click="updateBarElementsBtn_clickHandler(event,Bar_Elements_Txt)" id="updateBarElementsBtn" label="Update"/>
+			</s:HGroup>
+			
+			<s:Label fontWeight="bold" text="domain_def: " />
+			<s:HGroup name="Domain_Def_Grp" width="100%">
+				<s:TextInput id="Domain_Def_Txt" name="Domain_Def_Txt" width="90%" text="{ConfigUtility.get('domain_def')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:Button click="updateDomainDefBtn_clickHandler(event,Domain_Def_Txt)" id="updateDomainDefBtn" label="Update"/>
+			</s:HGroup>
+			
+		</s:VGroup>
+		
+		<s:VGroup id="agsGroup" paddingTop="2" paddingBottom="2" paddingLeft="3" paddingRight="3" gap="10" width="100%" height="700" clipAndEnableScrolling="true">
+			<s:CheckBox label="Use ArcGIS for Assets" id="useAgsCheck" />
+			<s:CheckBox label="Use ArcGIS for Map" id="useLatLongCheck" />
+			<s:CheckBox label="Rollback Edits on Failure" id="rollbackCheck" />
+			
+			
+			<s:Label fontWeight="bold" text="ArcGIS Service URL: " />
+			<s:TextInput id="agsServiceUrl" width="95%"    skinClass="spark.skins.mobile.TextInputSkin"/>
+			
+			<s:VGroup id="gdbVersionGrp">
+				<s:Button id="gdbVersionBtn" label="gdbVersion"
+						  click="{opengdbSelect(event);}"/>
+				<s:TextInput id="gdbVersionVal" editable="false"
+							 skinClass="spark.skins.mobile.TextInputSkin" text=""/>
+			</s:VGroup>
+			
+			
+			
+		</s:VGroup>
+	</views:CBViewStack>
+	
+	<s:HGroup width="100%">
+		<s:Button width="33%" label="Save" click="onSave(); "/>
+		<s:Button width="33%" label="Restore Defaults" click="loadDefaults()"/>
+		<s:Button width="33%" label="Close" click="handleCloseEvent();"/>
+		
+	</s:HGroup>
+</s:TitleWindow>

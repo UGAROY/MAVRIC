@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" creationComplete="init()" width="100%">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.DropDownViewEvent;
+			import com.transcendss.mavric.events.SignInvEvent;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.TitleWindow;
+			import spark.events.TextOperationEvent;
+		
+			private var signRatDDView:DropDownViewVert = new DropDownViewVert();
+			private var signRatInput:TextInput;
+			
+			private var PSIDmin:Number;
+			private var PSIDmax:Number;
+			
+			private var signSelectorForm:TitleWindow;
+			
+			private var lastPressed:String;
+			
+			[Bindable]
+			private var unknownButH:Number;
+			
+			[Bindable]
+			private var routeList:ArrayCollection=new ArrayCollection();
+			
+			private var gtManager:GeotagsManager = new GeotagsManager();
+			private var dbManager:MAVRICDBManager;
+			[Bindable]
+			private var inspectionValuesChanged:Boolean = false;
+			[Bindable]
+			private var datePicked:Boolean = false;
+			public function init():void
+			{
+				inspectionValuesChanged = false;
+				datePicked= false;
+//				Voice_INSP.source = gtManager.voice;
+//				Capture_INSP.source = gtManager.camera;
+				
+				signRatDDView.domainTableIDColName =  "D_SIGN_RATING_ID";
+				signRatDDView.fetchDomainValues();
+				signRatInput = signRatDDView.input;
+				var Ratbutton:Button = signRatDDView.button;
+				signRatDDView.btnText = "Sign Rating";
+				signRatDDView.genericPopup.height = 200;
+				signRatDDView.genericPopup.width = 150;
+				SRatGroup.addElement(signRatDDView);
+				signRatDDView.input.addEventListener(TextOperationEvent.CHANGE, function(ev:Event):void{inspectionValuesChanged= true;});
+				signRatDDView.input.addEventListener( FlexEvent.VALUE_COMMIT, function(ev:Event):void{inspectionValuesChanged= true;});
+				
+				var attchView:AddAttachments = new AddAttachments();
+				attchView.init("SignInventory",true,false,true);
+				attchmentsHolder.addElement(attchView);
+			}
+			
+			protected function DatePicker_Click(evt:MouseEvent):void
+			{	
+				
+				DatePopUp.open(this,false);
+				PopUpManager.centerPopUp(DatePopUp);
+				
+			}
+			
+			protected function closeDatePop():void
+			{
+				InspDateInput.text = dateTimeFormatter.format(datePicker.selectedDate);
+				datePicked=true;
+				
+			}
+			
+			public function exportSignInspInfoToBaseAsset(baseAsst:BaseAsset):void
+			{
+				
+				baseAsst.inspProperties["SIGN_INSP_RATING_ID"].value = signRatDDView.domainIDStr;
+				baseAsst.inspProperties["REFLECTIVITY_REVIEW"].value = dayTimeRad.selected?"D":(nightTimeRad.selected?"N":"");
+				baseAsst.inspProperties["D_REFER_TO_ID"].value = "";
+				baseAsst.inspProperties["INSP_DT"].value =this.saveformatter.format(inspectionValuesChanged? (datePicked?this.InspDateInput.text:new Date()):(datePicked?this.InspDateInput.text:baseAsst.inspProperties["INSP_DT"].value));
+				
+			}
+			
+			
+			public function loadSelectedSignInspInfo(baseAsst:BaseAsset):void
+			{
+				if(baseAsst!=null)
+				{
+				this.inspsignMessage.text = baseAsst.invProperties["SIGN_VALUE"].value  ;
+				this.inspSignDescription.text = baseAsst.invProperties["MUTCD"].value; 
+				signRatDDView.domainID = baseAsst.inspProperties["SIGN_INSP_RATING_ID"].value?baseAsst.inspProperties["SIGN_INSP_RATING_ID"].value :"" ;
+				baseAsst.inspProperties["REFLECTIVITY_REVIEW"].value=="D"? dayTimeRad.selected = true : (baseAsst.inspProperties["REFLECTIVITY_REVIEW"].value=="N"? this.nightTimeRad.selected=true: dayTimeRad.selected=nightTimeRad.selected= false);
+				
+				InspDateInput.text =baseAsst.inspProperties["INSP_DT"].value?dateTimeFormatter.format(baseAsst.inspProperties["INSP_DT"].value):"";
+				inspectionValuesChanged = false;
+				datePicked= false;
+				}
+			}
+			
+			
+			
+			
+			
+			protected function confirmDateHandler(event:MouseEvent):void
+			{
+				DatePopUp.close(false);
+				InspDateInput.text = dateTimeFormatter.format(datePicker.selectedDate);
+			}
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="DatePopUp" height="270"  name="Date"  skinClass="skins.TSSSkinnablePopUpContainerSkin"  >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup id="DateVGroup" width="100%" height="100%" horizontalAlign="center" gap="0">
+					<s:DateSpinner id="datePicker" width="100%" height="100%" maxDate="{new Date()}" change="closeDatePop()"/>
+					<s:Button id="confirmDateButton" label="OK" width="100%" height="40" click="confirmDateHandler(event)"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		<s:DateTimeFormatter id="dateTimeFormatter" dateTimePattern="MM/dd/yyyy" errorText="" useUTC="false"/>
+		<s:DateTimeFormatter
+			id="saveformatter"
+			dateTimePattern="MM/dd/yyyy HH:mm:ss"
+			errorText=""
+			useUTC="false"
+			/>
+	</fx:Declarations>
+	
+	<s:VGroup paddingTop="10" paddingLeft="20" gap="12" width="100%">
+		<s:HGroup verticalAlign="middle" gap="10">
+			<s:VGroup>
+				<s:Button label="Inspection Date" width="135" click="DatePicker_Click(event)"/>
+				<s:TextInput id="InspDateInput" widthInChars="6" text="" editable="false"  skinClass="spark.skins.mobile.TextInputSkin"/>
+			</s:VGroup>
+			
+			<s:Spacer  width="280"/>
+			<!--<s:Image id="Capture_INSP"  buttonMode="true" width="40" height="40" click="{imageCapture('SignInventory',event)}"/> 
+			<s:Image id="Voice_INSP" buttonMode="true" width="40" height="40" click="{voiceCapture('SignInventory',event)}"/>-->
+			
+		</s:HGroup>
+		
+		<s:VGroup verticalAlign="middle" gap="10">
+			<s:Label text="Description:" fontWeight="bold"/>
+			<s:TextInput width="460" id ="inspSignDescription" editable="false"  skinClass="spark.skins.mobile.TextInputSkin" />
+		</s:VGroup>
+		<s:VGroup verticalAlign="middle" gap="10">
+			<s:Label text="Message:" fontWeight="bold"/>
+			<s:TextInput width="480" id="inspsignMessage" editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+		</s:VGroup>
+		
+		<s:HGroup verticalAlign="middle" id="SRatGroup"></s:HGroup>
+		
+		
+		<s:HGroup verticalAlign="middle"  gap="10">
+			<s:Label text="Reflectivity Condition:" fontWeight="bold"/>
+			<s:Spacer width="20"/>
+			
+			<s:RadioButton label="Daytime" selected="false" id="dayTimeRad" change="{inspectionValuesChanged = true;nightTimeRad.selected=!dayTimeRad.selected;}"/>
+			<s:RadioButton label="Nighttime" selected="false" id="nightTimeRad" change="{inspectionValuesChanged = true;dayTimeRad.selected=!nightTimeRad.selected;}"/>
+		</s:HGroup>
+		
+		<s:VGroup id="attchmentsHolder" gap="10" right="0" width="90%" />
+	</s:VGroup>
+	
+</s:Group>

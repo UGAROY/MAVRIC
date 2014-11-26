@@ -1,0 +1,1074 @@
+<?xml version="1.0" encoding="utf-8"?>
+<baseViews:BaseAssetTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:components="spark.components.*"
+			   xmlns:views="com.transcendss.mavric.views.*"
+			   xmlns:mavricUtils="com.transcendss.mavric.util.*"
+			   xmlns:baseViews="com.transcendss.mavric.views.baseViews.*"
+			   width="800" height="749"  
+			   skinClass="skins.MavricTitleWindowSkin"
+			   title="Guardrail Inventory"
+			   creationComplete="init()"
+			   close="handleCloseEvent()">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.events.GuardrailEvent;
+			import com.transcendss.mavric.events.GuardrailMenuEvent;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.util.GeoUtil;
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.RouteSelectorEvent;
+			import com.transcendss.transcore.events.TextMemoEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			import com.transcendss.transcore.sld.models.components.GeoTag;
+			import com.transcendss.transcore.sld.models.components.Materials;
+			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
+			import com.transcendss.transcore.sld.models.managers.LRMManager;
+			import com.transcendss.transcore.util.AssetSymbol;
+			import com.transcendss.transcore.util.TSSAudio;
+			import com.transcendss.transcore.util.TSSMemo;
+			import com.transcendss.transcore.util.TSSPicture;
+			import com.transcendss.transcore.util.TSSVideo;
+			
+			import flash.events.Event;
+			import flash.events.IEventDispatcher;
+			import flash.events.MouseEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.core.FlexGlobals;
+			import mx.core.IVisualElement;
+			import mx.core.UIComponent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			
+			import spark.events.PopUpEvent;
+			
+			private static const SIZE_PRECISION:int = 3;
+			
+			
+			public var mp:ArrayCollection = new ArrayCollection();
+			public var pp:ArrayCollection = new ArrayCollection();
+			public var rp:ArrayCollection = new ArrayCollection();
+			public var cp:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var routeList:ArrayCollection=new ArrayCollection();
+			//private var geoTagsArr:ArrayCollection=new ArrayCollection();
+			
+			//	public var name:String = new String();
+			private var imEvent:GuardrailMenuEvent;
+			private var curMat:Materials = null;
+			public var dispatcher:IEventDispatcher;
+			private var guardrailType:ArrayCollection;
+			private var guardrailEvent:GuardrailEvent;
+			private var guardrailData:Object;
+			private var rsEvent:RouteSelectorEvent;
+			private var lastPressed:String=new String();
+			private var dbManager:MAVRICDBManager;
+			private var asset_base_id:String ="";
+			private var guardrail_id:Number = -1;
+			private var milepost:Number =-1;
+			private var picArray:ArrayList = new ArrayList();
+		//	private var fileUtility:FileUtility = new FileUtility();
+			private var baseAsset:BaseAsset = null;
+			private var horizUnits:int=1; 	// 1=inches, 2=feet, default=1
+			private var vertUnits:int=1;	// 1=inches, 2=feet, default=1
+			
+			private var counter:int = 0;
+			private var sdlftx:int;
+			private var sdrtx: int;
+			private var culvx:int;
+			private var sdlfty:int;
+			private var sdrty:int;
+			private var culvy:int;
+			private var leftSprite:AssetSymbol;
+			private var rightSprite:AssetSymbol;
+			private var openedLists:ArrayCollection;
+			private static const listNum:int = 13; // # of lists in form
+			private var gtManager:GeotagsManager = new GeotagsManager();
+			private var gRailMatDDView:DropDownViewVert = new DropDownViewVert();
+			private var gRailPurposeDDView:DropDownViewVert = new DropDownViewVert();
+			private var gRailLocDDView:DropDownViewVert = new DropDownViewVert();
+			private var gRailConditionDDView:DropDownViewVert = new DropDownViewVert();
+			private var guardrailRailMaterialInput:TextInput;
+			private var guardrailRailPurposeInput:TextInput;
+			private var guardrailPlacementInput:TextInput;
+			private var guardrailConditionInput:TextInput;
+			
+			[Bindable]
+			private var datePicked:Boolean = false;
+			
+			private var moveToLat:String="";
+			private var moveToLong:String="";
+			private var moveToPrec:String="";
+			private var moveToRefpt:Number;
+			private var assetMoved:Boolean = false;
+			
+			protected function init():void
+			{
+				try
+				{
+					
+					dbManager = MAVRICDBManager.newInstance();
+					guardrailData = new Object();
+					guardrailType = new ArrayCollection();
+					openedLists = new ArrayCollection();
+					guardrailType.addItem("Median");
+					guardrailType.addItem("Crossing");
+					guardrailType.addItem("Ditch");
+					routeList=FlexGlobals.topLevelApplication.GlobalComponents.routeList;
+					guardrailRouteInput.text = new String("" + FlexGlobals.topLevelApplication.currentRouteName);
+					assetMoved = false;
+					datePicked = false;
+					
+					asset_base_id ="";
+					guardrail_id = -1;
+					geoTagsArr = new ArrayCollection();
+						
+					//ddview. = controlObj.ID;
+					gRailMatDDView.domainTableIDColName = "D_GRAIL_MATERIAL_ID";
+					gRailMatDDView.fetchDomainValues();
+					guardrailRailMaterialInput = gRailMatDDView.input;
+					var btn1 : Button = gRailMatDDView.button;
+					gRailMatDDView.btnText = "Material";
+					gRailMatDDView.isRequired = true;
+					gRailMatDDView.genericPopup.height=200;
+					GMatGroup.addElement(gRailMatDDView);
+					
+					
+					//ddview. = controlObj.ID;
+					gRailPurposeDDView.domainTableIDColName = "D_GRAIL_PURPOSE_ID";
+					gRailPurposeDDView.fetchDomainValues();
+					guardrailRailPurposeInput = gRailPurposeDDView.input;
+					var btn2 : Button = gRailPurposeDDView.button;
+					gRailPurposeDDView.btnText = "Rail Purpose";
+					gRailPurposeDDView.isRequired = true;
+					gRailPurposeDDView.genericPopup.height=200;
+					GPurposeGroup.addElement(gRailPurposeDDView);
+					
+					
+					//ddview. = controlObj.ID;
+					gRailLocDDView.domainTableIDColName = "D_GRAIL_LOC_ID";
+					gRailLocDDView.fetchDomainValues();
+					guardrailPlacementInput = gRailLocDDView.input;
+					var btn3 : Button = gRailLocDDView.button;
+					gRailLocDDView.btnText = "Placement";
+					gRailLocDDView.isRequired = true;
+					gRailLocDDView.genericPopup.height=200;
+					GPlacementGroup.addElement(gRailLocDDView);
+					
+					
+					//ddview. = controlObj.ID;
+					gRailConditionDDView.domainTableIDColName = "D_GRAIL_CONDITION_ID";
+					gRailConditionDDView.fetchDomainValues();
+					guardrailConditionInput = gRailConditionDDView.input;
+					var btn : Button = gRailConditionDDView.button;
+					gRailConditionDDView.btnText = "Condition";
+					gRailConditionDDView.genericPopup.height=200;
+					GConditionGroup.addElement(gRailConditionDDView);
+
+					
+					
+				} catch (err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
+				}
+				guardrailLengthInput.softKeyboardType = "number";
+				
+				var attchView:AddAttachments = new AddAttachments();
+				attchView.init("GuardRailForm",true,false,true);
+				addAttchmentsHolder.addElement(attchView);
+				
+				var eve:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
+				dispatchEvent(eve);
+			}
+
+			public override function handleCloseEvent(event:Event = null):void 
+			{
+				if(event != null)
+				{
+					dispatchEvent(event);
+				}
+				else if(baseAsset != null)
+				{
+					var gEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT, true, true);
+					gEvent.saveCulvert = false;
+					gEvent.culvert = baseAsset;
+					dispatchEvent(gEvent);
+					
+					deleteUnsavedGeotagFiles();
+				}
+
+				closeAllPopUps();
+				PopUpManager.removePopUp(this);
+
+			}
+			
+
+			
+			
+			
+		
+			
+			private function calculateEndMP():void
+			{
+				
+				this.guardrailEndMPInput.text=(new Number(this.guardrailBegMPInput.text)+ (new Number(guardrailLengthInput.text)/5280)).toFixed(3);
+				
+			}
+			
+			private function onCaptureEndLocation(event:Event):void
+			{
+				
+				if(baseAsset == null ){
+					guardrailLengthInput.text = "0";
+					return;//end here, do not go further.
+				}
+			
+				var distMiles:Number = 0;
+				
+				var newLat:String = baseAsset.invProperties["LAT_END"].value = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Lat;
+				var oldLat:String =  baseAsset.invProperties["LAT_BEGIN"].value;
+				
+				var newLong:String = baseAsset.invProperties["LON_END"].value = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Long;
+				var oldLong:String = baseAsset.invProperties["LON_BEGIN"].value;
+				
+				
+				if(oldLat ==null || oldLong == null || oldLat =="" || oldLong == "")
+					FlexGlobals.topLevelApplication.TSSAlert("Unable to obtain the Guardrail begin Lat/Long values to calculate length");
+				else if (newLat ==null || newLong == null || newLat =="" || newLong == "")
+					FlexGlobals.topLevelApplication.TSSAlert("Unable to obtain the Guardrail end Lat/Long values to calculate length. Please make sure the GPS is turned on");
+				else
+					distMiles=  GeoUtil.distanceBetweenCoordinates(new Number(oldLat),new Number(oldLong),new Number(newLat),new Number(newLong),"feet");
+				
+				
+				guardrailEndMPInput.text=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMPost().toFixed(3);
+				guardrailLengthInput.text  = Math.abs(distMiles).toFixed(0);
+			}
+			
+			private function onAttachedToBridge(event:Event):void
+			{
+				
+			}
+			
+			
+			
+			public function roundDecimal(num:Number, precision:int):Number{
+				
+				var decimal:Number = Math.pow(10, precision);
+				
+				return Math.round(decimal* num) / decimal;
+				
+			}
+			
+			private function onSave():void
+			{
+				var culEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT , true, true);
+				culEvent.geoTags = geoTagsArr; 	
+				
+		
+				var cul:BaseAsset;
+				
+				if (baseAsset != null)
+				{
+					cul = baseAsset;
+				}
+				else
+				{
+					cul = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.createAsset( "GUARDRAIL", -1, 1);
+					cul.setAssetLocation("LAT_BEGIN","LON_BEGIN");
+				}
+				
+				if(this.retireChk.selected)
+				{
+					cul.invProperties["RETIRED"].value=1;
+					cul.inspProperties["INSP_DT"].value =saveformatter.format(cul.inspProperties["INSP_DT"].value);
+					
+				}
+				else
+				{	
+					cul.invProperties[cul.routeIDColName].value =this.guardrailRouteInput.text;
+					cul.invProperties["ASSET_BASE_ID"].value =asset_base_id;
+					
+					cul.inspProperties["INSP_DT"].value =saveformatter.format(gInspDateInput.text);
+					if(gRailMatDDView.input.text != null && gRailMatDDView.input.text != "")
+						cul.invProperties["D_GRAIL_MATERIAL_ID"].value = this.gRailMatDDView.domainID;
+					else
+					{
+						noMaterialError();
+						return;
+					}
+					if(gRailPurposeDDView.input.text != null && gRailPurposeDDView.input.text !="")
+						cul.invProperties["D_GRAIL_PURPOSE_ID"].value =this.gRailPurposeDDView.domainID;
+					else
+					{
+						noRailPurposeError();
+						return;
+					}
+					if(gRailLocDDView.input.text != null && gRailLocDDView.input.text != "")
+						cul.invProperties["D_GRAIL_LOC_ID"].value =this.gRailLocDDView.domainID;
+					else
+					{
+						noPlacementError();
+						return;
+					}
+					cul.inspProperties["D_GRAIL_CONDITION_ID"].value =this.gRailConditionDDView.domainIDStr;
+					if(guardrailLengthInput.text !=null && guardrailLengthInput.text != "")
+						cul.invProperties["LENGTH_FT"].value =this.guardrailLengthInput.text;
+					else
+					{
+						noLengthError();
+						return;
+					}
+					//cul.invProperties["END_MP"].value = this.guardrailEndMPInput.text;
+					cul.invProperties["BRIDGE_ATTACH_FLG"].value =this.cbGuardrailAttachedToBridge.selected?1:0;
+	
+					
+					cul.id = guardrail_id;
+					cul.subType = this.gRailLocDDView.domainID;
+					if(assetMoved)
+						cul.setAssetLocation("LAT_BEGIN","LON_BEGIN", this.moveToRefpt, this.moveToLat, this.moveToLong, this.moveToPrec);
+				}
+				culEvent.culvert = cul;
+				this.baseAsset	= cul;
+				handleCloseEvent(culEvent);
+			
+			}
+			
+
+			
+			
+			
+			private function closeAllPopUps():void
+			{
+				this.gRailMatDDView.closeDropDown();
+				this.gRailPurposeDDView.closeDropDown();
+				this.gRailLocDDView.closeDropDown();
+				this.gRailConditionDDView.closeDropDown();
+
+			}
+			
+			public override function setBaseAsset(legacyValues:BaseAsset):void
+			{
+				assetMoved = false;
+				baseAsset = legacyValues;
+				geoTagsArr = new ArrayCollection();
+				var lrmManager:LRMManager = new LRMManager();
+				
+				asset_base_id=legacyValues.invProperties["ASSET_BASE_ID"].value ;
+				guardrail_id = new Number(legacyValues.invProperties[legacyValues.primaryKey].value);
+				
+				this.guardrailRouteInput.text=legacyValues.invProperties[legacyValues.routeIDColName].value?legacyValues.invProperties[legacyValues.routeIDColName].value:FlexGlobals.topLevelApplication.currentRouteName;
+				this.gRailMatDDView.description=findValue(gRailMatDDView.domain, legacyValues.invProperties["D_GRAIL_MATERIAL_ID"].value);
+				this.gRailPurposeDDView.description=findValue(gRailPurposeDDView.domain, legacyValues.invProperties["D_GRAIL_PURPOSE_ID"].value) ;
+				this.gRailLocDDView.description=findValue(gRailLocDDView.domain, legacyValues.invProperties["D_GRAIL_LOC_ID"].value) ;
+				this.gRailConditionDDView.description=findValue(gRailConditionDDView.domain, legacyValues.inspProperties["D_GRAIL_CONDITION_ID"].value);
+				
+				this.guardrailLengthInput.text=legacyValues.invProperties["LENGTH_FT"].value;
+				this.cbGuardrailAttachedToBridge.selected=legacyValues.invProperties["BRIDGE_ATTACH_FLG"].value==1?true:false;
+					
+				if (legacyValues.inspProperties["INSP_DT"].value)
+					gInspDateInput.text= formatter.format(legacyValues.inspProperties["INSP_DT"].value );
+				if(legacyValues.invProperties[legacyValues.fromMeasureColName].value)			
+				{
+					milepost = Number(legacyValues.invProperties[legacyValues.fromMeasureColName].value);
+					this.guardrailBegMPInput.text= parseFloat(String(lrmManager.milepointToMilepostPlusOffset(new Number(legacyValues.invProperties[legacyValues.fromMeasureColName].value), "GUARDRAIL",new ArrayCollection(FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.getAllMilePostsAsBaseAssets())))).toFixed(3);
+				}
+					
+//				// load local geotags
+				if (guardrail_id != -1)
+				{
+					var gtArray:Array = dbManager.getLocalGeoTags(guardrail_id, baseAsset.assetType);
+					
+					for (var gti:int=0;gti<gtArray.length;gti++)
+					{
+						var tmpMedia:Object = new Object();
+						var tmpGT:GeoTag = gtArray[gti] as GeoTag;	
+						tmpGT.asset_ty_id = baseAsset.assetType;
+						var viE:* = new GeotagsManager().ConvertGeotags(tmpGT,"","local");
+						if(viE)
+						{
+							if(viE is TSSPicture)
+								picArray.addItem(viE);
+							if (tmpGT.is_insp == 0)
+								InvAttachments.addElement(viE);
+
+						}
+						tmpMedia.geoTag = tmpGT;
+						tmpMedia.geoLocalId = tmpGT.id;
+					}
+					
+				}
+				else
+				{
+					//set lat long from GPS if new GR
+					baseAsset.setAssetLocation("LAT_BEGIN","LON_BEGIN");
+					milepost = baseAsset.invProperties[baseAsset.fromMeasureColName].value;
+					this.guardrailBegMPInput.text= parseFloat(String(lrmManager.milepointToMilepostPlusOffset(new Number(baseAsset.invProperties[baseAsset.fromMeasureColName].value), "GUARDRAIL",new ArrayCollection(FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.getAllMilePostsAsBaseAssets())))).toFixed(3);
+				}
+				
+				
+				calculateEndMP();
+				
+				if(FlexGlobals.topLevelApplication.connected  && baseAsset.id!=-1 && baseAsset.status!='NEW')
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(true);
+					var httpServ:HTTPService = new HTTPService();
+					httpServ.method = "GET";
+					httpServ.resultFormat = "text";
+					httpServ.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+					
+					if(FlexGlobals.topLevelApplication.useAgsService  )
+					{
+						var layerID:String =FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerID(baseAsset.description);
+						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String( baseAsset.id));
+						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							var attachments:Object = JSON.parse(event.result as String);
+							
+							setGeotagsFromServer(attachments.attachmentInfos as Array, layerID );
+						});
+						
+					}
+					else if(baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !=""  && baseAsset.invProperties["ASSET_BASE_ID"].value !=null )
+					{
+						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL+"Geotags/"+String(baseAsset.invProperties["ASSET_BASE_ID"].value);
+						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							setGeotagsFromServer(JSON.parse(event.result as String) as Array);
+						});
+					}
+					if(httpServ.url)
+						httpServ.send();
+				}
+				
+				
+				//if editing an asset from server
+				if((baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !="") )
+					//|| (String(baseAsset.invProperties["STATUS"].value) =='EDITED'))
+					this.retireChk.enabled = true;
+				else
+					this.retireChk.enabled = false;
+				
+				
+				
+				
+				if(legacyValues.invProperties["RETIRED"].value==1)
+				{
+					this.retireChk.selected = true;
+					this.retireOkay(true);
+					
+				}
+//				setMilePostDiagram();
+			}
+			
+			
+//			private function setGeotagsFromServer( gtArray:Array):void
+//			{
+//				for (var gti:int=0;gti<gtArray.length;gti++)
+//				{
+//					var insp:Number = (String(gtArray[gti].IS_INSP)=="0")?0:1;
+//					var tmpGT:GeoTag = new GeoTag(Number(gtArray[gti].ATTACH_ID),String(gtArray[gti].ASSET_TYPE)!=""?String(gtArray[gti].ASSET_TYPE):"1", String(gtArray[gti].ROUTE_NAME),String(gtArray[gti].ASSET_BASE_ID),""
+//						,(String(gtArray[gti].IS_INSP)=="0")?0:1,Number(gtArray[gti].BEGIN_MILE),Number(gtArray[gti].END_MILE),String(gtArray[gti].IMAGE_FILENAME),String(gtArray[gti].VIDEO_FILENAME),String(gtArray[gti].VOICE_FILENAME),String(gtArray[gti].TEXT_MEMO));
+//					
+//					var viE:* = gtManager.ConvertGeotags(tmpGT, String(gtArray[gti].URL));
+//					if(viE)
+//					{
+//						this.InvAttachments.addElement(viE);
+//					}
+//					
+//				}
+//			}
+			
+			public function setGeotagsFromServer(gtArray:Array, layerID:String = ""):void
+			{
+				
+				gtManager.setGeotags(
+					InvAttachments,
+					gtArray,
+					baseAsset.assetType,
+					String(baseAsset.id),
+					baseAsset.routeName,
+					Number(baseAsset.invProperties[baseAsset.fromMeasureColName].value),
+					"",
+					baseAsset.invProperties[baseAsset.toMeasureColName]?Number(baseAsset.invProperties[baseAsset.toMeasureColName].value):0,layerID);
+				
+				
+			}
+
+			/**
+			 * Returns an object with the two milepost objects, complete with images.
+			 */
+			private function binarySearch(target:Number):Object
+			{
+				var array:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.milepostArray;
+				var left:int = 0;
+				var right:int = array.length - 1;
+				var middle:int;
+				if(array == null || array.length == 0)
+					return {leftPost:null, rightPost:null};
+				if(target <  new Number(array[left].invProperties[array[left].fromMeasureColName].value))
+					return {leftPost:null, rightPost:array[left]};
+				if(target >  new Number(array[right].invProperties[array[right].fromMeasureColName].value))
+					return {leftPost:array[right], rightPost:null};
+				while(left < right - 1)
+				{
+					middle = (left + right)/2;
+					if(target == new Number(array[middle].invProperties[array[middle].fromMeasureColName].value))
+						return {leftPost:array[left], rightPost:array[right]};
+					else if(target < new Number(array[middle].invProperties[array[middle].fromMeasureColName].value))
+						right  = middle;
+					else
+						left = middle;
+				}
+				
+				return {leftPost:array[left], rightPost:array[right]};
+			}
+			// load remote geotags
+			
+			
+			
+			
+			
+			
+			
+			/*
+			private function showSettingsMenu(event:MouseEvent):void {
+			// Create a non-modal TitleWindow container.
+			var settingsMenu:TitleWindow=
+			PopUpManager.createPopUp(this,SettingsMenu, false) as TitleWindow;
+			PopUpManager.centerPopUp(settingsMenu);
+			}
+			
+			*/
+			
+			
+			
+			public override function handlePicture(event:CameraEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+				{
+					var bmp:Bitmap = event.bitmap;
+					var tmpImage:TSSPicture = new TSSPicture();
+					tmpImage.source = bmp; //icon is now the captured image itself
+					tmpImage.bitmap = bmp;
+					//					tmpImage.x = stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+					//					tmpImage.y =getIconY("image");
+					tmpImage.width = 40;//120;
+					tmpImage.height = 40;//120;
+					
+					
+					var fileName:String = new Date().time + ".png";
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = guardrailRouteInput.text;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					if(asset_base_id != null && asset_base_id !="")
+					{
+						tmpGT.asset_base_id = asset_base_id;
+						tmpGT.local_asset_id = ""+guardrail_id;
+					}
+					else if (guardrail_id !=-1)
+					{
+						tmpGT.local_asset_id = guardrail_id.toString();
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					}
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = fileName;
+					tmpGT.text_memo = event.memo;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+						tmpGT.is_insp = 0;
+					else
+						tmpGT.is_insp = 1;
+					
+					tmpGT.asset_ty_id = baseAsset!=null?baseAsset.assetType:"1";
+					//					if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+					geoTagsArr.addItem(tmpGT);
+					//					else
+					//						tmpImage.geoLocalId = "" + dbManager.addGeoTag(tmpGT);
+					
+					tmpImage.geoTag = tmpGT;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+						InvAttachments.addElement(tmpImage);
+//					else
+//						InspAttachments.addElement(tmpImage);
+				}
+				try
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(true);
+					fileUtility.WritePicture(fileName, bmp);
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+				} catch (er:Error)
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+					FlexGlobals.topLevelApplication.TSSAlert(er.message);
+				}
+			}
+			
+			//function to handle VideoEvent
+			public override function handleVideo(event:videoEvent):void{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+				{
+					var vid:TSSVideo=new TSSVideo();
+					vid.source=gtManager.video;
+					vid.video=event.video;
+					//					vid.x=stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+					//					vid.y=getIconY("video");
+					vid.width=40;
+					vid.height=40;
+					
+					try
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						var fileName:String=new Date().time +".3gp";
+						fileUtility.WriteVideo(vid.video, fileName, event.path);
+						//vid.filePath="file:///mnt/sdcard/geotags/" + fileName;
+						vid.filePath = fileName;
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						
+						
+						var tmpGT:GeoTag=new GeoTag();
+						tmpGT.cached_route_id=guardrailRouteInput.text;
+						if(asset_base_id != null && asset_base_id !="")
+						{
+							tmpGT.asset_base_id = asset_base_id;
+							tmpGT.local_asset_id = ""+guardrail_id;
+						}
+						else if (guardrail_id != -1)
+						{
+							tmpGT.local_asset_id = guardrail_id.toString();
+							tmpGT.asset_base_id = "";
+						}
+						else
+						{
+							tmpGT.local_asset_id = "";
+							tmpGT.asset_base_id = "";
+						}
+						if(milepost==-1)
+							milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+						tmpGT.begin_mile_point=milepost;
+						tmpGT.end_mile_point=0;
+						tmpGT.voice_file_name="";
+						tmpGT.image_file_name="";
+						//tmpGT.video_file_name = vid.filePath;
+						tmpGT.video_file_name = fileName;
+						tmpGT.text_memo = event.memo;
+						if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+							tmpGT.is_insp = 0;
+						else
+							tmpGT.is_insp = 1;
+						tmpGT.asset_ty_id = baseAsset!=null?baseAsset.assetType:"1";
+						//						if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+						geoTagsArr.addItem(tmpGT);
+						//						else
+						//							vid.geoLocalId = ""+ dbManager.addGeoTag(tmpGT);
+						vid.geoTag = tmpGT;
+						if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+							InvAttachments.addElement(vid);
+//						else
+//							InspAttachments.addElement(vid);
+						
+					} catch (er:Error)
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert(er.message);
+					}
+					
+					
+				}
+				
+			}		
+			
+			public override function handleVoiceMemo(event:VoiceEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+				{
+					
+					var soundBytes:ByteArray=event.byteArray;
+					var tmpImage:TSSAudio = new TSSAudio();
+					tmpImage.source = gtManager.voice;
+					tmpImage.soundBytes = event.byteArray;
+					//					tmpImage.x = stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+					//					
+					//					tmpImage.y =  getIconY("voice");
+					tmpImage.width = 40;
+					tmpImage.height = 40;
+					var fileName:String = new Date().time +".wav";
+					//saving the sound file
+					/*
+					var fTemp:File = new File("/sdcard/VoiceMemos/" + fileName);
+					var writer:WAVWriter = new WAVWriter();
+					writer.numOfChannels=1;
+					writer.sampleBitRate=16;
+					writer.samplingRate=8000;
+					soundBytes.position=0;
+					var stream:FileStream=new FileStream();
+					stream.open(fTemp,FileMode.WRITE);
+					writer.processSamples(stream, soundBytes, 8000, 1);
+					
+					stream.close();
+					*/
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = guardrailRouteInput.text;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					if(asset_base_id != null && asset_base_id !="")
+					{
+						tmpGT.asset_base_id = asset_base_id;
+						tmpGT.local_asset_id = ""+guardrail_id;
+					}
+					else if (guardrail_id !=-1)
+					{
+						tmpGT.local_asset_id = guardrail_id.toString();
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					}
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = "";
+					tmpGT.voice_file_name= fileName;
+					tmpGT.video_file_name="";
+					tmpGT.image_file_name="";
+					tmpGT.text_memo = "";
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+						tmpGT.is_insp = 0;
+					else
+						tmpGT.is_insp = 1;
+					tmpGT.asset_ty_id = baseAsset!=null?baseAsset.assetType:"1";
+					//						if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+					geoTagsArr.addItem(tmpGT);
+					//						else
+					//							tmpImage.geoLocalId = "" + dbManager.addGeoTag(tmpGT);
+					//	
+					tmpImage.geoTag = tmpGT;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+						InvAttachments.addElement(tmpImage);
+//					else
+//						InspAttachments.addElement(tmpImage);
+					
+					try{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						fileUtility.saveToWAV(event.byteArray, fileName);
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+					}
+					catch(e:Error){
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert(e.message);
+					}
+					
+					
+				}
+			}
+			
+			public override function handleTextMemo(event:TextMemoEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+				{
+					var tmpMemo:TSSMemo = new TSSMemo();
+					
+					tmpMemo.source = gtManager.memo;
+					tmpMemo.memo=event.memo;
+					tmpMemo.label = event.memo;
+					
+					tmpMemo.width = 40;
+					tmpMemo.height = 40;
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = guardrailRouteInput.text;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					if(asset_base_id != null && asset_base_id !="")
+					{
+						tmpGT.asset_base_id = asset_base_id;
+						tmpGT.local_asset_id = ""+guardrail_id;
+					}
+					else if (guardrail_id !=-1)
+					{
+						tmpGT.local_asset_id = guardrail_id.toString();
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					}
+					
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = "";
+					tmpGT.text_memo = event.memo;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+						tmpGT.is_insp = 0;
+					else
+						tmpGT.is_insp = 1;
+					tmpGT.asset_ty_id = baseAsset!=null?baseAsset.assetType:"1";
+					//if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+					geoTagsArr.addItem(tmpGT);
+					//					else
+					//						tmpMemo.geoLocalId = "" + dbManager.addGeoTag(tmpGT);
+					
+					tmpMemo.geoTag = tmpGT
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "GuardRailForm")
+						InvAttachments.addElement(tmpMemo);
+//					else
+//						InspAttachments.addElement(tmpMemo);
+				}
+			}
+			
+			protected function skinnablePopUp_closeHandler(event:PopUpEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			// check required fields
+			public function noPlacementError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("You must select a Placement Type");	
+				
+			}
+			
+			public function noLengthError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("You must enter a value for Length");	
+				
+			}
+			
+			public function noMaterialError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("You must select a Material Type");	
+				
+			}
+			
+			public function noRailPurposeError():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("You must select a Rail Purpose");	
+				
+			}
+			
+			public override function removeGeoTag(tssmedia:Object):void
+			{
+				var elm:IVisualElement = tssmedia as IVisualElement;
+				if(InvAttachments.containsElement(elm))
+				{
+					InvAttachments.removeElement(elm);
+				}		
+				
+				if(geoTagsArr.getItemIndex(tssmedia.geoTag) != -1)
+					geoTagsArr.removeItemAt(geoTagsArr.getItemIndex(tssmedia.geoTag));
+			}
+			
+			protected function closeDatePop():void
+			{
+				gInspDateInput.text = formatter.format(datePicker.selectedDate);
+				datePicked=true;
+				
+			}
+			
+			protected function DatePicker_Click(event:MouseEvent):void
+			{
+				DatePopUp.open(this,false);
+				PopUpManager.centerPopUp(DatePopUp);
+				
+			}
+			
+			protected function confirmDateHandler(event:MouseEvent):void
+			{
+				DatePopUp.close(false);
+				gInspDateInput.text = formatter.format(datePicker.selectedDate);
+			}
+			
+			protected function retireChk_changeHandler(event:Event):void
+			{
+				if(this.retireChk.selected)
+				{	
+					var _retireResp:mx.rpc.Responder = new mx.rpc.Responder(retireOkay, fault);
+					
+					FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to retire this record? All the local changes made to the asset will be discarded on retirement.", "Retire Asset Confirmation", _retireResp);
+					
+					
+					function fault(data:Object):void
+					{	
+						FlexGlobals.topLevelApplication.TSSAlert("Error in Opening Retire Confirmation Dialog.");
+					}
+					
+				}
+				
+			}
+			protected function retireOkay(data:Object):void
+			{
+				if(data == true)
+				{
+					for (var forIndex:int = 0; forIndex < viewStack.numChildren; forIndex++)
+					{
+						var curr:DisplayObject = viewStack.getChildAt(forIndex);
+						if (curr is UIComponent)
+						{
+							var curr2:UIComponent = curr as UIComponent;
+							curr2.enabled = false;
+						}
+					}
+				}
+			}
+			
+			protected function moveBtn_changeHandler(event:Event):void
+			{
+				moveToLat=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Lat;
+				moveToLong=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Long;
+				moveToPrec =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Precision;
+				moveToRefpt = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+				assetMoved = true;
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="DatePopUp" height="270"  name="Date"  skinClass="skins.TSSSkinnablePopUpContainerSkin"  >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup id="DateVGroup" width="100%" height="100%" horizontalAlign="center" gap="0">
+					<s:DateSpinner id="datePicker" width="100%" height="100%" maxDate="{new Date()}" change="closeDatePop()"/>
+					<s:Button id="confirmDateButton" label="OK" width="100%" height="40" click="confirmDateHandler(event)"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		<s:DateTimeFormatter
+			id="formatter"
+			dateTimePattern="MM/dd/yyyy"
+			errorText="null"
+			useUTC="false"
+			/>		
+		<s:DateTimeFormatter
+			id="saveformatter"
+			dateTimePattern="MM/dd/yyyy HH:mm:ss"
+			errorText=""
+			useUTC="false"
+			/>
+		<mx:NumberValidator id="LengthValidator" source="{guardrailLengthInput}" property="text" domain="real" precision="0"
+							trigger="{guardrailLengthInput}" triggerEvent="change"/>
+	</fx:Declarations>
+	
+	
+	<s:HGroup>
+		<s:Button label="Inventory" enabled="{viewStack.selectedChild !=Inventory}" click="{viewStack.selectedChild=Inventory}"/>
+		<s:Button label="Attachments" enabled="{viewStack.selectedChild !=Attachments}" click="{viewStack.selectedChild=Attachments}"/>
+	</s:HGroup>
+	<views:CBViewStack id="viewStack" width="100%" height="100%" skinClass="skins.CBScrollableSkin">
+		<s:VGroup id="Inventory">
+			<s:VGroup id="inventoryGroup" gap="10" paddingLeft="20" paddingTop="20" width="100%">
+
+				<s:HGroup gap="50">
+					<s:HGroup verticalAlign="middle">
+						<s:Label text="Route:" fontWeight="bold"  />
+						<s:TextInput id="guardrailRouteInput" width="100" editable="false"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<s:Label text="Begin Milepost:" fontWeight="bold" />
+						<s:TextInput id="guardrailBegMPInput" width="100"  editable="false" text="{FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMPost().toFixed(3)}"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<s:Label text="End Milepost:" fontWeight="bold" />
+						<s:TextInput id="guardrailEndMPInput" width="100" editable="false"/>
+					</s:HGroup>
+				</s:HGroup>
+				<s:Spacer/>
+				<s:Spacer/>
+				<s:HGroup gap="90">
+					<s:VGroup horizontalAlign="left">
+						<s:HGroup verticalAlign="middle" id="GMatGroup"></s:HGroup>
+						<s:Spacer/>
+						<s:Spacer/>
+						<s:HGroup verticalAlign="middle" id="GPurposeGroup"></s:HGroup>
+						<s:Spacer/>
+						<s:Spacer/>
+						<s:HGroup verticalAlign="middle" id="GPlacementGroup"></s:HGroup>
+						<s:Spacer/>
+						<s:Spacer/>
+						<s:HGroup verticalAlign="middle">
+							<s:Label text="Length:" fontWeight="bold" textAlign="left"/>
+							<s:TextInput id="guardrailLengthInput" width="100" softKeyboardType="number" restrict="0-9"   change="calculateEndMP()"/>
+							<s:Label text="Feet" />
+							<s:Label text="(Required)"  fontSize="8" color="0xFF0000" />	
+						</s:HGroup>
+						
+					</s:VGroup>
+					<s:VGroup>
+						<s:VGroup>
+							<s:Button id="btnGuardrailCaptureEndLoc" label="Capture End Location" click="onCaptureEndLocation(event)"/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:CheckBox id="cbGuardrailAttachedToBridge" label="Attached to Bridge?" click="onAttachedToBridge(event)"/>
+						</s:VGroup>
+						<s:Spacer/>
+						<s:Spacer/>
+						<s:Spacer/>
+						<s:Spacer/>
+						<s:VGroup>
+<!--							<s:HGroup>
+								<s:Image id="Memo" buttonMode="true" width="40" height="40" click="memoCapture('GuardRailForm',event)"/>
+								<s:Image id="Voice" buttonMode="true" width="40" height="40" click="voiceCapture('GuardRailForm',event)"/>
+								<s:Image id="Capture"  buttonMode="true" width="40" height="40" click="imageCapture('GuardRailForm',event)"/> 
+							</s:HGroup>-->
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:Spacer/>
+							<s:HGroup verticalAlign="middle">
+								<!--<s:Label text="Insp Date:" fontWeight="bold" />-->
+								<s:Button label="Insp Date" fontWeight="bold" click="DatePicker_Click(event)"/>
+								<s:TextInput id="gInspDateInput" width="100"  text="{formatter.format(new Date())}" enabled="false"/>
+							</s:HGroup>
+						</s:VGroup>
+						<s:Spacer/>
+						<s:Spacer/>
+						<s:HGroup verticalAlign="middle" id="GConditionGroup"> </s:HGroup>
+					</s:VGroup>
+				</s:HGroup>
+				<s:Spacer/>
+				<s:Spacer/>
+				<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="90%" />
+			</s:VGroup>
+		</s:VGroup>
+		
+		<s:VGroup id ="Attachments"  paddingLeft="20" paddingTop="10">
+			<s:Label text="Inventory Attachments" fontWeight="bold"/>
+			<s:Group id ="InvAttachments"  height="99%">
+				<s:layout>
+					<s:TileLayout/>
+					
+				</s:layout>
+			</s:Group>
+		</s:VGroup>
+	</views:CBViewStack>
+	<s:HGroup width="100%">
+		<s:HGroup horizontalAlign="center" width="100%">
+			<s:Button label="Save" click="onSave();"/>
+			<s:Button label="Close" id="clbtn" click="handleCloseEvent();"/>
+		</s:HGroup>
+		<s:CheckBox label="Retire" id="retireChk" change="retireChk_changeHandler(event);"/>
+		<s:Button label="Move to Current Location" id="moveBtn"  click="moveBtn_changeHandler(event)" />
+	</s:HGroup>
+	
+	
+	
+</baseViews:BaseAssetTitleWindow>

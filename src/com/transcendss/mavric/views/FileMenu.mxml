@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<!-- containers\spark\myComponents\MyLoginForm.mxml -->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   title="File"
+			   skinClass="skins.MavricTitleWindowSkin"
+			    creationComplete="init(event)"
+			   close="handleCloseEvent();">
+	<s:layout>
+		<s:VerticalLayout paddingTop="10" paddingBottom="10" paddingRight="10" paddingLeft="10"/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.util.PopUpUtils;
+			import com.transcendss.mavric.views.componentviews.*;
+			import com.transcendss.transcore.events.*;
+			
+			import mx.core.Application;
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.PopUpEvent;
+			[Bindable]
+			private var application:Object = FlexGlobals.topLevelApplication;
+			
+			
+			private var loadRoutesWindow:LocalRoutesForm;
+			private var routeSelWindow:RouteSelector;
+			
+				
+			
+			// Handle the close button and Cancel button.
+			private function handleCloseEvent():void {
+				PopUpManager.removePopUp(this);
+			}            
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+			}
+			
+			// Handle the OK button.
+			private function processLogin():void {
+				// Check credentials (not shown) then remove pop up.
+				PopUpManager.removePopUp(this);
+			}
+			
+			
+			protected function saveRoute(event:Event):void{
+				try 
+				{
+					var mbEvent:MenuBarEvent = new MenuBarEvent(MenuBarEvent.ROUTE_SELECTOR_ENABLED,null, true, true);
+					dispatchEvent(mbEvent);
+				}
+				catch(error:TypeError){
+					//catch the occassional type error obtained when clicked on the menu container outside the item
+				}				
+				
+			}
+			/*
+			<mate:ListenerInjector eventType="{MenuBarEvent.ROUTE_SAVED}" method="saveCurrentRoute"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.ROUTE_LOADED}" method="loadSavedRoute"/>
+			
+			*/
+			
+			
+			
+			public function routeSaved():void
+			{
+				//display the setting form
+				//loadRoutesWindow = LocalRoutesForm(PopUpManager.createPopUp(this,LocalRoutesForm,false));
+				//PopUpManager.centerPopUp(loadRoutesWindow);
+			
+				//var menuEvent:MenuBarEvent=new MenuBarEvent(MenuBarEvent.ROUTE_SAVED,null,true,true);
+				//dispatchEvent(menuEvent);
+				
+				if(application.isCachedRoute)
+					FlexGlobals.topLevelApplication.TSSAlert("Route loaded from cached routes cannot be saved");
+				else
+					FlexGlobals.topLevelApplication.sldDiagram.saveLocalDiagram();
+				
+			
+				
+			}
+			
+			public function uploadData():void
+			{
+				FlexGlobals.topLevelApplication.sldDiagram.mavricConfiguredSync();
+			}
+			
+			
+			protected function routeLoad():void
+			{
+							
+				var menuEvent:MenuBarEvent=new MenuBarEvent(MenuBarEvent.ROUTE_LOADED,null,true,true);
+				dispatchEvent(menuEvent);
+				//routeSelWindow = RouteSelector(PopUpManager.createPopUp(this,RouteSelector,true));
+				//PopUpManager.centerPopUp(routeSelWindow);
+			}
+			
+			protected function boundaryLoad():void
+			{
+				if (!FlexGlobals.topLevelApplication.connected)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("WiFi is off. Please turn on WiFi, connect to a network, and try again.");
+				} else
+				{
+					PopUpManager.centerPopUp(PopUpManager.createPopUp(this, DownloadRoutesForm, false));
+				}
+				//PopUpManager.centerPopUp(PopUpManager.createPopUp(DisplayObject(Application.application), DownloadRoutesForm, false));
+			}
+			
+			protected function init(event:FlexEvent):void
+			{
+				PopUpUtils.closeAll(this);
+			}
+			
+		]]>
+	</fx:Script>
+	
+
+	<s:VGroup>
+		<s:Button label="Download Routes"
+				  click="boundaryLoad();" width="170"/>
+		<s:Button label="Load Route"
+				  click="routeLoad();" width="170"/>
+		<!--<s:Button label="Download Routes"
+				  click="boundaryLoad();" width="170"/>
+		<s:Button label="Load Route"
+				  click="routeLoad();" width="170"/>-->
+		<s:Button label="Save Current Route"
+				  click="routeSaved();"  width="170" /> 
+		<!--<s:Button label="Upload Data to Server" 
+				  click="uploadData();" />-->
+	</s:VGroup> 
+</s:TitleWindow>

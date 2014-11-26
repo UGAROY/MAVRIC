@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:events="events.*"
+			   close="handleCloseEvent();"
+			   creationComplete="init()"
+			   title="Print Options" width="400" height="260">
+	<s:layout>
+		<s:VerticalLayout verticalAlign="top" horizontalAlign="center" gap="10"/>
+	</s:layout>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+//			import com.sld.Diagram;
+//			import com.sld.components.Feature;
+//			import com.sld.components.Route;
+//			import com.sld.components.RouteInfoHUD;
+//			import com.util.ConfigurationManager;
+//			import com.util.Converter;
+//			
+//			import events.DataAccessEvent;
+//			import events.DataAttributesEvent;
+//			import events.PrintMapLoadEvent;
+//			
+//			import flash.display.Bitmap;
+//			import flash.display.BitmapData;
+//			
+//			import mx.containers.Canvas;
+//			import mx.core.FlexGlobals;
+//			import mx.core.IVisualElement;
+//			import mx.core.UIComponent;
+			import mx.managers.PopUpManager;
+			import spark.components.supportClasses.Range;
+//		
+//			import org.alivepdf.colors.RGBColor;
+//			import org.alivepdf.display.Display;
+//			import org.alivepdf.fonts.FontFamily;
+//			import org.alivepdf.fonts.Style;
+//			import org.alivepdf.layout.Orientation;
+//			import org.alivepdf.layout.Size;
+//			import org.alivepdf.layout.Unit;
+//			import org.alivepdf.pdf.PDF;
+//			import org.alivepdf.saving.Method;
+//			
+//			import spark.primitives.Graphic;
+			
+//			protected var printPDF:PDF;
+//			private var pSizeXPx:Number;
+//			private var pSizeYPx:Number;
+//			private var pMarginPx:Number;
+//			
+//			private var mSLDDiagram:Diagram;
+//			private var mSLDRoute:Route;
+//			private var mManager:ConfigurationManager;
+//			private var mSLDGraphicBD:BitmapData;
+//			private var mSLDHt:Number;
+//			private var mSLDWd:Number;
+//			private var mSLDScale:Number;
+//			private var mSLDViewMi:Number;
+//			private var mSLDRteName:String;
+//			private var mSLDBegMi:Number;
+//			private var mSLDEndMi:Number;
+//			private var rteSegTotal:int;
+			
+			private function init():void{
+				
+//				pSizeXPx = 792;
+//				pSizeYPx = 612;
+//				pMarginPx = 36;
+//				
+//				mSLDDiagram = FlexGlobals.topLevelApplication.sldDiagram;
+//				mSLDRoute = FlexGlobals.topLevelApplication.sldRoute;
+//				mManager = FlexGlobals.topLevelApplication.ConfigManager;
+//				
+//				mSLDGraphicBD = FlexGlobals.topLevelApplication.sldGraphicBD;
+//				
+//				mSLDHt = mSLDDiagram.sldHeight;
+//				mSLDWd = mSLDDiagram.dWidth;
+//				
+//				mSLDScale = mSLDDiagram.scale;
+//				mSLDViewMi = mSLDDiagram.viewMiLeft;
+//				
+//				mSLDRteName = mSLDRoute.name;
+//				mSLDBegMi = mSLDRoute.beginMi;
+//				mSLDEndMi = mSLDRoute.endMi;
+				//this.addEventListener(PrintMapLoadEvent.PRINTMAP_LOADED,printBitMapToFile);
+			}
+			
+			private function genTemplate():Sprite{
+				var tmplt:Sprite = new Sprite()
+//				var x1:int = 0;
+//				var y1:int = 0;
+//				var x2:int = pSizeXPx - (pMarginPx*2);
+//				var y2:int = pSizeYPx- (pMarginPx*2);				
+//
+//				tmplt.graphics.clear();
+//				tmplt.graphics.lineStyle(2,0x000000);
+//				tmplt.graphics.beginFill(0xdddddd,0.25);
+//				tmplt.graphics.moveTo(x1, y1);
+//				tmplt.graphics.lineTo(x2, y1);
+//				tmplt.graphics.lineTo(x2, y2);
+//				tmplt.graphics.lineTo(x1, y2);
+//				tmplt.graphics.lineTo(x1, y1);
+//				tmplt.graphics.moveTo(x1, mSLDHt);
+//				tmplt.graphics.lineTo(x2, mSLDHt);		
+				return tmplt;
+			}			
+			
+			private function genRouteImageTiles():void{
+
+//				var uPxPerPage:Number = pSizeXPx - (pMarginPx*2); // usable width per page
+//				var uMiPerPage:Number = Converter.scalePixelToMile(uPxPerPage,mSLDScale); //route miles per page			
+//				
+//				var numPages:int = Math.ceil(mSLDWd/uPxPerPage);				
+//				var curBegMi:Number = mSLDBegMi;
+//				var curEndMi:Number = curBegMi + uMiPerPage;				
+//				
+//				// init pdf, mode and page
+//				printPDF = new PDF(Orientation.LANDSCAPE, Unit.INCHES, Size.LETTER);
+//				printPDF.setDisplayMode (Display.REAL);				
+//								
+//				for (var i:int=0; i < numPages; i++){
+//					printPDF.addPage(Orientation.LANDSCAPE,Unit.INCHES, Size.LETTER,90);
+//
+//					// create template border
+//					var template:Sprite = genTemplate();
+//					// add route segment
+//					template.addChild(mSLDDiagram.printSLDSegment(mSLDRoute,mSLDDiagram.sldHeight,curBegMi,curEndMi));
+//
+//					// add crossing features
+//					template.addChild(mSLDDiagram.printStoredFeatures(curBegMi,curEndMi));
+//					
+//					printPDF.addImage(template,1,"Normal",null,false,"JPG",100,0.5,0.5);
+//					//setPrintStatus(i+1); //update progress bar
+//					
+//					// calculate new pts
+//					curBegMi = curEndMi;
+//					curEndMi = curBegMi + uMiPerPage;
+//					if (curEndMi > mSLDEndMi) curEndMi = mSLDEndMi;
+//					
+//				}
+//				
+//				// save local pdf
+//				var bytes:ByteArray = printPDF.savePDF(Method.LOCAL);
+//				var f:FileReference = new FileReference();
+//				f.save(bytes,"sld.pdf");
+//				
+//				//statusGroup.includeInLayout = false;
+			}
+
+			public function handlePDFPrintEvent():void {
+				//statusGroup.includeInLayout = true;
+//				genRouteImageTiles();
+
+			}	
+			
+			public function handlePrintEvent():void {
+				//
+			}
+			
+			private function handleCloseEvent():void {
+				PopUpManager.removePopUp(this);
+			} 
+			
+			// Event handler function to set the value of the 
+			// ProgressBar control.
+			private function setPrintStatus(curSeg:int):void
+			{
+//				var curPctValue:int =  Math.round((curSeg/rteSegTotal) * 100);
+//				if(curSeg <= rteSegTotal)
+//				{
+//					statusbar.setProgress(curSeg,rteSegTotal);
+//					statusbar.label= "CurrentProgress" + " " + curPctValue + "%";
+//				}			
+			}
+		]]>
+	</fx:Script>
+	
+		
+	<s:Group id="sldPrintGroup" width="100%">
+		<s:layout>
+			<s:VerticalLayout gap="10" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+		</s:layout>
+		
+		<s:HGroup horizontalAlign="left" verticalAlign="top" width="100%">
+			
+			<s:BorderContainer id="diagramCompBorder" cornerRadius="3" borderWeight="1" height="100%" width="35%"
+							   borderColor="0x444444" dropShadowVisible="true" backgroundColor="0xffffff" >
+				<s:layout>
+					<s:VerticalLayout gap="10" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+				</s:layout>
+				<s:VGroup width="100%" verticalAlign="middle">
+					<s:Label text="Components"/>
+					<s:CheckBox label="Route Diagram" selected="true"/>
+					<s:CheckBox label="Feature Diagram" selected="true"/>
+					<s:CheckBox label="Overview Map" selected="false" enabled="false"/>
+					<s:CheckBox label="Tracking Map" selected="false" enabled="false"/>
+				</s:VGroup>
+			</s:BorderContainer>
+			<s:BorderContainer id="printRangeBorder" cornerRadius="3" borderWeight="1" height="100%" width="65%"
+							   borderColor="0x444444" dropShadowVisible="true" backgroundColor="0xffffff">	
+				<s:layout>
+					<s:VerticalLayout gap="10" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+				</s:layout>				
+				<s:VGroup width="100%" verticalAlign="middle">
+					<s:Label text="Print Range"/>
+					<s:RadioButton value="pRange" label="All" selected="true"/>
+					<s:RadioButton value="pRange" label="Current View"/>
+					<s:HGroup verticalAlign="middle" paddingTop="5">
+						<s:RadioButton value="pRange" label="From: "/><s:DropDownList id="fMile" width="50" enabled="false"/><s:Label text="To"/><s:DropDownList id="tMile" width="50"  enabled="false"/>
+					</s:HGroup>	
+				</s:VGroup>
+			</s:BorderContainer>
+		</s:HGroup>
+		<s:HGroup horizontalAlign="center" width="100%" paddingTop="10">
+			<s:Button label="Print" click="handlePrintEvent()" enabled="false"/><mx:Spacer width="40"/><s:Button label="Print To PDF" click="handlePDFPrintEvent()" /><mx:Spacer width="40"/><s:Button label="Cancel" click="handleCloseEvent()" />
+		</s:HGroup>
+		<s:HGroup id="statusGroup" width="100%" paddingTop="10" includeInLayout="false" >
+			<!-- <mx:ProgressBar id="statusbar" indeterminate="true"  includeInLayout="false" indeterminateMoveInterval="10" labelPlacement="bottom" minimum="0" maximum="100" bottom="20"
+							color="0x323232" label="" direction="right" mode="manual" width="100%"/> -->
+			
+			
+		</s:HGroup>		
+
+	</s:Group>
+
+	</s:TitleWindow>

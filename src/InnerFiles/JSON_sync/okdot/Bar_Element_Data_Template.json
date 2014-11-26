@@ -1,0 +1,542 @@
+[
+    {
+        "BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "1",
+            "DESCRIPTION": "COST_CENTER",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "2",
+            "DESCRIPTION": "CONST_YEAR",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "3",
+            "DESCRIPTION": "DISTRICT",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "4",
+            "DESCRIPTION": "MEDIAN_TYPE",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "5",
+            "DESCRIPTION": "MEDIAN_WIDTH",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "6",
+            "DESCRIPTION": "SHOULDER_MATERIAL",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "7",
+            "DESCRIPTION": "SHOULDER_THICKNESS",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "8",
+            "DESCRIPTION": "SUFF_RATING",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "9",
+            "DESCRIPTION": "SURFACE_MATERIAL",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "10",
+            "DESCRIPTION": "NUMBER_OF_LANES",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	}
+]

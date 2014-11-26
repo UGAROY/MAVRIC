@@ -1,0 +1,17 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+.AttrLayout{
+	font-weight:normal;
+}
+
+.AttrTitle{
+	color: #444444;
+	font-size:14px;
+	font-weight:bold;
+}
+
+.VideoImage{
+	border: 1px thin solid;
+}

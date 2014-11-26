@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:controllers="com.transcendss.mavric.sld.controllers.*"
+		 width="100%" height="100%"
+		 xmlns:mate="http://mate.asfusion.com/">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<mate:Dispatcher id="myDispatcher" />
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.google.maps.*;
+			import com.transcendss.transcore.events.*;
+			
+			private function dispatchMapEvent(event:MapEvent):void
+			{
+				var mapEv:MapInitEvent = new MapInitEvent(event.type, event.feature,3, true,true );
+				myDispatcher.dispatchEvent(mapEv);				
+			}
+			
+			public function setMapOptions(event:MapInitEvent):void{
+				event.stopPropagation();
+				map.setInitOptions( MapOptions(event.MapOptions));
+			}
+		]]>
+	</fx:Script>
+	<s:BorderContainer id="map3DBorder" cornerRadius="3" borderWeight="1" 
+					   borderColor="0x444444" dropShadowVisible="true"
+					   backgroundColor="0xffffff" width="100%" height="100%">
+		
+		<s:Group id="mapGroup3D" clipAndEnableScrolling="true" horizontalScrollPosition="0" width="100%" height="100%" >
+			<s:layout>
+				<s:HorizontalLayout/>
+			</s:layout>
+			<maps:Map3D id="map" xmlns:maps="com.google.maps.*"    
+						key="ABQIAAAAzpmvOqIDlAeq_blvXCvwkxQGPLZp1aYYN9bxyrHAL-mbMEQoPBS55gbPevdlVSgr3mJ1Oh2gTSLb6g"               
+						width="100%" height="100%" mapevent_mappreinitialize="dispatchMapEvent(event)" sensor="false"/>
+		</s:Group>
+	</s:BorderContainer>
+</s:Group>

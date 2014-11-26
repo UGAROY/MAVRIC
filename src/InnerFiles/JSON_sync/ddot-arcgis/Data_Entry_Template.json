@@ -1,0 +1,469 @@
+[
+    {
+        "DATA_ENTRY_TEMPLATE": {
+            "TITLE": "Edit Signs",
+            "SUBTITLE": "",
+            "ASSET_TYPE": "1",
+            "HEIGHT": "750",
+            "WIDTH": "1020",
+            "RETIRE_AVAILABLE": "True",
+            "MOVE_AVAILABLE": "True",
+            "TABS": [
+                {
+                    "ID": "Inventory 1",
+                    "TYPE": "Inventory",
+                    "ENABLEGEOTAGS": "True",
+                    "GROUPS": [
+                        {
+                            "TYPE": "hgroup",
+                            "TITLE": "",
+                            "X": "0",
+                            "Y": "10",
+                            "GAP": "10",
+                            "HEIGHT": "50",
+                            "WIDTH": "150",
+                            "CONTROLS": [
+                                {
+                                    "ID": "RID",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Route ID",
+                                    "COLUMN": "RID",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "MEAS",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Milepoint",
+                                    "COLUMN": "MEAS",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "MODIFY_DT",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Last modified on",
+                                    "COLUMN": "MODIFY_DT",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "10",
+                            "Y": "80",
+                            "HEIGHT": "500",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                
+                                {
+                                    "ID": "BARCODEID",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Bar Code ID",
+                                    "COLUMN": "BARCODEID",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNSPECIFICTEXT",
+                                    "TYPE": "TextArea",
+                                    "LABEL": "Sign Specific Text",
+                                    "COLUMN": "SIGNSPECIFICTEXT",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert",
+                                    "NumLines": "4"
+                                },
+                                {
+                                    "ID": "COMMENTS",
+                                    "TYPE": "TextArea",
+                                    "LABEL": "Comments",
+                                    "COLUMN": "COMMENTS",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert",
+                                    "NumLines": "5"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "345",
+                            "Y": "73",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                
+                                {
+                                    "ID": "DIRECTION",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Direction",
+                                    "COLUMN": "DIRECTION",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNHEIGHT_INCH",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Height (In)",
+                                    "COLUMN": "SIGNHEIGHT_INCH",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNWIDTH_INCH",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Width (In)",
+                                    "COLUMN": "SIGNWIDTH_INCH",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SHEETING",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Sheeting",
+                                    "COLUMN": "SHEETING",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNRETROREFLECTIVITY",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Retro Reflectivity",
+                                    "COLUMN": "SIGNRETROREFLECTIVITY",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "675",
+                            "Y": "73",
+                            "HEIGHT": "450",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "SIGNMOUNTINGTYPE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Mounting Type",
+                                    "COLUMN": "SIGNMOUNTINGTYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "GUIDESIGNTYPE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Guide Sign Type",
+                                    "COLUMN": "GUIDESIGNTYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "INFOSIGNTYPE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Info Sign Type",
+                                    "COLUMN": "INFOSIGNTYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "REGSIGNTYPE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Reg. Sign Type",
+                                    "COLUMN": "REGSIGNTYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": "Inspection",
+                    "TYPE": "Inspection",
+                    "ENABLEGEOTAGS": "True",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "0",
+                            "Y": "10",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "SIGNINSPECTIONDATE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Inspection Date",
+                                    "COLUMN": "SIGNINSPECTIONDATE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNCONDITION",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Sign Condition",
+                                    "COLUMN": "SIGNCONDITION",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": "Attachments",
+                    "TYPE": "Attachments",
+                    "ENABLEGEOTAGS": "False",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "InvAttach",
+                            "X": "50",
+                            "Y": "10",
+                            "HEIGHT": "400",
+                            "WIDTH": "500",
+                            "CONTROLS": []
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "DATA_ENTRY_TEMPLATE": {
+            "TITLE": "Edit Signs",
+            "SUBTITLE": "",
+            "ASSET_TYPE": "2",
+            "HEIGHT": "750",
+            "WIDTH": "1020",
+            "RETIRE_AVAILABLE": "True",
+            "MOVE_AVAILABLE": "True",
+            "TABS": [
+                {
+                    "ID": "Inventory 1",
+                    "TYPE": "Inventory",
+                    "ENABLEGEOTAGS": "True",
+                    "GROUPS": [
+                        {
+                            "TYPE": "hgroup",
+                            "TITLE": "",
+                            "X": "0",
+                            "Y": "10",
+                            "GAP": "10",
+                            "HEIGHT": "50",
+                            "WIDTH": "150",
+                            "CONTROLS": [
+                                {
+                                    "ID": "RID",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Route ID",
+                                    "COLUMN": "RID",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "MEAS",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Milepoint",
+                                    "COLUMN": "MEAS",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "MODIFY_DT",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Last modified on",
+                                    "COLUMN": "MODIFY_DT",
+                                    "EDITABLE": false,
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "10",
+                            "Y": "80",
+                            "HEIGHT": "500",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                
+                                {
+                                    "ID": "BARCODEID",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Bar Code ID",
+                                    "COLUMN": "BARCODEID",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "DIRECTION",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Direction",
+                                    "COLUMN": "DIRECTION",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNSPECIFICTEXT",
+                                    "TYPE": "TextArea",
+                                    "LABEL": "Sign Specific Text",
+                                    "COLUMN": "SIGNSPECIFICTEXT",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert",
+                                    "NumLines": "3"
+                                },
+                                {
+                                    "ID": "COMMENTS",
+                                    "TYPE": "TextArea",
+                                    "LABEL": "Comments",
+                                    "COLUMN": "COMMENTS",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert",
+                                    "NumLines": "4"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "345",
+                            "Y": "73",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "SIGNHEIGHT_INCH",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Height (In)",
+                                    "COLUMN": "SIGNHEIGHT_INCH",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNWIDTH_INCH",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Width (In)",
+                                    "COLUMN": "SIGNWIDTH_INCH",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SHEETING",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Sheeting",
+                                    "COLUMN": "SHEETING",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNRETROREFLECTIVITY",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Retro Reflectivity",
+                                    "COLUMN": "SIGNRETROREFLECTIVITY",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        },
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "675",
+                            "Y": "73",
+                            "HEIGHT": "450",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "SIGNMOUNTINGTYPE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Mounting Type",
+                                    "COLUMN": "SIGNMOUNTINGTYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "GUIDESIGNTYPE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Guide Sign Type",
+                                    "COLUMN": "GUIDESIGNTYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "INFOSIGNTYPE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Info Sign Type",
+                                    "COLUMN": "INFOSIGNTYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "REGSIGNTYPE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Reg. Sign Type",
+                                    "COLUMN": "REGSIGNTYPE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": "Inspection",
+                    "TYPE": "Inspection",
+                    "ENABLEGEOTAGS": "True",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "",
+                            "X": "0",
+                            "Y": "10",
+                            "HEIGHT": "460",
+                            "WIDTH": "200",
+                            "CONTROLS": [
+                                {
+                                    "ID": "SIGNINSPECTIONDATE",
+                                    "TYPE": "TextInput",
+                                    "LABEL": "Inspection Date",
+                                    "COLUMN": "SIGNINSPECTIONDATE",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                },
+                                {
+                                    "ID": "SIGNCONDITION",
+                                    "TYPE": "DropDownButton",
+                                    "LABEL": "Sign Condition",
+                                    "COLUMN": "SIGNCONDITION",
+                                    "EDITABLE": "TRUE",
+                                    "LAYOUT": "Vert"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "ID": "Attachments",
+                    "TYPE": "Attachments",
+                    "ENABLEGEOTAGS": "False",
+                    "GROUPS": [
+                        {
+                            "TYPE": "vgroup",
+                            "TITLE": "InvAttach",
+                            "X": "50",
+                            "Y": "10",
+                            "HEIGHT": "400",
+                            "WIDTH": "500",
+                            "CONTROLS": []
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+]

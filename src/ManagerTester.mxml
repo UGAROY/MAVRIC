@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" applicationDPI="160" applicationComplete="init(event)"
+			   xmlns:controllers="com.transcendss.mavric.controllers.*"
+			   xmlns:mate="http://mate.asfusion.com/">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.asfusion.mate.actionLists.Scope;
+			import com.asfusion.mate.core.Cache;
+			import com.asfusion.mate.core.SmartObject;
+			import com.transcendss.mavric.events.JSONParseEvent;
+			import com.transcendss.mavric.events.SaveEvent;
+			import com.transcendss.mavric.managers.AssetManager;
+			import com.transcendss.mavric.views.AssetEditForm;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			
+			import mx.events.FlexEvent;
+			
+			private var _spriteMoveGroup:Array;
+			public var am : AssetManager;
+			private var globalDispatcher : IEventDispatcher;
+			
+			public function init(e:Event):void
+			{
+				_spriteMoveGroup = new Array();
+				globalDispatcher = new EventDispatcher;
+				//am = Cache.getCachedInstance(AssetManager, "global", new Scope(new Event("Custom"), true, EventMap)) as AssetManager;
+				//am.createAsset("CULV");
+				
+ 			}
+			
+			public function catcher(e:SaveEvent):void
+			{
+				am.saveAsset(e.target as BaseAsset);
+			}
+			
+			public function assetReadyCatcher(e:JSONParseEvent):void
+			{
+				//am.onAssetComplete(e);
+				//addElement(am.aef);
+			}
+
+			public function get spriteMoveGroup():Array
+			{
+				return _spriteMoveGroup;
+			}
+
+			public function set spriteMoveGroup(value:Array):void
+			{
+				_spriteMoveGroup = value;
+			}
+
+			
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+</s:Application>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		width="100%">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
+			
+			import mx.core.FlexGlobals;
+			
+			private var imgCaptureFunc:Function=null;
+			private var videoCaptureFunc:Function=null;
+			private var voiceCaptureFunc:Function=null;
+			private var source:String="";
+			
+			[Bindable]
+			private var gtManager:GeotagsManager = new GeotagsManager();
+			
+			
+			public function init(sourceM:String, includeImage:Boolean = false, 
+								 includeVideo:Boolean= false, includeVoice:Boolean=false):void
+			{
+				source = sourceM;
+				if(includeImage)
+				{
+					imageCaptureBtn.visible = true;
+					imageCaptureBtn.includeInLayout = true;
+				}
+				if(includeVideo)
+				{
+					videoCaptureBtn.visible = true;
+					videoCaptureBtn.includeInLayout = true;
+				}
+				if(includeVoice)
+				{
+					voiceCaptureBtn.visible = true;
+					voiceCaptureBtn.includeInLayout = true;
+				}
+				
+			}
+			
+			
+
+			
+			protected function imageCaptureBtn_clickHandler(event:MouseEvent):void
+			{
+				FlexGlobals.topLevelApplication.setBusyStatus(true);
+				FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource = source;
+				
+				var tmpEvent:CameraEvent = new CameraEvent(CameraEvent.OPENCONTROL, true, true);
+				dispatchEvent(tmpEvent);	
+			}
+			
+			protected function videoCaptureBtn_clickHandler(event:MouseEvent):void
+			{
+				FlexGlobals.topLevelApplication.setBusyStatus(true);
+				FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource = source;
+				
+				var tmpEvent:videoEvent = new videoEvent(videoEvent.OPENCONTROL, true, true);
+				dispatchEvent(tmpEvent);
+			}
+			
+			protected function voiceCaptureBtn_clickHandler(event:MouseEvent):void
+			{
+				FlexGlobals.topLevelApplication.setBusyStatus(true);
+				FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource = source;
+				
+				var tmpEvent:VoiceEvent = new VoiceEvent(VoiceEvent.OPENCONTROL, true, true);
+				dispatchEvent(tmpEvent);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+
+	</fx:Declarations>
+	<s:Rect top="0" bottom="0" left="20" right="0" radiusX="3" radiusY="3">
+		<s:stroke>
+			<s:SolidColorStroke color="black"/> 
+		</s:stroke>
+	</s:Rect>
+	<s:VGroup paddingLeft="20" paddingTop="10" paddingRight="10" paddingBottom="10" gap="20">
+		<s:HGroup gap="20">
+			<s:Spacer width="20"/>
+			<s:Label text="Add Attachment" />
+		</s:HGroup>
+		<s:HGroup gap="20">
+			<s:Spacer width="20"/>
+			<s:Image id="imageCaptureBtn" source="{gtManager.camera}" click="imageCaptureBtn_clickHandler(event)"  buttonMode="true" width="40" height="40" visible="false" includeInLayout="false"/>
+			<s:Image id="videoCaptureBtn" source="{gtManager.video}" click="videoCaptureBtn_clickHandler(event)" buttonMode="true" width="40" height="40" visible="false" includeInLayout="false" /> 
+			<s:Image id="voiceCaptureBtn" source="{gtManager.voice}" click="voiceCaptureBtn_clickHandler(event)" buttonMode="true" width="40" height="40" visible="false" includeInLayout="false"/>
+		</s:HGroup>
+	</s:VGroup>
+	
+
+	
+</s:Group>

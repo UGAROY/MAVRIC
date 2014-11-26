@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="User Selection and Session Configuration"
+		close="handleCloseEvent();" 
+		width="430" height="500"
+		xmlns:mate="http://mate.asfusion.com/" xmlns:addOns="MAVRIC2.views.addOns.*"
+		backgroundColor="0xFFFFCC"
+		creationComplete="init()"
+		skinClass="skins.MavricTitleWindowSkin">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.asfusion.mate.events.Dispatcher;
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.managers.SettingsManager;
+			import com.transcendss.mavric.util.FileUtility;
+			import com.transcendss.mavric.util.PopUpUtils;
+//			import com.transcendss.nativeExtensions.GPSTools.GPSHandler;
+			import com.transcendss.transcore.events.MenuBarEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			[Embed(source="../../../../../images/list.png")] protected var milist:Class
+			//
+			private var inspectOne:String;
+			[Bindable]
+			private var inspectors:ArrayCollection;
+			[Bindable]
+			private var inspectors2:ArrayCollection;
+			[Bindable]
+			private var gpsUnits:ArrayCollection;
+			private var menuEvent:MenuBarEvent;
+			private var dbManager:MAVRICDBManager;
+			private var setMan:SettingsManager = new SettingsManager();
+			
+//			private var tmpGPSH:GPSHandler = null;
+			private var dispatcher:Dispatcher = new Dispatcher();
+			private var fileUtil:FileUtility = new FileUtility();
+			[Bindable]
+			private var boundsDP:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var boundsIndex:int = -1;
+			
+			private function init():void{
+				PopUpUtils.closeAll(this);
+				this.closeButton.visible=true;
+				inspectOne=new String();
+				dbManager = MAVRICDBManager.newInstance();
+				
+				gpsUnits=new ArrayCollection();			
+				
+				var boundryTy:String = ConfigUtility.get("main_boundry_ty");
+
+				boundsDP = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain(boundryTy.toUpperCase());
+				var item:String = setMan.getSetting("DEFAULT_BOUNDRY");
+				boundsIndex =  item ? parseInt(item) : ConfigUtility.getInt("default_boundry");
+				defBoundryVal.text = boundsDP.getItemAt(boundsIndex).DESCRIPTION;
+				defBoundryLbl.text = "SELECT "+ boundryTy.toUpperCase(); 
+				getUserDomainByBoundry(defBoundryVal.text);
+
+			}
+			
+			private function getUserDomainByBoundry(boundry:String):void
+			{
+//				if (!dbManager.isUserDomainAvailable())
+//				{
+//					requestUsers(boundry,new mx.rpc.Responder(populateUser, onFail));
+//				}
+//				else
+//					inspectors=dbManager.getInspectorsByBoundry(boundry);
+//				inspectors2=inspectors;
+				
+				inspectors = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getUsersDomainByBoundry(boundry);
+				inspectors2 = inspectors;
+			}
+			
+//			public function requestUsers(district:String, resp:mx.rpc.Responder= null):Object
+//			{
+//				var httpService:HTTPService = new HTTPService();
+//				
+//				httpService.url = ConfigUtility.get("serviceURL") +"Users";// baseAsset.get___();
+//				
+//				httpService.resultFormat = "text";
+//				
+//				var token:AsyncToken = httpService.send();
+//				
+//				if (resp)
+//					token.addResponder(resp);
+//				
+//				return token.result;
+//			}
+//			
+//			protected function onFail(ev:Object):void
+//			{
+//				
+//			}
+//			public function populateUser(ev:ResultEvent):void
+//			{
+//				inspectors = new ArrayCollection();
+//				var userLst:ArrayCollection = new ArrayCollection(JSON.parse(ev.result as String) as Array);
+//				
+//				for each(var usr:Object in userLst)
+//				{
+//					dbManager.insertUser(usr.USER_NAME, usr.BOUNDRY);
+//					if(defBoundryVal.text == usr.BOUNDRY || usr.BOUNDRY=="All Divisions")
+//						inspectors.addItem({USER_NAME: usr.USER_NAME});
+//				}
+//				
+//				inspectors2=inspectors;
+//			}
+			
+			private function handleCloseEvent():void {
+				if(inspectOne == null || inspectOne==""){
+					err.text="Please select User 1!";
+					err.visible=true;
+				}
+				else
+				{
+					var insp1menuEvent:MenuBarEvent=new MenuBarEvent(MenuBarEvent.INSP1_CHANGED,null,true,true);
+					insp1menuEvent.itemToggled=true;
+					insp1menuEvent.insp1=inspectOne;
+					dispatchEvent(insp1menuEvent);
+					
+					
+					var insp2menuEvent:MenuBarEvent=new MenuBarEvent(MenuBarEvent.INSP2_CHANGED,null,true,true);
+					insp2menuEvent.insp2=inspt2.text==""?"None":inspt2.text;
+					insp2menuEvent.itemToggled=true;
+					dispatchEvent(insp2menuEvent);
+					PopUpManager.removePopUp(this);
+				}
+					
+			} 
+			
+			private function showInspect1():void{
+				inspectOPop.open(this,false);
+				PopUpManager.centerPopUp(inspectOPop);
+			}
+			private function showInspect2():void{
+				inspectTPop.open(this,false);
+				PopUpManager.centerPopUp(inspectTPop);
+			}
+			
+			private function closeInpsectOne():void{
+				inspectOPop.close(true,ilist.selectedItem);
+				inspectOne=String(ilist.selectedItem.USER_NAME);
+				
+				inspt1.text=inspectOne;
+				
+			}
+			private function openDistrictSelect(event:MouseEvent):void
+			{
+				boundaryPopUp.open(this, false);
+				PopUpManager.centerPopUp(boundaryPopUp);
+			}
+			private function changeDistrict():void
+			{
+				defBoundryVal.text = boundsDP.getItemAt(boundsList.selectedIndex).DESCRIPTION;
+				boundaryPopUp.close(true, boundsList.selectedIndex);
+				boundsIndex = boundsList.selectedIndex;
+				getUserDomainByBoundry(defBoundryVal.text);
+			}
+			private function closeInpsectTwo():void{
+				inspectTPop.close(true,ilist2.selectedItem);
+				inspt2.text=ilist2.selectedItem.USER_NAME;
+			}
+			
+			private function showBTGPS():void{
+				BTGPSPop.open(this,false);
+				PopUpManager.centerPopUp(BTGPSPop);
+			}
+			
+			private function closeBTGPS():void{
+				///Comment out in ios-------------------
+//				BTGPSPop.close(true,btgpslist.selectedItem);
+//				if (tmpGPSH != null)
+//				{
+//					var selgps:String = String(btgpslist.selectedItem);
+//					tmpGPSH.connectDevice(btgpslist.selectedIndex);
+//					FlexGlobals.topLevelApplication.btGPSHandler = tmpGPSH;
+//				}
+				///End Comment out in ios-----------------
+			}
+			
+			private function showBTDevices():void
+			{
+				///Comment out in ios-------------------
+//				try
+//				{
+//					tmpGPSH = new GPSHandler();
+//					FlexGlobals.topLevelApplication.btGPSHandler = tmpGPSH;
+//					var tmpArray:Array = tmpGPSH.getDevices();
+//					gpsUnits.removeAll();
+//					for (var i:int=0;i<tmpArray.length;i++)
+//					{
+//						gpsUnits.addItem(tmpArray[i]);
+//					}
+//					showBTGPS(); 
+//				} catch (er:Error)
+//				{
+//					trace(er.message);
+//				}
+				///End Comment out in ios-------------------
+				
+			}
+			
+			protected function openRouteSelect(event:Event):void{
+				
+				//clearDomains checkbox has been removed from this form (commented out below)
+				/*if (clearDomains.selected)
+				{
+					dbManager.deleteCulvertDomains();
+					dbManager.clearCachedRoutes();
+					FlexGlobals.topLevelApplication.GlobalComponents.assetManager.clearAssetTables();
+					//FlexGlobals.topLevelApplication.GlobalComponents.assetManager
+					dbManager.dropGeotagsTable();
+					dbManager.clearMapImageTable();
+					fileUtil.deleteGeoTags();
+					fileUtil.deleteMapImages();
+				}*/
+				if (cacheMaps.selected)
+				{
+					FlexGlobals.topLevelApplication.cacheLocalMaps = true;
+				} else
+				{
+					FlexGlobals.topLevelApplication.cacheLocalMaps = false;
+				}
+				if(inspectOne == null || inspectOne==""){
+					err.text="Please select User 1!";
+					err.visible=true;
+				}
+				else
+				{
+					try 
+					{
+						
+						FlexGlobals.topLevelApplication.useInternalGPS = internalGPSbtn.selected;
+						var insp1menuEvent:MenuBarEvent=new MenuBarEvent(MenuBarEvent.INSP1_CHANGED,null,true,true);
+						insp1menuEvent.itemToggled=true;
+						insp1menuEvent.insp1=inspectOne;
+						dispatchEvent(insp1menuEvent);
+						
+						
+						var insp2menuEvent:MenuBarEvent=new MenuBarEvent(MenuBarEvent.INSP2_CHANGED,null,true,true);
+						insp2menuEvent.insp2=inspt2.text==""?"None":inspt2.text;
+						insp2menuEvent.itemToggled=true;
+						dispatchEvent(insp2menuEvent);
+						
+						
+						if(FlexGlobals.topLevelApplication.userFormCaller == "Main App")
+						{
+							if (FlexGlobals.topLevelApplication.connected)
+							{
+								var mbEvent:MenuBarEvent = new MenuBarEvent(MenuBarEvent.ROUTE_SELECTOR_ENABLED,null, true, true);
+								dispatchEvent(mbEvent);
+							}
+							else
+							{
+								var menuEvent:MenuBarEvent=new MenuBarEvent(MenuBarEvent.ROUTE_LOADED,null,true,true);
+								dispatchEvent(menuEvent);
+							}
+						}
+						handleCloseEvent();
+						
+					}
+					catch(error:TypeError)
+					{
+						FlexGlobals.topLevelApplication.TSSAlert(error.message);
+					}
+				
+				}
+				
+			}
+					
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<s:SkinnablePopUpContainer id="inspectOPop" width="200"  height="300"  name="Select User"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="ilist" width="100%" change="closeInpsectOne()" labelField="USER_NAME" dataProvider="{inspectors}" height="100%" fontSize="18" allowMultipleSelection="false" />
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="inspectTPop" width="200"  height="300"  name="Select User 2"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="ilist2" width="100%" change="closeInpsectTwo()" labelField="USER_NAME" dataProvider="{inspectors2}" height="100%" fontSize="18" allowMultipleSelection="false" />
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		<s:SkinnablePopUpContainer id="boundaryPopUp" width="300" height="400" name="Select Type"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="boundsList" width="100%" height="100%" allowMultipleSelection="false"
+							change="{changeDistrict()}" dataProvider="{boundsDP}" fontSize="18"
+							labelField="DESCRIPTION" selectedIndex="{boundsIndex}"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="BTGPSPop" width="200"  height="300"  name="Select GPS Device"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%"  skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="btgpslist" width="100%" change="closeBTGPS()" dataProvider="{gpsUnits}" height="100%" fontSize="18" allowMultipleSelection="false" />
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		
+
+		
+		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout verticalAlign="top" horizontalAlign="center"/>
+	</s:layout>
+	<s:VGroup gap="20" width="100%" horizontalAlign="center" height="400">
+		<s:Form width="100%" backgroundColor="0xFFFFCC" height="400">
+			<s:FormItem width="100%" backgroundColor="0xFFFFCC">
+				<s:HGroup  gap="15" verticalAlign="middle">	
+					<s:VGroup horizontalAlign="center">
+						<s:Image  width="35" height="35" source="{milist}" toolTip="Select" click="openDistrictSelect(event);"/>
+						<s:Label text="SELECT DISTRICT" id="defBoundryLbl"  fontSize="12"/>
+					</s:VGroup>
+					<s:Label id="defBoundryVal" color="#000000" textDecoration="underline" fontWeight="bold" />
+				</s:HGroup>
+			</s:FormItem>
+			<s:FormItem width="100%" backgroundColor="0xFFFFCC">
+				<s:HGroup  gap="15" verticalAlign="middle">		
+					<s:VGroup horizontalAlign="center">
+						<s:Image  width="35" height="35" source="{milist}" toolTip="Select" click="showInspect1();"/>
+						<s:Label text="SELECT USER 1  "  fontSize="12"/>
+						<s:Label text="(Required)"  fontSize="8" color="0xFF0000"/>
+						
+					</s:VGroup>
+					<s:Label id="inspt1" color="#000000" textDecoration="underline" fontWeight="bold" />
+				</s:HGroup>
+			</s:FormItem>
+			<s:FormItem width="100%" backgroundColor="0xFFFFCC">
+				<s:HGroup gap="15"  verticalAlign ="middle">
+					<s:VGroup horizontalAlign="center">
+						<s:Image width="35" height="35" source="{milist}" toolTip="Select" click="showInspect2()"/>
+						<s:Label text="SELECT USER 2  "  fontSize="12"/>
+						<s:Label text="(Optional)"  fontSize="8" color="0xFF0000"/>
+					</s:VGroup>	
+					<s:Label id="inspt2" color="#000000" textDecoration="underline" fontWeight="bold" />
+				</s:HGroup>
+			</s:FormItem>
+			
+			<s:FormItem width="100%" backgroundColor="0xFFFFCC">
+				<s:HGroup gap="15" verticalAlign="middle">
+					<s:Label text="GPS Type:"/>
+					<s:RadioButton id="internalGPSbtn" label="Internal" selected="true"/>
+					<s:RadioButton id="btGPSBtn" label="Bluetooth" click="showBTDevices()"/>
+					
+				
+				</s:HGroup>
+			</s:FormItem>
+			<s:FormItem backgroundColor="0xFFFFCC">
+				<s:VGroup verticalAlign="middle" horizontalAlign="center" width="100%">
+					<s:HGroup verticalAlign="middle" width="100%">
+						
+						<!--<s:CheckBox id="clearDomains" label="Clear Data?" />-->
+						<s:Spacer></s:Spacer>
+						<!--<s:Spacer></s:Spacer>-->
+						<s:CheckBox id="cacheMaps" label="Cache Maps?" />
+						<!--<s:Spacer></s:Spacer>
+						<s:Spacer></s:Spacer>-->
+						<s:Spacer></s:Spacer>
+						<!--<s:Button label="Cancel" click="handleCloseEvent()"/> -->
+					</s:HGroup>
+					<s:Button label="Start" click="openRouteSelect(event)"/>
+					<s:Label id="err" color="0xFF0000" visible="false" />
+				</s:VGroup>
+				
+			</s:FormItem>
+			
+		</s:Form>
+		
+	</s:VGroup>
+</s:TitleWindow>

@@ -1,0 +1,19 @@
+[
+	{"label": "File", "children": [
+	    {"label": "Save Current Route", "enabled": "true", "name":"routeSave", "class":"submenuitem"},
+	    {"label": "Load Route", "type": "normal", "name":"routeLoad", "class":"submenuitem"}
+	    ]},
+	{"label": "Edit", "children": [
+	    ]},
+	{"label": "View", "children": [
+		{"label": "Full Screen", "type":"check","name":"fullscreen", "class":"submenuitem"},
+	    {"label": "Route Selector", "enabled": "true", "name":"routeSelector", "class":"submenuitem"},
+	    {"label": "Video Log", "type": "check", "name":"drive", "class":"submenuitem"},
+	    {"label": "Overview Map", "type": "check", "name":"overview", "class":"submenuitem"},
+	    {"label": "Control Bar", "type": "check","name":"controlbar", "toggled": "true", "class":"submenuitem"}
+	    ]},
+	{"label": "Tools", "children": [
+	    {"label": "Magnifier", "enabled": "true", "name":"magnifier", "class":"submenuitem"}
+	    ]},
+	{"label": "Settings", "name":"settings"}
+]

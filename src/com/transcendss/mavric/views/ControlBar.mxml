@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="100%" height="100%"
+		 creationComplete="init()">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.db.CachedRoute;
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.*;
+			import com.transcendss.mavric.handlers.GPSMessageHandler;
+			import com.transcendss.mavric.managers.ConfigurationManager;
+			import com.transcendss.mavric.util.TSSRectangle;
+			import com.transcendss.mavric.views.SettingsMenu;
+			import com.transcendss.mavric.views.componentviews.GoToMilepostForm;
+			import com.transcendss.mavric.views.componentviews.LocalRoutesForm;
+			import com.transcendss.transcore.events.*;
+			import com.transcendss.transcore.sld.models.components.Route;
+			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
+			
+			import flash.sensors.Geolocation;
+			
+			import merapi.Bridge;
+			import merapi.handlers.*;
+			import merapi.messages.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			
+			import spark.components.*;
+
+
+			[Bindable]
+			private var jump2ScaleItems:ArrayCollection = new ArrayCollection();
+			[Embed(source="../../../../images/vlog/FirstFrame.png")] protected var first:Class
+			[Embed(source="../../../../images/vlog/PreviousFrame.png")] protected var previous:Class
+			[Embed(source="../../../../images/sld/Pause.png")] protected var pause:Class
+			[Embed(source="../../../../images/sld/Play.png")] protected var play:Class
+			[Embed(source="../../../../images/vlog/NextFrame.png")] protected var next:Class
+			[Embed(source="../../../../images/vlog/LastFrame.png")] protected var last:Class
+			[Embed(source="../../../../images/vlog/Uturn.png")] protected var uturn:Class
+
+			[Embed(source="../../../../images/sld/exit.png")] protected var exit:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_Select_Route_40x40.png")] protected var road:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_Scale_40x40.png")] protected var scale:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_Sync_40x40.png")] protected var sync:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_CSV_Sync_40x40.png")] protected var csvsync:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_RH_Indv_Sync_40x40.png")] protected var rhIndvsync:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_Milepost_40x40.png")] protected var milepost:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_Route_GPS_40x40.png")] protected var routegps:Class
+			
+			[Bindable]
+			private var app:MAVRIC2 = FlexGlobals.topLevelApplication as MAVRIC2;
+
+			private var buttonRotation:int = 0;
+			//private var geo:Geolocation = new Geolocation();
+			private var geo:Geolocation = new Geolocation();
+			private var mGPSHandle:GPSMessageHandler;
+			private var dbManager:MAVRICDBManager;
+			private var gtManager:GeotagsManager = new GeotagsManager();
+			// Initialize the control bar
+			
+			private var tmpEvent:Event; //Used for syncing. Can't pass params to responder so need to store it here temporarily.
+			
+			[Bindable]
+			private var curScaleIndex:Number =-1;
+			
+			private function init():void
+			{
+				btnPause.source = pause;
+				btnRun.source = play;
+				Memo.source = gtManager.memo;
+				Voice.source = gtManager.voice;
+				Video.source = gtManager.video;
+				Capture.source = gtManager.camera;
+				Exit.source =  exit;
+				//Sync.source = sync;
+				dbManager = MAVRICDBManager.newInstance();
+				
+			}
+			
+			protected function rteSelectBtnClick(event:Event):void{
+				try 
+				{
+					if(FlexGlobals.topLevelApplication.GlobalComponents.invDiagram)
+						FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.hideAttrDrpDwnOrTxt();
+					var mbEvent:MenuBarEvent = new MenuBarEvent(MenuBarEvent.ROUTE_SELECTOR_ENABLED,null, true, true);
+					dispatchEvent(mbEvent);
+				}
+				catch(error:TypeError){
+					//catch the occassional type error obtained when clicked on the menu container outside the item
+				}				
+				
+			}
+			
+			protected function currRteBtnClick(event:Event):void
+			{
+				if (!FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.GPS_ON)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("GPS Polling is not enabled. \nPlease enable before trying to get the current route.");
+					return;
+				}
+				var dp:ArrayCollection = new ArrayCollection(dbManager.getCachedRoutes());
+				var testCoord:Point = new Point(FlexGlobals.topLevelApplication.longitude, FlexGlobals.topLevelApplication.latitude);
+				//var testCoord:Point = new Point(-93.551, 42.009);
+				//var testCoord:Point = new Point(-93.49478, 41.61224);
+				
+				var parsedBoxes:ArrayCollection = new ArrayCollection();
+				var validRoutes:ArrayCollection = new ArrayCollection();
+				var _thresh:Number = ConfigUtility.getNumber("route_tolerance");
+				
+				for each (var lCRoute:CachedRoute in dp)
+				{
+					var min:Number = Number.MAX_VALUE;
+					var rect:TSSRectangle = TSSRectangle.fromJSON(lCRoute.bbox);
+					//if (rect.hasPoint(testCoord))
+					if (true)
+					{
+						var data:Array = JSON.parse(lCRoute.path) as Array;
+						for each (var lCoord:Object in data)
+						{
+							var dist:Number = Math.sqrt(Math.pow(parseFloat(lCoord.X) - testCoord.x, 2) + Math.pow(parseFloat(lCoord.Y) - testCoord.y, 2));
+							
+							if (dist < min)
+								min = dist;
+							
+							if (dist < _thresh && !validRoutes.contains(lCRoute))
+							{
+								parsedBoxes.addItem(rect);
+								validRoutes.addItem(lCRoute);
+							}
+						}
+						
+					}
+				}
+				
+				var form:LocalRoutesForm = PopUpManager.createPopUp(this, LocalRoutesForm) as LocalRoutesForm;
+				form.latentDP = validRoutes;
+					
+			}
+			
+			protected function goToBtnClick(event:Event):void
+			{
+				PopUpManager.createPopUp(this, GoToMilepostForm) as GoToMilepostForm;
+			}
+			
+			// Synchronize the changes
+			protected function syncChanges(event:Event):void
+			{
+				if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity == ConfigurationManager.MC_SYNC)
+					FlexGlobals.topLevelApplication.sldDiagram.mavricConfiguredSync();
+				else if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity == ConfigurationManager.RH_SYNC)
+				{
+					FlexGlobals.topLevelApplication.sldDiagram.RHSync();
+				}
+				else if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity == ConfigurationManager.EXPORT_CHANGES)
+					FlexGlobals.topLevelApplication.sldDiagram.exportChanges();
+			}
+			
+			private function reallyQuitApp(bol:Boolean):void
+			{
+				if (bol)
+					NativeApplication.nativeApplication.exit(0);
+			}
+			
+			// Exit the application
+			protected function quitApp(event:Event):void
+			{
+				var resp:mx.rpc.Responder = new mx.rpc.Responder(reallyQuitApp, null);
+				FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to quit?", "Are you sure?", resp);
+			}
+			
+			protected function testDB(event:Event):void{
+				var db:MAVRICDBManager = MAVRICDBManager.newInstance();
+				var cr:CachedRoute = new CachedRoute();
+				cr.routeid = "XXX";
+				cr.beginmile = 0;
+				cr.endmile = 10.2
+				cr.content = "Hi there";
+				
+				db.addCachedRoute(cr);
+				db.deleteCachedRoute(0);
+				
+			}
+			
+			protected function printHandler(event:Event):void{
+				try 
+				{		
+					var printEvent:PrintEvent = new PrintEvent(PrintEvent.PRINT_PREVIEW_ENABLED, true, true);
+					dispatchEvent(printEvent);
+				}
+				catch(error:TypeError){
+					//catch the occassional type error obtained when clicked on the menu container outside the item
+				}				
+			}
+			
+			protected function viewMileHandler(event:Event):void{
+				try 
+				{		
+					var vmEvent:ViewMileEvent = new ViewMileEvent(ViewMileEvent.VIEWMILE_SET, true, true);
+					dispatchEvent(vmEvent);
+				}
+				catch(error:TypeError){
+					//catch the occassional type error obtained when clicked on the menu container outside the item
+				}				
+			}
+			
+			public function setJumpScale(event:Event):void{
+				
+				// set jump scale
+				if (jump2ScaleItems.length == 0) {
+					jump2ScaleItems = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.scaleValues;
+				}
+				for(var j:int=0;j<ScaleInp.dataProvider.length;j++)
+				{
+					var scale:String = String(jump2ScaleItems.getItemAt(j).scaleValue);
+					var dScale:String = FlexGlobals.topLevelApplication.sldDiagram.getScale().toString();
+					if(scale == dScale)
+					{
+						ScaleInp.selectedIndex=j;
+						scaleText.text = "Scale: " + (ScaleInp.selectedItem.scaleLabel as String);//FlexGlobals.topLevelApplication.sldDiagram.getScale().toString();
+						curScaleIndex = j;
+						break;
+					}
+				}
+			}
+			
+			public function changeScale(event:RouteSelectorEvent):void{
+				// set jump scale
+				if (jump2ScaleItems.length == 0) {
+					jump2ScaleItems = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.scaleValues;
+				}
+				for(var j:int=0;j<ScaleInp.dataProvider.length;j++)
+				{
+					var scale:String = String(jump2ScaleItems.getItemAt(j).scaleValue);
+					var dScale:String = String(event.scale);
+					if(scale == dScale)
+					{
+						ScaleInp.selectedIndex=j;
+						scaleText.text = "Scale: " + (ScaleInp.dataProvider[j].scaleLabel as String);//FlexGlobals.topLevelApplication.sldDiagram.getScale().toString();
+						curScaleIndex = j;
+						break;
+					}
+				}
+			}
+			
+			private function jumpScale(event:Event,scale:Number):void{
+				// get route info and pass with new scale as new Route Selection Event - model will handle redraw/query logic
+				var rte:Route = FlexGlobals.topLevelApplication.sldDiagram.getRoute();
+				var rsEvent:RouteSelectorEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTION_COMPLETE, rte, scale);
+				rsEvent.routeName = rte.routeName;
+				rsEvent.serviceURL = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL + "LatLong/"+rte.routeName+"/"+rte.beginMi+"/"+rte.endMi;
+				rsEvent.fromStorage = true;
+				dispatchEvent(rsEvent); //(see event handler in MainEventMap)
+			}
+			
+			protected function imageCapture(event:Event):void
+			{
+				FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource = "ControlBar";
+				var tmpEvent:CameraEvent = new CameraEvent(CameraEvent.OPENCONTROL, true, true);
+				
+				dispatchEvent(tmpEvent);
+			}
+			
+			protected function videoCapture(event:Event):void
+			{
+				FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource = "ControlBar";
+				var tmpEvent:videoEvent = new videoEvent(videoEvent.OPENCONTROL, true, true);
+				
+				dispatchEvent(tmpEvent); 
+			}
+			
+						
+			protected function voiceCapture(event:Event):void
+			{
+			
+				//PopUpManager.centerPopUp(audioRecord);
+				FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource = "ControlBar";
+				
+				
+				var tmpEvent:VoiceEvent = new VoiceEvent(VoiceEvent.OPENCONTROL, true, true);
+				//tmpEvent.evenSource ="ControlBar";
+				dispatchEvent(tmpEvent);
+			}
+			
+			protected function memoCapture(event:Event):void
+			{
+				
+				FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource = "ControlBar";
+				var tmpEvent:TextMemoEvent = new TextMemoEvent(TextMemoEvent.OPENCONTROL, true, true);
+				//tmpEvent.eventSource ="ControlBar";
+				dispatchEvent(tmpEvent);
+			}
+			
+			protected function runHandler(event:Event):void
+			{
+				btnRun.visible = false;
+				btnRun.includeInLayout = false;
+				btnPause.includeInLayout = true;
+				btnPause.visible = true;
+				try 
+				{		
+					var runEvent:NavControlEvent = new NavControlEvent(NavControlEvent.START_RUN, true, true);
+					dispatchEvent(runEvent);
+				}
+				catch(error:TypeError){
+					//catch the occassional type error obtained when clicked on the menu container outside the item
+				}
+			}
+			
+			protected function pauseHandler(event:Event):void
+			{
+				btnPause.visible = false;
+				btnPause.includeInLayout = false;
+				btnRun.includeInLayout = true;
+				btnRun.visible = true;
+				btnRun.rotation = buttonRotation;
+				
+				try
+				{
+					var runEvent:NavControlEvent = new NavControlEvent(NavControlEvent.STOP_RUN, true, true);
+					dispatchEvent(runEvent);
+				}
+				catch(error:TypeError){
+					//catch the occassional type error obtained when clicked on the menu container outside the item
+				}
+			}
+			
+			
+			//*******************  Old GPS methods ***************************
+			private function gpsRun():void
+			{
+				geo.addEventListener(GeolocationEvent.UPDATE, updateLocation);
+			}
+			private function updateLocation(geoEvent:GeolocationEvent):void
+			{
+				//location.text = "Lat:" + geoEvent.latitude + "Long:" + geoEvent.longitude + "Elev:" + geoEvent.altitude;
+				geo.removeEventListener(GeolocationEvent.UPDATE, updateLocation);
+			}
+			//*******************  End Old GPS methods ***************************
+			
+			// Handler for bluetooth GPS events.  Updates the controlbar display and forwards the event to the GPS event handler
+			protected function gpsUpdateHandler(ev:GPSEvent):void
+			{
+				//location.text = "Lat/Long: " + ev.y + "/" + ev.x;
+				var gpse:GPSEvent = new GPSEvent(GPSEvent.UPDATE);
+				gpse.x = ev.x;
+				gpse.y = ev.y;
+				dispatchEvent(gpse);
+				
+			}
+			
+			
+//			// Handler for the checkbox to turn on GPS retrieveal, dispaly and navigation
+//			protected function chkGPSPoll_changeHandler(event:Event):void
+//			{
+//				var source:CheckBox = event.target as CheckBox;
+//				if (source.selected)
+//				{				 
+//					var internalGPS:Geolocation = new Geolocation();
+//					geo.setRequestedUpdateInterval(3000);
+//					geo.addEventListener(GeolocationEvent.UPDATE, internalGPSUpdateHandler);
+//					btnRun.enabled = false;
+//				}
+//				else
+//				{ 
+//					FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.clearGPS();
+//					geo.removeEventListener(GeolocationEvent.UPDATE, internalGPSUpdateHandler);	
+//					btnRun.enabled = true;
+//				}
+//			}
+			
+			
+			
+			// Method to handle GPS hits from the internal GPS
+						
+			
+	
+			// Close the scale selector and apply the new scale
+			private function closeScalePop(event:Event):void{		
+				scalePopUp.close(true,ScaleList.selectedItem);
+				FlexGlobals.topLevelApplication.setBusyStatus(true);
+				var timer:Timer = new Timer(200);
+				var afterWaiting:Function = function(event:TimerEvent):void { //wait for it close the popup
+					timer.removeEventListener(TimerEvent.TIMER, afterWaiting);
+					timer = null;
+					
+					
+					ScaleInp.selectedItem=ScaleList.selectedItem;
+					var array:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.scaleValues;
+					FlexGlobals.topLevelApplication.savedMPValue = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMPost();
+					jumpScale(event, new Number(array[ScaleList.selectedIndex].scaleValue));
+				}
+				timer.addEventListener(TimerEvent.TIMER, afterWaiting);
+				timer.start();
+				
+			}
+			
+			// Open the scale selector
+			private function openScaleSelect(event:MouseEvent):void{
+				
+				scalePopUp.open(this,false);
+				scalePopUp.x = (this.parent as DisplayObject).width /2 - scalePopUp.width/2;
+				scalePopUp.y = (this.parent as DisplayObject).height /2 - scalePopUp.height/2;
+			}
+			
+			private function verifySyncChanges(event:Event):void
+			{
+				if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity !=  ConfigurationManager.EXPORT_CHANGES)
+				{
+					if (!FlexGlobals.topLevelApplication.connected)
+					{
+						FlexGlobals.topLevelApplication.TSSAlert("WiFi is off. Please turn on WiFi, connect to a network, and try again.");
+						return;
+					}
+				}
+				tmpEvent = event;
+				FlexGlobals.topLevelApplication.YesNoPrompt("Are you ready to sync your asset data?" , "", new mx.rpc.Responder(syncCallBack, null));
+			}
+			
+			private function syncCallBack(sync:Boolean):void
+			{
+				if (sync)
+				{
+					syncChanges(tmpEvent)
+					tmpEvent = null;
+				}
+			}
+			
+			
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="scalePopUp" width="300"  height="400"  name="Select Scale"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="ScaleList" width="100%" change="closeScalePop(event)" selectedIndex="{curScaleIndex}" labelField = "scaleLabel" dataProvider="{FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.scaleValues}" height="100%" fontSize="18" allowMultipleSelection="false"/> 
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		<s:List id="ScaleInp"  visible="false" scrollSnappingMode="center" fontSize="18"  x="50"  y="200" width="160" height="50" dataProvider="{app.GlobalComponents.ConfigManager.scaleValues}" />
+	</fx:Declarations>
+	
+	
+	<s:Panel title="Control Panel" width="100%" skinClass="skins.HeaderlessPanelSkin" backgroundColor="0xc0c0c0" backgroundAlpha="0.50" >
+	<!--<s:controlBarContent >	-->		
+		<s:HGroup width="100%" verticalAlign="middle">
+			<s:HGroup gap="5" left="20" verticalAlign="middle">
+				<!--<s:Label text="To Mile:" includeInLayout="false"/>-->
+				<!--change="dispatchEvent(new ViewChangeEvent(ViewChangeEvent.VIEWMILE_CHANGED,rteMile.selectedItem));" dataProvider="{jump2MileItems}"-->
+				<!--<s:DropDownList id="rteMile"  width="60" includeInLayout="false" visible="false"/>
+				<mx:Spacer width="20" includeInLayout="false"/>
+				<s:List id="RouteList" width="200" height="50" labelField="ROUTE_NAME" fontSize="18" dataProvider="{dp}" allowMultipleSelection="false" change="getMinMax(event)" 
+				valueCommit="this.formValidator.validateForm(event);"/>
+				
+				-->
+				<s:Spacer width="50"/>
+				<!--
+				<s:Label id="scaleText" text="Scale:" />
+				<s:Spacer/>
+				<s:Spacer/>-->
+				<s:VGroup horizontalAlign="center" click="openScaleSelect(event)">
+					<s:Image id="scaleButton" toolTip="Scale" width="40" height="40" source="{scale}" />
+					<!--<s:Label text="CHANGE SCALE"  fontSize="12">
+					</s:Label>-->
+					<s:Label id="scaleText" text="Scale:" fontSize="10"/>
+				</s:VGroup>
+				<s:Spacer width="150"/>
+				<s:VGroup horizontalAlign="center" click="rteSelectBtnClick(event)">
+					<s:Image id="rteSelectBtn" toolTip="Route" width="40" height="40" source="{road}"/>
+					<!--<S:LABEL TEXT="SELECT ROUTE"  FONTSIZE="12">
+					</S:LABEL>-->
+				</s:VGroup>
+				<!--<s:Spacer/>-->
+				<s:Spacer width="25"/>
+				<s:VGroup horizontalAlign="center" click="currRteBtnClick(event)">
+					<s:Image id="currRteBtn" toolTip="Route" width="40" height="40" source="{routegps}"/>
+<!--					<S:LABEL TEXT="ROUTE BY GPS"  FONTSIZE="12">
+					</S:LABEL>-->
+				</s:VGroup>
+				<!--<s:Spacer/>-->
+				<s:Spacer width="25"/>
+				<s:VGroup horizontalAlign="center" click="goToBtnClick(event)">
+					<s:Image id="goToBtn" width="40" height="40" source="{milepost}"/>
+<!--					<S:LABEL TEXT="GO TO MILEPOST"  FONTSIZE="12">
+					</S:LABEL>-->
+				</s:VGroup>
+				
+
+			</s:HGroup>
+			
+			<s:Spacer width="15%" />
+			<s:HGroup verticalAlign="middle" gap="10" includeInLayout="false" visible="false">
+				<s:Image id="btnPause" toolTip="Pause" width="40" height="40" buttonMode="true" includeInLayout="false" visible="false" click="pauseHandler(event)"/>
+				<s:Image id="btnRun" toolTip="Run" width="40" height="40" buttonMode="true" click="runHandler(event)"/>
+			</s:HGroup>
+			<!--<s:Spacer width="100%" />-->
+			
+			
+			
+			<!--<mx:Spacer width="100%"/>-->
+			<s:HGroup verticalAlign="middle" gap="20">
+				<!--<s:Label text="Step Speed" paddingTop="5"/>
+				<s:HSlider id="speedSlider" minimum="10" maximum="500" stepSize="1" value="250" height="30" change="speedSlider_changeHandler(event)"/>
+				<s:Label text="Step Size" paddingTop="5"/>
+				<s:HSlider id="sizeSlider" minimum="1" maximum="400" stepSize="1" value="100" height="30" change="sizeSlider_changeHandler(event)"/>
+				-->
+				<!--<s:VGroup horizontalAlign="center">
+					<s:CheckBox id="chkGPSPoll" width="40" height="40" selected="false" change="chkGPSPoll_changeHandler(event)" />
+					<s:Label id="location" text="USE GPS" fontSize="12"/>
+				</s:VGroup>-->
+				
+				<!--<s:Spacer />-->
+				<s:HGroup>
+					<s:Image id="Capture"  buttonMode="true" width="40" height="40" click="imageCapture(event)"/>
+					<s:Spacer width="25"/>
+					<s:Image id="Video" buttonMode="true" width="40" height="40" click="videoCapture(event)"/>
+					<s:Spacer width="25"/>
+					<s:Image id="Voice" buttonMode="true" width="40" height="40" click="voiceCapture(event)"/>
+					<s:Spacer width="25"/>
+					<s:Image id="Memo" buttonMode="true" width="40" height="40" click="memoCapture(event)"/>
+				</s:HGroup>
+				<s:Spacer width="150"/>
+				<!--<mx:Spacer width="100%"/>-->
+				<!--<s:Image id="Sync" buttonMode="true" width="40" height="40" click="{verifySyncChanges(event)}"/>-->
+				<s:Image id="Exit" buttonMode="true" width="40" height="40" click="quitApp(event)"/>
+				
+			</s:HGroup><!--
+			<mx:Spacer width="100%"/>-->
+			<!--<s:HGroup verticalAlign="middle" gap="10" includeInLayout="false">
+			<s:Label id="location" text=""/> 
+			<s:Label text="User Name"/>
+			<s:TextInput id="uName" maxWidth="60"/>  
+			<s:Label text="Password"/>
+			<s:TextInput id="pwd" maxWidth="60" /> -->
+			<!--source="@Embed(source='images/blueArrowRt.gif')"-->
+			<!--<mx:Image id="loginArrow"  buttonMode="true"/>
+			</s:HGroup>		 -->				
+		</s:HGroup>
+	
+		
+		<!--</s:controlBarContent>-->
+	</s:Panel>
+	
+</s:Group>

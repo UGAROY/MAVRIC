@@ -1,0 +1,5 @@
+[
+	{
+	"ServiceURL": "http://riethmiller.com/SLDService/SldWcfService.svc/"
+	}
+]

@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		title="DropDownViewHoriz" backgroundColor="{_bgColor}" >
+	
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="genericPopup" width="300" height="400" name="Selection"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin" >
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="popupList" change="closePopup()" width="100%" height="100%"  labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false"/>
+					
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.asfusion.mate.events.Dispatcher;
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.DropDownViewEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			private var _btnText:String;
+			private var _domain:ArrayCollection;
+			
+			
+			[Bindable]
+			private var _width_TI:Number = 325;
+			
+			[Bindable]
+			private var _bgColor:uint= uint("0xFFFFFF");
+			
+			[Bindable]
+			private var _isEnabled:Boolean = true;
+			[Bindable]
+			private var _isRequired:Boolean = false;
+			
+			[Bindable]
+			private var _leftWidth:Number = 0;
+		
+			[Bindable]
+			private var _description:String;
+			private var _domainId:String="";
+			private var _propertyId:String;
+			private var _domainTableIDColName:String;
+			private var _customCPEvent:DropDownViewEvent;
+			private var _customBCEvent:DropDownViewEvent;
+			private var dbManager:MAVRICDBManager = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.mdbm;
+			private var dispatcher:Dispatcher = new Dispatcher();
+			private var _customBCCallbakServiceMethod:String;
+			private var _customCPCallbakServiceMethod:String;
+
+			
+
+			private var _customBCCallbak:Function;
+			private var _customCPCallbak:Function;
+			
+			public function clickMethod(event:MouseEvent):void
+			{
+				if(_customBCEvent != null) // custom click method
+				{
+						if(_customBCCallbak ==null)
+						{
+							var customEvent:DropDownViewEvent = new DropDownViewEvent(_customBCEvent.type);
+							dispatcher.dispatchEvent(customEvent);
+						}
+						else
+						{
+							_customBCCallbak.call(null, null);	
+						}
+				}
+				else
+				{
+					openPopup();
+				}
+			}
+			
+			public function openPopup():void
+			{
+				genericPopup.open(this,false);
+				PopUpManager.centerPopUp(genericPopup);
+				
+				popupList.dataProvider = _domain;
+			}
+
+			
+			public function closePopup():void
+			{
+				genericPopup.close(true, popupList.selectedItem);
+				
+				
+				
+			 	this.domainID = popupList.selectedItem.ID;
+				
+				//custom close popup
+				if(_customCPEvent !=null)
+				{
+					if(_customCPCallbak ==null)
+					{
+						var customEvent:DropDownViewEvent = new DropDownViewEvent(_customCPEvent.type);
+						dispatcher.dispatchEvent(customEvent);
+					}
+					else
+					{
+						_customCPCallbak.call(null,null);
+					}
+				}
+			}
+
+			public function closeDropDown():void
+			{
+				genericPopup.close(false);
+			}
+			public function get btnText():String
+			{
+				return _btnText;
+			}
+
+			public function set btnText(value:String):void
+			{
+				_btnText = value;
+			}
+			
+			public function get width_TI():Number
+			{
+				return _width_TI;
+			}
+			
+			public function set width_TI(value:Number):void
+			{
+				_width_TI = value;
+			}
+			
+			public function get bgColor():uint
+			{
+				return _bgColor;
+			}
+			
+			public function set bgColor(value:uint):void
+			{
+				_bgColor = value;
+			}
+
+			public function get domain():ArrayCollection
+			{
+				return _domain;
+			}
+
+			public function set domain(value:ArrayCollection):void
+			{
+				_domain = value;
+			}
+
+			public function get propertyId():String
+			{
+				return _propertyId;
+			}
+
+			public function set propertyId(value:String):void
+			{
+				_propertyId = value;
+			}
+			
+			public function get isEnabled():Boolean
+			{
+				return _isEnabled;
+			}
+			
+			public function set isEnabled(value:Boolean):void
+			{
+				_isEnabled = value;
+			}
+			
+			public function get customCPEvent():DropDownViewEvent
+			{
+				return _customCPEvent;
+			}
+			
+			public function set customCPEvent(value:DropDownViewEvent):void
+			{
+				_customCPEvent = value;
+			}
+			
+			public function get customBCEvent():DropDownViewEvent
+			{
+				return _customBCEvent;
+			}
+			
+			public function set customBCEvent(value:DropDownViewEvent):void
+			{
+				_customBCEvent = value;
+			}
+			
+			public function set customBCCallbakServiceMethod(val:String):void
+			{
+				_customBCCallbakServiceMethod= val;
+			}
+			
+			public function set customCPCallbakServiceMethod(val:String):void
+			{
+				_customCPCallbakServiceMethod= val;
+			}
+			
+			public function set customBCCallback(value:Function):void
+			{
+				_customBCCallbak = value;
+			}
+			public function set customCPCallback(value:Function):void
+			{
+				_customCPCallbak = value;
+			}
+
+			public function get description():String
+			{
+				return _description;
+			}
+			public function get text():String
+			{
+				return this.domainIDStr;
+			}
+
+			public function set description(value:String):void
+			{
+				_description = value;
+				
+				for each(var obj:Object in domain)
+				{
+					if(obj.DESCRIPTION == _description)
+					{
+						_domainId = obj.ID;
+						break;
+					}
+				}
+			}
+			
+			public function get domainIDStr():String//mainly for assetEditForm 
+			{
+				if(_domainId!="")
+					return String(_domainId);
+				else
+					return "";
+			}
+			
+			public function get domainID():String
+			{
+				return _domainId;
+			}
+						
+			public function set domainID(d:String):void
+			{
+				_domainId = d;
+				if(_domainId !="")
+				{
+					for each(var obj:Object in domain)
+					{
+						if(obj.ID == _domainId)
+						{
+							_description = obj.DESCRIPTION;
+							break;
+						}
+					}
+				}
+			}
+			
+			public function get domainTableIDColName():String
+			{
+				return _domainTableIDColName;
+			}
+
+			public function set domainTableIDColName(value:String):void
+			{
+				_domainTableIDColName = value;
+			}
+			
+			public function get isRequired():Boolean
+			{
+				return _isRequired;
+			}
+			
+			public function set isRequired(value:Boolean):void
+			{
+				_isRequired = value;
+			}
+			
+			public function get leftWidth():Number
+			{
+				return _leftWidth;
+			}
+			
+			public function set leftWidth(value:Number):void
+			{
+				_leftWidth = value;
+			}
+			
+			public function fetchDomainValues():void
+			{
+				
+				if(!_domainTableIDColName || _domainTableIDColName ==="")
+					return;
+				
+//				if (!dbManager.isAssetDomainAvailable(_domainTableIDColName))
+//				{
+//					var httpServ:HTTPService = new HTTPService();
+//					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL +"Domains/"+ _domainTableIDColName +"/" + domainTableDescCol;
+//					httpServ.method = "GET";
+//					httpServ.resultFormat = "text";
+//					httpServ.addEventListener(FaultEvent.FAULT, fault);
+//					httpServ.addEventListener(ResultEvent.RESULT, setDomainFromService);
+//					httpServ.send();
+//				}
+//				else // Otherwise get the domains from the local table
+//				{
+//					_domain = dbManager.getAssetDomain(_domainTableIDColName);
+//					if(_domainId !=-1)
+//					{
+//						for each(var obj:Object in domain)
+//						{
+//							if(obj.ID == String(_domainId))
+//							{
+//								_description = obj.DESCRIPTION;
+//								break;
+//							}
+//						}
+//					}
+//				}
+				_domain = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain(this._domainTableIDColName);
+				
+			}
+//			private function fault(e:FaultEvent):void
+//			{
+//				trace("Error in Domain retrieval");
+//			}
+//			
+//			public function setDomainFromService(event:ResultEvent):void
+//			{
+//				var resp:Array = JSON.parse(event.result as String) as Array;
+//				_domain = new ArrayCollection(resp);
+//				dbManager.insertAssetDomain(_domain, _domainTableIDColName);	
+//				if(_domainId !=-1)
+//				{
+//					for each(var obj:Object in domain)
+//					{
+//						if(obj.ID == String(_domainId))
+//						{
+//							_description = obj.DESCRIPTION;
+//							break;
+//						}
+//					}
+//				}
+//			}
+
+			
+
+
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%" height="100%" >
+		<s:HGroup verticalAlign="bottom">
+			<s:Spacer width="{_leftWidth}"/>
+			<s:Button id="buttonH" label="{_btnText}" click="clickMethod(event)" enabled="{_isEnabled}"/>
+			<s:Label text="(Required)"  fontSize="8" color="0xFF0000" visible="{_isRequired}"/>	
+		</s:HGroup>
+		<s:HGroup verticalAlign="bottom">
+			<s:Spacer width="{_leftWidth}"/>
+			<s:TextInput id="inputH" width="{_width_TI}"  editable="false" text="{_description}" skinClass="spark.skins.mobile.TextInputSkin"/>
+		</s:HGroup>
+	</s:HGroup>
+</s:View>

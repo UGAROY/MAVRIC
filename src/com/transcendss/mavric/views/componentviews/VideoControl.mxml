@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:media="flash.media.*"
+			   xmlns:input="flash.text.*"
+			   xmlns:Validators="Validators.*" 
+			   xmlns:uic="mx.core.*"
+			   creationComplete="setup()"
+			   close="closeWindow()"
+			   title="Camera Control"
+			   styleName="VideoImage"
+			   width="648" height="570"
+			   xmlns:mate="http://mate.asfusion.com/" 
+			   xmlns:addOns="RoadAnalyzer.views.addOns.*">	
+	<fx:Declarations>		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.util.FLVEncoderPckg.FlvEncoder;
+			import com.transcendss.transcore.events.CameraEvent;
+			
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.Button;
+
+			public var hndlCam:Camera;
+			public var video:Video
+			public var recorder:FlvEncoder;
+			//public var tmpLayout:LayoutContainer = new LayoutContainer();
+			//public var captureButton:Button = new Button();
+			//public var closeButton:Button = new Button();
+			//public var memo:TextField = new TextField();
+			//public var txtFormat:TextFormat = new TextFormat();
+			public var uic:UIComponent = new UIComponent();
+			
+			private function setup():void
+			{
+				var app:MAVRIC2 = FlexGlobals.topLevelApplication as MAVRIC2;
+				hndlCam = Camera.getCamera();
+				if (hndlCam == null) app.TSSAlert("No Camera could be found :(");
+				hndlCam.setMode(640, 480, 15);
+				video = new Video(640, 480);
+				video.x = 0;
+				video.y = 0;
+				video.attachCamera(hndlCam);
+				video.width = 640;
+				video.height = 480;
+				video.attachCamera(hndlCam);
+				uic.addChild(video);
+				vContainer.addElement(uic);
+			}
+			
+			public function captureImage():void
+			{
+				var app:MAVRIC2 = FlexGlobals.topLevelApplication as MAVRIC2;
+				var tmpbmd:BitmapData = new BitmapData(640, 480);
+				tmpbmd.draw(video);
+				var tmpbmp:Bitmap = new Bitmap(tmpbmd);
+				var tmpEvent:CameraEvent = new CameraEvent(CameraEvent.NEWPICTURE, true, true);
+				tmpEvent.bitmap = tmpbmp;
+				tmpEvent.memo = "";
+				app.dispatchEvent(tmpEvent);
+			}
+			
+			public function closeWindow():void
+			{
+				PopUpManager.removePopUp(this);
+			}	
+
+			protected function btnStart_clickHandler(event:MouseEvent):void
+			{
+				recorder.
+			}
+			
+			protected function btnStop_clickHandler(event:MouseEvent):void
+			{
+				
+			}
+
+		]]>
+	</fx:Script>
+	<s:BorderContainer x="2" y="2" width="642" height="480" id="vContainer"></s:BorderContainer>
+	<s:Button x="260" y="490" width="120" height="40" label="Start Recording" id="btnStart" click="btnStart_clickHandler(event)"/>
+	<s:Button x="260" y="490" width="120" height="40" label="Stop Recording" id="btnStop" click="btnStop_clickHandler(event)"/>
+</s:TitleWindow>

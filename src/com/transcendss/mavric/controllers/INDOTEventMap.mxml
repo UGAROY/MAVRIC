@@ -1,0 +1,777 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mate:EventMap  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:mate="http://mate.asfusion.com/" cache="global" >
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.events.*;
+			import com.transcendss.mavric.managers.AssetManager;
+			import com.transcendss.mavric.managers.ExternalFileManager;
+			import com.transcendss.mavric.managers.MenuManager;
+			import com.transcendss.mavric.managers.SyncManager;
+			import com.transcendss.mavric.views.*;
+			import com.transcendss.mavric.views.componentviews.*;
+			import com.transcendss.transcore.events.*;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.*;
+			import com.transcendss.transcore.sld.models.managers.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.*;
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			private var debugFlag : Boolean = true; 
+			private var routeListURL:String ="http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/9/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=RAMP_CODE%3D%270000%27&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=ROUTEID,ROUTENAME&f=pjson";
+			private var minMaxURL:String ="http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/8/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=measure&f=pjson";
+			
+			//private var xingSignsURL:String ="http://ec2-50-19-3-83.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/14/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=measure&f=pjson";
+			
+			private var elSpeedLmtURL:String = "http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/6/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2CROUTEID%2CFROMMEASURE%2CTOMEASURE%2CSPEED_LIMIT&f=pjson";
+//			private var elRuralUrbanURL:String = "http://ec2-50-19-3-83.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/11/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=true&maxAllowableOffset=&outSR=&outFields=OBJECTID%2CROUTEID%2CFROMMEASURE%2CTOMEASURE%2CRUR_URB_CORP&f=pjson";
+//			private var elParkingURL:String = "http://ec2-50-19-3-83.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/10/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2C+ROUTEID%2C+FROMMEASURE%2CTOMEASURE%2CPARK_TYPE&f=pjson";
+			private var elFuncClassURL:String = "http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/7/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2C+ROUTEID%2C+FROMMEASURE%2CTOMEASURE%2C+FUNC_CLASS_2010&f=pjson";
+//			private var elFederalAidURL:String = "http://ec2-50-19-3-83.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/4/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2C+ROUTEID%2C+FROMMEASURE%2CTOMEASURE%2C+FEDERAL_AID&f=pjson";
+			private var elPeakLanesURL:String = "http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/5/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2C+ROUTEID%2C+FROMMEASURE%2CTOMEASURE%2C+HNO_PEAK_LANES&f=pjson";
+			private var elSigTypesURL:String = "http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/5/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2C+ROUTEID%2C+FROMMEASURE%2CTOMEASURE%2C+HPREVAIL_TYPE_SIGNAL&f=pjson";
+			private var elTerTypesURL:String = "http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/5/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2C+ROUTEID%2C+FROMMEASURE%2CTOMEASURE%2C+HTYPE_TERRAIN&f=pjson";
+			private var latLongURL:String = "http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/TSS_INDOT/MapServer/1/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=routeid%3D%27%27&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=true&maxAllowableOffset=&outSR=&outFields=&f=pjson";
+			//private var ftBrdgURL:String ="http://ec2-50-19-3-83.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/4/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=measure+between++and+&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2CMeasure%2CDistance%2CIIT_DESCR&f=pjson";
+			private var ftBrdgURL:String ="http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/3/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2CMeasure%2CDistance%2CIIT_DESCR&f=pjson";
+			private var ftSignURL:String ="http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/4/query?text=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&objectIds=&where=&time=&returnCountOnly=false&returnIdsOnly=false&returnGeometry=false&maxAllowableOffset=&outSR=&outFields=OBJECTID%2C+ROUTEID%2C+MEASURE%2C+MUTCD%2CDescription&f=pjson";
+				
+			public function getMinMaxURL(event:RouteSelectorEvent) :String
+			{
+				event.stopPropagation();
+				var temp:String =minMaxURL.replace("?text=&","?text="+event.routeName+"&"); 
+				return temp;
+			}
+			public function getLatLongURL(event:RouteSelectorEvent) :String
+			{
+				event.stopPropagation();
+				var temp:String =latLongURL.replace("&where=routeid%3D%27%27&","&where=routeid%3D%27"+event.routeName+"%27&"); 
+				return temp;
+			}
+			
+			public function getElementURL(event:ElementEvent):String
+			{
+				event.stopPropagation();
+				var temp:String="";
+				
+				switch(event.elementType)
+				{
+					case "1":
+						temp = elSpeedLmtURL.replace("&where=&","&where=%28%28frommeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+or+%28tomeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+%29+and+routeid+%3D%27"+event.routeFullName.replace("-","")+"%27&");
+						break;
+					case "2":
+						temp = elPeakLanesURL.replace("&where=&","&where=%28%28frommeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+or+%28tomeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+%29+and+routeid+%3D%27"+event.routeFullName.replace("-","")+"%27&");
+						break;
+					case "3":
+						temp = elFuncClassURL.replace("&where=&","&where=%28%28frommeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+or+%28tomeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+%29+and+routeid+%3D%27"+event.routeName +"%27&");
+						break;
+					case "4":
+						temp = elSigTypesURL.replace("&where=&","&where=%28%28frommeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+or+%28tomeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+%29+and+routeid+%3D%27"+event.routeFullName.replace("-","")+"%27&");
+						break;					
+					case "5":
+						temp = elTerTypesURL.replace("&where=&","&where=%28%28frommeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+or+%28tomeasure+between+"+event.begMile+"+and+"+event.endMile+"%29+%29+and+routeid+%3D%27"+event.routeFullName.replace("-","")+"%27&");
+						break;
+				}
+				if(temp == "")
+				//temp = elSpeedLmtURL.replace("?text=&","?text="+event.routeName+"&");
+					return event.serviceURL;
+				else
+					return temp;
+			}
+			
+			public function getAttrURL(event:AttributeEvent):String
+			{
+				event.stopPropagation();
+				var temp:String;
+				
+				switch(event.attrType)
+				{
+					case "1":
+						temp = elSpeedLmtURL.replace("?text=&","?text="+event.routeName+"&");
+						break;
+					case "2":
+						temp = elPeakLanesURL.replace("?text=&","?text="+event.routeName+"&");
+						break;
+					case "3":
+						temp = elFuncClassURL.replace("?text=&","?text="+event.routeName+"&");
+						break;
+					case "4":
+						temp = elSigTypesURL.replace("?text=&","?text="+event.routeName+"&");
+						break;					
+					case "5":
+						temp = elTerTypesURL.replace("?text=&","?text="+event.routeName+"&");
+						break;
+				}
+				
+				temp = temp.replace("&where=&","&where=OBJECTID%3D"+event.attrid+"&");
+				return temp;
+			}
+			
+			
+			public function getEditsJson(event:AttributeEvent):String
+			{
+				event.stopPropagation();
+				var editString:String="";
+				//[{"id":13,"allowMerge":true,"retireMeasureOverlap":true,"adds":[{"attributes":{"ROUTEID":"10200000690000001","FROMMEASURE": 3.45209999,"TOMEASURE": 3.8209,"SPEED_LIMIT":60}}]}]
+				switch(event.attrType)
+				{
+					//speed limit
+					case "1":
+						editString = "[{\"id\":6,\"allowMerge\":true,\"retireMeasureOverlap\":true,\"adds\":[{\"attributes\":{\"ROUTEID\":\""+event.routeFullName.replace("-","")+"\",\"OBJECTID\":"+ event.attrid+ " ,\"FROMMEASURE\":"+event.bmilePoint+" ,\"TOMEASURE\":"+event.emilePoint+" ,\"SPEED_LIMIT\":"+event.value+"}}]}]"	;			
+						break;
+					//HNO_PEAK_LANES
+					case "2":
+						editString = "[{\"id\":57,\"allowMerge\":true,\"retireMeasureOverlap\":true,\"adds\":[{\"attributes\":{\"ROUTEID\":\""+event.routeName+"\",\"OBJECTID\":"+ event.attrid+ " ,\"FROMMEASURE\":"+event.bmilePoint+" ,\"TOMEASURE\":"+event.emilePoint+" ,\"HNO_PEAK_LANES\":"+event.value+"}}]}]";
+						break;
+					//FUNC_CLASS_2010
+					case "3":
+						editString = "[{\"id\":7,\"allowMerge\":true,\"retireMeasureOverlap\":true,\"adds\":[{\"attributes\":{\"ROUTEID\":\""+event.routeFullName.replace("-","")+"\",\"OBJECTID\":"+ event.attrid+ " ,\"FROMMEASURE\":"+event.bmilePoint+" ,\"TOMEASURE\":"+event.emilePoint+" ,\"FUNC_CLASS_2010\":"+event.value+"}}]}]";
+						break;
+					//HPREVAIL_TYPE_SIGNAL
+					case "4":
+						editString = "[{\"id\":5,\"allowMerge\":true,\"retireMeasureOverlap\":true,\"adds\":[{\"attributes\":{\"ROUTEID\":\""+event.routeFullName.replace("-","")+"\",\"OBJECTID\":"+ event.attrid+ " ,\"FROMMEASURE\":"+event.bmilePoint+" ,\"TOMEASURE\":"+event.emilePoint+" ,\"HPREVAIL_TYPE_SIGNAL\":"+event.value+"}}]}]";
+						break;			
+					//HTYPE_TERRAIN
+					case "5":
+						editString = "[{\"id\":5,\"allowMerge\":true,\"retireMeasureOverlap\":true,\"adds\":[{\"attributes\":{\"ROUTEID\":\""+event.routeFullName.replace("-","")+"\",\"OBJECTID\":"+ event.attrid+ " ,\"FROMMEASURE\":"+event.bmilePoint+" ,\"TOMEASURE\":"+event.emilePoint+" ,\"HTYPE_TERRAIN\":"+event.value+"}}]}]";
+						break;
+				}
+				
+				//[{"id":3,"adds":[{"attributes":{"ROUTEID":"SR85","EVENTID":"ABC123","MEAS":35,"FROM_DATE":1230768000000,"TO_DATE":1262304000000}}]}]
+				return editString;
+			}
+			
+			public function getSignEditJson(event:AssetEvent):String
+			{
+				event.stopPropagation();
+				var editString:String="";
+				
+				if(event.culvert.description =="SIGN")
+					editString = "[{\"id\":4,\"allowMerge\":true,\"retireMeasureOverlap\":true,\"adds\":[{\"attributes\":{\"ROUTEID\":\""+event.culvert.routeName+"\",\"MEASURE\":"+event.culvert.invProperties["REFPT"].value +",\"MUTCD\":\""+event.culvert.invProperties["MUTCD"].value+"\"}}]}]";
+				
+				return editString;
+			}
+			
+			public function getFeatureURL(event:FeatureEvent):String
+			{
+				event.stopPropagation();
+				var temp:String;
+				
+				switch(event.featureName)
+				{
+					case "BRDG":
+						//temp = ftBrdgURL.replace("?text=&","?routeid="+event.routeName+"&");
+						//temp = temp.replace("&where=measure+between++and+&","&where=measure+between+"+event.begMile+"+and+"+event.endMile+"&");
+						temp = ftBrdgURL.replace("&where=&","&where=routeid%3D%27"+event.routeName+"%27+and+measure+between+"+event.begMile+"+and+"+event.endMile+"&");
+						return temp;
+					case "SIGN":
+						//temp = ftBrdgURL.replace("?text=&","?text="+event.routeName+"&");
+						temp = ftSignURL.replace("&where=&","&where=routeid%3D%27"+event.routeName+"%27+and+measure+between+"+event.begMile+"+and+"+event.endMile+"&");
+						return temp;
+						
+				}
+				
+				//temp = elSpeedLmtURL.replace("?text=&","?text="+event.routeName+"&");
+				return event.serviceURL;
+			}
+			
+			public function callStickDiagram(ac:ArrayCollection, event:FeatureEvent):void
+			{
+				event.stopPropagation();
+				FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.drawFeatures(ac, event.featureName);
+			}
+			public function symblFileRequestCallBack(respos:Object, event:ExternalFileEvent):void
+			{
+				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetSymLoaded(respos,event.featureName,event.responder,event.bAsset);
+				
+			}
+			
+			public function updateAssetManager(arr:ArrayCollection, event:FeatureEvent):void
+			{
+				event.stopPropagation();
+				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.onDBRetrievalComplete(arr, event.featureName, event.responder);
+				
+			}
+			
+			public function callDEDiagram(ac:ArrayCollection, event:ElementEvent):void
+			{
+				event.stopPropagation();
+				FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawElemsFrmSrvceRes(ac);
+			}
+			
+			public function updateAttrSuccResult(result:String):void{
+				var resultobj:Object = JSON.parse(result);
+				if (resultobj.success ==true)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Data Modified Successfully");
+					//FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawSingleElemfrmStore();
+					FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.draw(FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.scale(),FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.route,false,FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.gBarX);
+				}
+				else
+					updateAttrFaultResult();
+			}
+			
+			public function updateSignSuccResult(result:String):void{
+				var resultobj:Object = JSON.parse(result);
+				if (resultobj.success ==true)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Sign Added/Modified Successfully");
+					//FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawSingleElemfrmStore();
+				}
+				else
+					updateAttrFaultResult();
+			}
+			
+			public function updateAttrFaultResult():void{
+				FlexGlobals.topLevelApplication.TSSAlert("Error in Saving Data");
+				//FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.draw();
+			}
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mate:Debugger level="{Debugger.ALL}" />
+		
+		<!-- ======================================================================================== -->
+		<!-- Events -->
+		<!-- _________________________________________________________________________________________ -->  
+		
+		<mate:EventHandlers type="{MapInitEvent.MAP_PREINITIALIZE}" debug="{debugFlag}" >
+			<mate:MethodInvoker generator="{MapManager}" method="onMapPreinitialize" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{MenuBarEvent.CREATE_MENU}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{MenuManager}" method="createMenu" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		<!-- Menu Button Click Event-->
+		
+		<!-- -->
+		<mate:EventHandlers type="{MenuBarEvent.MENU_CLICKED}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{MenuManager}" method="onClick" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+	
+		<mate:EventHandlers type="{NavControlEvent.CLICKED}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{NavManager}" method="onClick" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		
+		
+		
+		<mate:EventHandlers type="{RouteSelectorEvent.ROUTE_LIST_REQUESTED}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{routeListURL}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{INDOTServiceManager}" method="onRouteListResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{RouteSelManager}" method="setRouteList" arguments="{[lastReturn, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+	
+		<mate:EventHandlers type="{RouteSelectorEvent.MIN_MAX_REQUESTED}" debug="{debugFlag}">
+			<mate:InlineInvoker method="getMinMaxURL" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{INDOTServiceManager}" method="onMinMaxResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{RouteSelManager}" method="setMinMax" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{com.transcendss.mavric.events.SyncEvent.SYNC_REQUESTED}" debug="{debugFlag}" >
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" method="POST" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{SyncManager}" method="clearLocalTables" arguments="{resultObject}" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		<!-- *********************************Culvert Inventory Code***************************************** -->
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_GEOTAG_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertGeotags" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_MATERIAL_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertMaterial" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_SHAPE_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertShape" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_PLACEMENT_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertPlacement" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_JOINTLOC_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertJointloc" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_ABUTMENT_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertAbutment" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_BEAM_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertBeam" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_GENERAL_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertGeneral" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_FLOW_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertFlow" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_JOINT_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertJoint" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_BARREL_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertBarrel" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_CULVERTENDS_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertEnds" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_CHANNEL_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertChannel" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_MAINT_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertMaint" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>		
+		
+		
+		<!-- ************************************************************************************************  -->
+		<!-- The two following handlers need to be switched out for disconnected/connected mode -->
+		<mate:EventHandlers type="{ExternalFileEvent.LOCAL_FILE_REQUESTED}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ExternalFileManager}" method="parseConfigFile" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{ExternalFileEvent.FILE_REQUESTED}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.filePath}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{ExternalFileManager}" method="dispatchFileContents" arguments="{[lastReturn, event.fileName]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		<!-- ************************************************************************************************  -->
+		
+		<!--<mate:EventHandlers type="{ExternalFileEvent.ASSET_SYMBL_REQUESTED}" debug="true">
+			<mate:HTTPServiceInvoker url="{event.filePath}" resultFormat="text" debug="true" >
+				<mate:resultHandlers>
+					<mate:InlineInvoker  method="{symblFileRequestCallBack}" arguments="{[resultObject,event]} "/>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>-->
+		
+		<mate:EventHandlers type="{FeatureEvent.FEATURE_REQUEST}" debug="true">
+			<mate:InlineInvoker method="{getFeatureURL}" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="true" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{INDOTServiceManager}" method="onFeatureResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					
+					<mate:InlineInvoker  method="callStickDiagram" arguments="{[lastReturn, event]} "/>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{FeatureEvent.ASSET_REQUEST}" debug="true">
+			<mate:InlineInvoker method="{getFeatureURL}" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="true" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{INDOTServiceManager}" method="onFeatureResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					
+					<mate:InlineInvoker method="updateAssetManager" arguments="{[lastReturn, event]} "/>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+	
+		<mate:EventHandlers type="{ElementEvent.ELEMENT_REQUEST}" debug="true">
+			<mate:InlineInvoker method="{getElementURL}" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{INDOTServiceManager}" method="onElementResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					
+					<mate:InlineInvoker  method="callDEDiagram" arguments="{[lastReturn, event]} "/>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers id="attr" type="{AttributeEvent.ATTRIBUTE_REQUEST}" debug="true">
+			<mate:InlineInvoker method="{getAttrURL}" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="true" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{INDOTServiceManager}" method="onAttrResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:EventAnnouncer generator="{AttributeEvent}" type="{AttributeEvent.ATTRIBUTE_READY}" constructorArguments="{[AttributeEvent.ATTRIBUTE_READY,event.milePoint, lastReturn, event.ClickY,event.ClickX ]}" bubbles="true"  >
+						<!--<mate:Properties milePoint="{event.milePoint}" data="{lastReturn}"/>-->
+					</mate:EventAnnouncer>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{AttributeEvent.ATTRIBUTE_SAVE}" debug="true">
+			<mate:InlineInvoker method="{getEditsJson}" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/exts/LRSServer/applyEdits"  resultFormat="text" debug="true" useProxy="false" method="POST" contentType="application/x-www-form-urlencoded">
+				<mate:Request edits = "{lastReturn}" 
+							  gdbVersion = "DBO.Demo"
+							  f = "pjson"/>
+				
+				<mate:resultHandlers>
+					<mate:InlineInvoker method="{updateAttrSuccResult}" arguments="{resultObject}"/>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker method="updateAttrFaultResult" arguments="{resultObject}"/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{AssetEvent.NEWCULVERT}" debug="true">
+			<mate:InlineInvoker method="{getSignEditJson}" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="http://ec2-50-16-48-180.compute-1.amazonaws.com/ArcGIS/rest/services/INDOT_RoutesAndEvents/MapServer/exts/LRSServer/applyEdits"  resultFormat="text" debug="true" useProxy="false" method="POST" contentType="application/x-www-form-urlencoded">
+				<mate:Request edits = "{lastReturn}" 
+							  gdbVersion = "DBO.Demo"
+							  f = "pjson"/>
+				
+				<mate:resultHandlers>
+					<mate:InlineInvoker method="{updateSignSuccResult}" arguments="{resultObject}"/>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker method="updateAttrFaultResult" arguments="{resultObject}"/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<!--on new route selection-->
+		<mate:EventHandlers type="{RouteSelectorEvent.ROUTE_SELECTION_COMPLETE}" debug="{debugFlag}">
+			<mate:InlineInvoker method="getLatLongURL" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{INDOTServiceManager}" method="onLatLongResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{MapManager}" method="setNewRouteCoords" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		<!--redraw map without new route drawing-->
+		<mate:EventHandlers type="{RouteSelectorEvent.ROUTE_SELECTION_MAP_REDRAW}" debug="{debugFlag}">
+			<mate:InlineInvoker method="getLatLongURL" arguments="{event}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{INDOTServiceManager}" method="onLatLongResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{MapManager}" method="setNewRouteCoords" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		<!-- ======================================================================================== -->
+		<!-- Injectors -->
+		<!-- _________________________________________________________________________________________ -->
+		
+		<mate:Injectors target="{ThreeDMap}">
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP3D_OPTIONS_READY}" method="setMapOptions"/>
+		</mate:Injectors>
+		
+		<mate:Injectors target="{MenuBar}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{MenuBarEvent.MENU_READY}" method="setMenuItems"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.DISTRICT_CHANGED}" method="setDistrict"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.INSP1_CHANGED}" method="setInsp1"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.INSP2_CHANGED}" method="setInsp2"/>
+		</mate:Injectors>
+
+		<mate:Injectors target="{OverviewMap}">
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP_OPTIONS_READY}" method="setMapOptions"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.XY_CHANGE}" method="xyChange"/>
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP_ROUTE_INFO_READY}" method="drawRoute"/>
+			<mate:ListenerInjector eventType="{TSSMapEvent.TRACKING_POINT}" method="positionTrackingPoint"/>
+		</mate:Injectors>
+		
+		<mate:Injectors target="{MAVRIC2}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{MenuBarEvent.ROUTE_SAVED}" method="saveCurrentRoute"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.ROUTE_LOADED}" method="loadSavedRoute"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.SETTINGS_ENABLED}" method="showSettingPopUp"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.ROUTE_SELECTOR_ENABLED}" method="showRteSelection"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.CONTROLBAR_ENABLED}" method="showControlBar"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.DRIVEMAP_ENABLED}" method="showDriveMapOnly"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.OVERVIEW_ENABLED}" method="showOverviewOnly"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.FULL_SCREEN_ENABLED}" method="displayFullScreen"/>
+			<mate:ListenerInjector eventType="{PrintEvent.PRINT_PREVIEW_ENABLED}" method="showPrintDialog"/>
+			<mate:ListenerInjector eventType="{AttributeEvent.ATTRIBUTE_READY}" method="showAttrDetails"/>
+			<mate:ListenerInjector eventType="{CameraEvent.OPENCONTROL}" method="showCameraControl"/>
+			<mate:ListenerInjector eventType="{CameraEvent.OPENIMAGE}" method="showFullImage"/>
+			<mate:ListenerInjector eventType="{VoiceEvent.OPENCONTROL}" method="showVoiceControl"/>
+			<mate:ListenerInjector eventType="{TextMemoEvent.OPENCONTROL}" method="showTextMemoControl"/>
+		
+			<mate:ListenerInjector eventType="{TextMemoEvent.OPENMEMO}" method="showTextMemo"/>
+			<mate:ListenerInjector eventType="{videoEvent.OPENCONTROL}" method="showVideoControl"/>
+			<mate:ListenerInjector eventType="{videoEvent.OPENVIDEO}" method="showVideo"/>
+			<mate:ListenerInjector eventType="{AssetEvent.CULVERTFORMLOADED}" method="passCulvertInfo"/>
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_CHANGE_REQUESTED}" method="showRteSelectionForRteChange"/>
+		</mate:Injectors>
+	
+		
+		<mate:Injectors target="{RouteSelector}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTOR_POPULATE}" method="rteSelectorPopulate" />
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_LIST_READY}" method="setRouteList" />
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.MIN_MAX_READY}" method="setMinMax"/>
+		</mate:Injectors>
+		
+		<mate:Injectors target="{SLDDiagram}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTION_COMPLETE}" method="setRoute"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.START_RUN}" method="startRun"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.STOP_RUN}" method="stopRun"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.NEXT}" method="next"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.PREVIOUS}" method="previous"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.BEGINNING}" method="gotoBeginning"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.END}" method="gotoEnd"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.UTURN}" method="uturn"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.CHANGE_SPEED}" method="changeSpeed"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.CHANGE_STEP}" method="changeStep"/>
+			<mate:ListenerInjector eventType="{ViewMileEvent.VIEWMILE_SET}" method="setViewMile"/>
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.GUIDEBAR_CHANGED}" method="toggleGuideBar"/>
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.INV_PANEL_VIEW_CHANGED}" method="toggleInvPanelView"/>
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.MEASUREBAR_SWITCH_CHANGED}" method="toggleMeasureBar"/>
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.MEASUREBAR_UNIT_CHANGED}" method="changeMeasureBarUnit"/>
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTION_COMPLETE}" method="setCBButtonDPs"/>
+			<mate:ListenerInjector eventType="{CameraEvent.NEWPICTURE}" method="handlePicture"/>
+			
+			<mate:ListenerInjector eventType="{videoEvent.NEWVIDEO}" method="handleVideo"/>
+			
+			<mate:ListenerInjector eventType="{VoiceEvent.NEWMEMO}" method="handleVoiceMemo"/>
+			<mate:ListenerInjector eventType="{TextMemoEvent.NEWMEMO}" method="handleTextMemo"/>
+			<mate:ListenerInjector eventType="{DataEventEvent.NEWPOINTEVENT}" method="handlePointEvent"/>
+			<mate:ListenerInjector eventType="{DataEventEvent.NEWLINEAREVENTSTART}" method="handleLineEventStart"/>
+			<mate:ListenerInjector eventType="{DataEventEvent.NEWLINEAREVENTEND}" method="handleLineEventEnd"/>
+			<mate:ListenerInjector eventType="{GestureControlEvent.CHANGED}" method="controlGestures"/>
+			<!--<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setupInfForm"/>-->
+			<mate:ListenerInjector eventType="{SignInvEvent.NEWSIGNEVENT}" method="handleNewSign"/>
+			<mate:ListenerInjector eventType="{videoEvent.NEWVIDEO}" method="handleVideo"/>
+			<mate:ListenerInjector eventType="{GPSEvent.UPDATE}" method="handleGPSChange"/>
+			
+			<mate:ListenerInjector eventType="{AssetEvent.NEWCULVERT}" method="handleNewCulvert"/>
+			
+			<mate:ListenerInjector eventType="{AccessPointEvent.NEWACCESSPOINT}" method="handleNewAP"/>
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP_ROUTE_INFO_READY}" method="setRouteCoords"/>
+			<mate:ListenerInjector eventType="{ElementEvent.ELEMENT_LOAD_COMPLETED}" method="continueLocalSave"/>
+		
+		</mate:Injectors>
+		
+		<mate:Injectors target="{VideoLog}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{NavControlEvent.XY_CHANGE}" method="xyChange"/>
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP_ROUTE_INFO_READY}" method="setRouteCoords"/>
+		</mate:Injectors>
+		
+	
+		
+		<mate:Injectors target="{ControlBar}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setJumpScale"/>
+			<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setImageSource"/>
+			<mate:ListenerInjector eventType="{MapOperationEvent.MAP_SCALE_CHANGED}" method="setJumpScale"/>
+		</mate:Injectors>
+		
+		<mate:Injectors target="{InventoryMenu}" debug="{debugFlag}">
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_MATERIAL_REQUEST}" method="setCulvertMaterial"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_MATERIAL_READY}" method="setMaterialList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_SHAPE_REQUEST}" method="setCulvertShape"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_SHAPE_READY}" method="setShapeList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_PLACEMENT_REQUEST}" method="setCulvertPlacement"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_PLACEMENT_READY}" method="setPlacementList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_JOINTLOC_REQUEST}" method="setCulvertJointloc"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_JOINTLOC_READY}" method="setJointlocList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_ABUTMENT_REQUEST}" method="setCulvertAbutment"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_ABUTMENT_READY}" method="setAbutmentList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_BEAM_REQUEST}" method="setCulvertBeam"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_BEAM_READY}" method="setBeamList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_GENERAL_REQUEST}" method="setCulvertGeneral"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_GENERAL_READY}" method="setGeneralList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_FLOW_REQUEST}" method="setCulvertFlow"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_FLOW_READY}" method="setFlowList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_JOINT_REQUEST}" method="setCulvertJoint"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_JOINT_READY}" method="setJointsList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_BARREL_REQUEST}" method="setCulvertBarrel"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_BARREL_READY}" method="setBarrelList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_CULVERTENDS_REQUEST}" method="setCulvertEnds"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_CULVERTENDS_READY}" method="setEndsList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_CHANNEL_REQUEST}" method="setCulvertChannel"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_CHANNEL_READY}" method="setChannelList"/>
+			<!--<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_MAINT_REQUEST}" method="setCulvertMaint"/>-->
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_MAINT_READY}" method="setMaintList"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_GEOTAG_READY}" method="setGeotagsFromServer"/>
+			<mate:ListenerInjector eventType="{CameraEvent.NEWPICTURE}" method="handlePicture"/>
+			<mate:ListenerInjector eventType="{videoEvent.NEWVIDEO}" method="handleVideo"/>
+			<mate:ListenerInjector eventType="{VoiceEvent.NEWMEMO}" method="handleVoiceMemo"/>
+			<mate:ListenerInjector eventType="{TextMemoEvent.NEWMEMO}" method="handleTextMemo"/>
+		</mate:Injectors>
+		
+
+		
+	</fx:Declarations>
+</mate:EventMap >

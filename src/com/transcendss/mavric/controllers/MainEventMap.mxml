@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mate:EventMap  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:mate="http://mate.asfusion.com/" cache="global" >
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.events.AccessPointEvent;
+			import com.transcendss.mavric.events.AssetEditFormEvent;
+			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.events.DataEventEvent;
+			import com.transcendss.mavric.events.DomainRetrievalEvent;
+			import com.transcendss.mavric.events.GPSEvent;
+			import com.transcendss.mavric.events.GestureControlEvent;
+			import com.transcendss.mavric.events.GuardrailEvent;
+			import com.transcendss.mavric.events.GuardrailMenuEvent;
+			import com.transcendss.mavric.events.LocalRouteEvent;
+			import com.transcendss.mavric.events.SignInvEvent;
+			import com.transcendss.mavric.extended.models.MAVRICDiagram;
+			import com.transcendss.mavric.managers.ArcGISServiceManager;
+			import com.transcendss.mavric.managers.ExternalFileManager;
+			import com.transcendss.mavric.managers.MavricConfiguredSyncManager;
+			import com.transcendss.mavric.managers.MenuManager;
+			import com.transcendss.mavric.managers.RandHSyncManager;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.views.AssetEditForm;
+			import com.transcendss.mavric.views.ControlBar;
+			import com.transcendss.mavric.views.GuardrailMenu;
+			import com.transcendss.mavric.views.InventoryMenu;
+			import com.transcendss.mavric.views.MenuBar;
+			import com.transcendss.mavric.views.OverviewMap;
+			import com.transcendss.mavric.views.SLDDiagram;
+			import com.transcendss.mavric.views.ThreeDMap;
+			import com.transcendss.mavric.views.VideoLog;
+			import com.transcendss.mavric.views.componentviews.MainEntryForm;
+			import com.transcendss.mavric.views.componentviews.RouteSelector;
+			import com.transcendss.transcore.events.AssetManagerEvent;
+			import com.transcendss.transcore.events.AttributeEvent;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.ConfigManagerEvent;
+			import com.transcendss.transcore.events.ElementEvent;
+			import com.transcendss.transcore.events.ElementEditEvent;
+			import com.transcendss.transcore.events.ExternalFileEvent;
+			import com.transcendss.transcore.events.FeatureEvent;
+			import com.transcendss.transcore.events.InventoryMenuEvent;
+			import com.transcendss.transcore.events.MapInitEvent;
+			import com.transcendss.transcore.events.MenuBarEvent;
+			import com.transcendss.transcore.events.NavControlEvent;
+			import com.transcendss.transcore.events.PrintEvent;
+			import com.transcendss.transcore.events.RouteGeotagEvent;
+			import com.transcendss.transcore.events.RouteSelectorEvent;
+			import com.transcendss.transcore.events.TextMemoEvent;
+			import com.transcendss.transcore.events.UserDataEvent;
+			import com.transcendss.transcore.events.ViewMileEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.managers.CulvertManager;
+			import com.transcendss.transcore.sld.models.managers.MapManager;
+			import com.transcendss.transcore.sld.models.managers.NavManager;
+			import com.transcendss.transcore.sld.models.managers.RouteSelManager;
+			import com.transcendss.transcore.sld.models.managers.ServiceManager;
+			import com.tss.mapcore.events.TSSMapEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			
+			
+			
+			[Bindable]
+			private var debugFlag : Boolean = true; 
+			
+			[Bindable]
+			private var useAgsService:Boolean = FlexGlobals.topLevelApplication.useAgsService;
+			
+			[Bindable]
+			private var useAgsLatLong:Boolean = FlexGlobals.topLevelApplication.useAgsLatLong;
+			
+			
+			public function callStickDiagram(ac:ArrayCollection, event:FeatureEvent):void
+			{
+				event.stopPropagation();
+				FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.drawFeatures(ac, event.featureName);
+			}
+			
+			
+			
+			public function geotagRequestCallBack(ac:ArrayCollection):void
+			{
+				FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.geotagRequestCallBack(ac);
+			}
+			
+			public function symblFileRequestCallBack(respos:Object, event:ExternalFileEvent):void
+			{
+				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetSymLoaded(respos,event.featureName,event.responder,event.bAsset);
+				
+			}
+			
+			public function updateAssetManager(arr:ArrayCollection, event:FeatureEvent):void
+			{
+				event.stopPropagation();
+				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.onDBRetrievalComplete(arr, event.featureName, event.responder);
+				
+			}
+			
+			public function setMilepostData(arr:ArrayCollection, event:FeatureEvent):void
+			{
+				event.stopPropagation();
+				event.responder.result({dataProviderAC:arr, nRouteObj:event.diagramObj});
+				
+			}
+			
+			public function callDEDiagram(ac:ArrayCollection, event:ElementEvent):void
+			{
+				event.stopPropagation();
+				FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawElemsFrmSrvceRes(ac);
+			}
+			
+			public function setFaultDEDiagram( event:Event):void
+			{
+				event.stopPropagation();
+				FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawElemsFrmSrvceResFaultHandler();
+			}
+			
+			public function assetReqFaultHandler( event:Event):void
+			{
+				FlexGlobals.topLevelApplication.decrementEventStack();
+			}
+			public function signDataReqFaultHandler():void{
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
+				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining milemarkerdata");
+			}
+			
+			public function updateAttrSuccResult(result:String):void{
+				if (result=="Success"){
+//					Alert.show("Attribute Data Modified Successfully");
+					FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawSingleElemfrmStore();
+				}
+				else
+					updateAttrFaultResult();
+			}
+			public function updateAttrFaultResult():void{
+				FlexGlobals.topLevelApplication.TSSAlert("Error in Saving Data");
+				//FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.draw();
+			}
+			
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<mate:Debugger level="{Debugger.ALL}" />
+		
+		<!-- ======================================================================================== -->
+		<!-- Events -->
+		<!-- _________________________________________________________________________________________ -->  
+		
+		<mate:EventHandlers type="{TSSMapEvent.TRACKING_POINT}" debug="{debugFlag}" >
+			<mate:MethodInvoker generator="{MAVRICDiagram}" method="fireXYChange_FT" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{MapInitEvent.MAP_PREINITIALIZE}" debug="{debugFlag}" >
+			<mate:MethodInvoker generator="{MapManager}" method="onMapPreinitialize" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{MenuBarEvent.CREATE_MENU}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{MenuManager}" method="createMenu" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		<!-- Menu Button Click Event-->
+		
+		<!-- -->
+		<mate:EventHandlers type="{MenuBarEvent.MENU_CLICKED}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{MenuManager}" method="onClick" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+	
+		<mate:EventHandlers type="{NavControlEvent.CLICKED}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{NavManager}" method="onClick" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		
+		
+		
+		<mate:EventHandlers type="{RouteSelectorEvent.ROUTE_LIST_REQUESTED}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getURL" arguments="{['route',useAgsService, event.serviceURL]}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers >
+					<mate:MethodInvoker generator="{useAgsService ?  ArcGISServiceManager : ServiceManager}" method="{useAgsService ? 'onRouteListResult': 'onServiceResult'}" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{RouteSelManager}" method="setRouteList" arguments="{[lastReturn, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+	
+		<mate:EventHandlers type="{RouteSelectorEvent.MIN_MAX_REQUESTED}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getURL" arguments="{['minmax',useAgsService, event.serviceURL, event.routeName]}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{useAgsService ?  ArcGISServiceManager : ServiceManager}" method="{useAgsService ?'onMinMaxResult': 'onServiceResult'}" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{RouteSelManager}" method="setMinMax" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{com.transcendss.mavric.events.SyncEvent.APPLY_EDITS}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}"  resultFormat="text" debug="{debugFlag}" useProxy="false" method="POST" contentType="application/x-www-form-urlencoded">
+				
+				<mate:Request edits = "{event.editsJson }" 
+							  gdbVersion = "{ConfigUtility.get('gdb_version')}"
+							  f = "pjson"
+							  rollbackOnFailure ="{ConfigUtility.get('rollback_on_failure')}"/>
+							  <!--userName = "{event.userName}"-->
+						
+				
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ArcGISServiceManager}" method="onServiceObjResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{RandHSyncManager}" method="clearLocalData" arguments="{[lastReturn,event]}" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:MethodInvoker generator="{ArcGISServiceManager}" method="onServiceObjResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{RandHSyncManager}" method="clearLocalData" arguments="{[lastReturn,event]}" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{com.transcendss.mavric.events.SyncEvent.SYNC_REQUESTED}" debug="{debugFlag}" >
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" method="POST" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{MavricConfiguredSyncManager}" method="clearLocalTables" arguments="{[resultObject,event]}" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:MethodInvoker generator="{MavricConfiguredSyncManager}" method="syncFaultHandler" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		
+		
+		<mate:EventHandlers type="{com.transcendss.mavric.events.SyncEvent.SYNC_INITIATE}" debug="{debugFlag}" >
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" method="POST" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ MavricConfiguredSyncManager}" method="setLogIDAndContinueSync" arguments="{[resultObject,event]}" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:MethodInvoker generator="{MavricConfiguredSyncManager}" method="setInitiateSyncFaultHandler" arguments="{[event]}" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{com.transcendss.mavric.events.SyncEvent.SET_PROCESS_STATUS_ON_SYNC_ERROR}" debug="{debugFlag}" >
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" method="POST" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{MavricConfiguredSyncManager}" method="setProcStatusResponseHandler" arguments="{[resultObject,event]}" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:MethodInvoker generator="{MavricConfiguredSyncManager}" method="setProcStatusFaultHandler" arguments="{[event]}" >
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:faultHandlers>
+				
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{RouteGeotagEvent.ROUTE_GEOTAG_REQUESTED}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:InlineInvoker  method="{geotagRequestCallBack}" arguments="{lastReturn} "/>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>	
+		<!-- *********************************Culvert Inventory Code***************************************** -->
+		
+		<!--<mate:EventHandlers type="{InventoryMenuEvent.CULVERT_GEOTAG_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{CulvertManager}" method="setCulvertGeotags" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+
+
+		
+		<mate:EventHandlers type="{GuardrailMenuEvent.GUARDRAIL_GEOTAG_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:EventAnnouncer generator="{GuardrailMenu}" type="{GuardrailMenuEvent.GUARDRAIL_GEOTAG_READY}" constructorArguments="{[null,AssetEditFormEvent.GEOTAG_READY,true,true, lastReturn ]}" bubbles="true"  >
+					</mate:EventAnnouncer>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+-->
+
+		<!-- UNDER CONSTRUCTION: Needs a way to pass url into setDomainFromService-->
+		<mate:EventHandlers type="{DomainRetrievalEvent.FETCH_DOMAIN}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.url}" resultFormat="text" debug="{debugFlag}"> 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{DropDownViewVert}" method="setDomainFromService" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>	
+		
+		<mate:EventHandlers type="{UserDataEvent.FETCH_USER_DOMAIN}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.url}" resultFormat="text" debug="{debugFlag}"> 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:EventAnnouncer generator="{UserDataEvent}" type="{UserDataEvent.USER_DOMAIN_READY}" constructorArguments="{[UserDataEvent.USER_DOMAIN_READY, lastReturn]}" bubbles="true"  />
+
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>	
+		
+		<!-- ************************************************************************************************  -->
+		<!-- The two following handlers need to be switched out for disconnected/connected mode -->
+		<mate:EventHandlers type="{ExternalFileEvent.LOCAL_FILE_REQUESTED}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ExternalFileManager}" method="parseConfigFile" arguments="{event}" >
+				<mate:Properties dispatcher="{scope.dispatcher}"/>
+			</mate:MethodInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{ExternalFileEvent.FILE_REQUESTED}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.filePath}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{ExternalFileManager}" method="dispatchFileContents" arguments="{[lastReturn, event.fileName]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		<!-- ************************************************************************************************  -->
+		
+		<mate:EventHandlers type="{ExternalFileEvent.ASSET_SYMBL_REQUESTED}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.filePath}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:InlineInvoker  method="{symblFileRequestCallBack}" arguments="{[resultObject,event]} "/>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{FeatureEvent.FEATURE_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					
+					<mate:InlineInvoker  method="{callStickDiagram}" arguments="{[lastReturn, event]} "/>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{FeatureEvent.GETMILEPOSTDATA}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getURL" arguments="{['milemarker',useAgsService, event.serviceURL, event.routeName, event.begMile, event.endMile, event.eventLayerID]}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{useAgsService ?  ArcGISServiceManager : ServiceManager}" method="{useAgsService ? 'onAssetServiceResult': 'onServiceResult'}" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:InlineInvoker method="setMilepostData" arguments="{[lastReturn, event]} "/>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker  method="signDataReqFaultHandler" arguments="{event} "/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{FeatureEvent.ASSET_REQUEST}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getURL" arguments="{['assetevent',useAgsService, event.serviceURL, event.routeName, event.begMile, event.endMile, event.eventLayerID]}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{useAgsService ?  ArcGISServiceManager : ServiceManager}" method="{useAgsService ? 'onAssetServiceResult': 'onServiceResult'}" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					
+					<mate:InlineInvoker method="updateAssetManager" arguments="{[lastReturn, event]} "/>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+	
+		<mate:EventHandlers type="{ElementEvent.ELEMENT_REQUEST}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getURL" arguments="{['assetevent',useAgsService, event.serviceURL, event.routeName, event.begMile, event.endMile, event.eventLayerID]}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{useAgsService ?  ArcGISServiceManager : ServiceManager}" method="{useAgsService ? 'onAssetServiceResult': 'onServiceResult'}" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					
+					<mate:InlineInvoker  method="callDEDiagram" arguments="{[lastReturn, event]} "/>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:MethodInvoker generator="{useAgsService ?  ArcGISServiceManager : ServiceManager}" method="{useAgsService ? 'onAssetServiceResult': 'onServiceResult'}" arguments="{[null, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					
+					<mate:InlineInvoker  method="callDEDiagram" arguments="{[lastReturn, event]} "/>
+				</mate:faultHandlers>
+					
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers id="attr" type="{AttributeEvent.ATTRIBUTE_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:EventAnnouncer generator="{AttributeEvent}" type="{AttributeEvent.ATTRIBUTE_READY}" constructorArguments="{[AttributeEvent.ATTRIBUTE_READY,event.milePoint, lastReturn, event.ClickY,event.ClickX ]}" bubbles="true"  >
+						<!--<mate:Properties milePoint="{event.milePoint}" data="{lastReturn}"/>-->
+					</mate:EventAnnouncer>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{AttributeEvent.ATTRIBUTE_SAVE}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}"  resultFormat="text" debug="{debugFlag}" useProxy="false" method="POST" contentType="text/json">
+				<!--<mate:Request elemid = "{event.attrid}" 
+							  rowid = "{event.rowid}"
+							  value = "{event.value}"
+							  desc = "{event.desc}" />-->
+				
+				<mate:resultHandlers>
+					<mate:InlineInvoker method="updateAttrSuccResult" arguments="{resultObject}"/>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker method="updateAttrFaultResult"/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<!--<mate:EventHandlers type="{AttributeEvent.ATTRIBUTE_SAVE}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}"  resultFormat="text" debug="{debugFlag}" useProxy="false" method="POST" contentType="application/x-www-form-urlencoded">
+					<mate:Request elemid = "{event.attrid}" 
+								  rowid = "{event.rowid}"
+								  value = "{event.value}"
+								  desc = "{event.desc}" />
+	
+					<mate:resultHandlers>
+						<mate:InlineInvoker method="updateAttrSuccResult" arguments="{resultObject}"/>
+					</mate:resultHandlers>
+					<mate:faultHandlers>
+						<mate:InlineInvoker method="updateAttrFaultResult"/>
+					</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+	-->	
+		<!--<mate:EventHandlers type="{RouteSelectorEvent.ROUTE_SELECTION_COMPLETE}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{MapManager}" method="setNewRouteCoords" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>-->
+		
+		
+		
+		<mate:EventHandlers type="{RouteSelectorEvent.ROUTE_SELECTION_MAP_REDRAW}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getURL" arguments="{['latlong',useAgsService, event.serviceURL, event.routeName]}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{useAgsService ||useAgsLatLong ? ArcGISServiceManager : ServiceManager}" method="{useAgsService ||useAgsLatLong ?'onLatLongResult': 'onServiceResult' }" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{MapManager}" method="setNewRouteCoords" arguments="{lastReturn}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<!--<mate:EventHandlers type="{AssetEditFormEvent.GEOTAG_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" > 
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ServiceManager}" method="onServiceResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:EventAnnouncer generator="{AssetEditFormEvent}" type="{AssetEditFormEvent.GEOTAG_READY}" constructorArguments="{[null,AssetEditFormEvent.GEOTAG_READY,true,true, lastReturn ]}" bubbles="true"  >
+					
+					</mate:EventAnnouncer>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker method="assetGTFaultHandler"/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>-->
+		
+		
+		<!-- ======================================================================================== -->
+		<!-- Injectors -->
+		<!-- _________________________________________________________________________________________ -->
+		
+		<mate:Injectors target="{ThreeDMap}">
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP3D_OPTIONS_READY}" method="setMapOptions"/>
+		</mate:Injectors>
+		
+		<mate:Injectors target="{MenuBar}" debug="{true}">
+			<mate:ListenerInjector eventType="{MenuBarEvent.MENU_READY}" method="setMenuItems"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.DISTRICT_CHANGED}" method="setDistrict"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.INSP1_CHANGED}" method="setInsp1"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.INSP2_CHANGED}" method="setInsp2"/>
+			
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.SYNC_TYPE_CHANGED}" method="setSyncIcon"/>
+			<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setSyncIcon"/>
+		</mate:Injectors>
+
+		<mate:Injectors target="{OverviewMap}">
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP_OPTIONS_READY}" method="setMapOptions"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.XY_CHANGE}" method="xyChange"/>
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP_ROUTE_INFO_READY}" method="drawRoute"/>
+			<mate:ListenerInjector eventType="{TSSMapEvent.TOGGLE_MAP}" method="reDrawRoute" />
+		</mate:Injectors>
+		
+		<mate:Injectors target="{MAVRIC2}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{MenuBarEvent.ROUTE_SAVED}" method="saveCurrentRoute"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.ROUTE_LOADED}" method="loadSavedRoute"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.SETTINGS_ENABLED}" method="showSettingPopUp"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.ROUTE_SELECTOR_ENABLED}" method="showRteSelection"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.CONTROLBAR_ENABLED}" method="showControlBar"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.DRIVEMAP_ENABLED}" method="showDriveMapOnly"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.OVERVIEW_ENABLED}" method="showOverviewOnly"/>
+			<mate:ListenerInjector eventType="{MenuBarEvent.FULL_SCREEN_ENABLED}" method="displayFullScreen"/>
+			<mate:ListenerInjector eventType="{PrintEvent.PRINT_PREVIEW_ENABLED}" method="showPrintDialog"/>
+			<mate:ListenerInjector eventType="{AttributeEvent.ATTRIBUTE_READY}" method="showAttrDetails"/>
+			<mate:ListenerInjector eventType="{CameraEvent.OPENCONTROL}" method="showCameraControl"/>
+			<mate:ListenerInjector eventType="{CameraEvent.OPENIMAGE}" method="showFullImage"/>
+			<mate:ListenerInjector eventType="{VoiceEvent.OPENCONTROL}" method="showVoiceControl"/>
+			<mate:ListenerInjector eventType="{TextMemoEvent.OPENCONTROL}" method="showTextMemoControl"/>
+		
+			<mate:ListenerInjector eventType="{TextMemoEvent.OPENMEMO}" method="showTextMemo"/>
+			<mate:ListenerInjector eventType="{videoEvent.OPENCONTROL}" method="showVideoControl"/>
+			<mate:ListenerInjector eventType="{videoEvent.OPENVIDEO}" method="showVideo"/>
+			<mate:ListenerInjector eventType="{AssetEvent.CULVERTFORMLOADED}" method="passCulvertInfo"/>
+			<mate:ListenerInjector eventType="{GuardrailEvent.GUARDRAIL_FORM_LOADED}" method="passAssetInfo"/>
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_CHANGE_REQUESTED}" method="showRteSelectionForRteChange"/>
+			<mate:ListenerInjector eventType="{CameraEvent.NEWPICTURE}" method="handlePicture" />
+			<mate:ListenerInjector eventType="{videoEvent.NEWVIDEO}" method="handleVideo" />
+			<mate:ListenerInjector eventType="{VoiceEvent.NEWMEMO}" method="handleVoiceMemo"/>
+			<mate:ListenerInjector eventType="{TextMemoEvent.NEWMEMO}" method="handleTextMemo" />
+			<mate:ListenerInjector eventType="{ElementEditEvent.EDIT_ELEMENT}" method="handleEditElementLongClick" />
+			<mate:ListenerInjector eventType="{ElementEditEvent.COMPLETE_ELEMENT_MERGE}" method="completeElementMerge" />
+<!--
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_MATERIAL_READY}" method="setMaterialList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_SHAPE_READY}" method="setShapeList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_PLACEMENT_READY}" method="setPlacementList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_JOINTLOC_READY}" method="setJointlocList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_ABUTMENT_READY}" method="setAbutmentList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_BEAM_READY}" method="setBeamList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_GENERAL_READY}" method="setGeneralList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_FLOW_READY}" method="setFlowList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_JOINT_READY}" method="setJointsList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_BARREL_READY}" method="setBarrelList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_CULVERTENDS_READY}" method="setEndsList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_CHANNEL_READY}" method="setChannelList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_MAINT_READY}" method="setMaintList" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_MAINT_EQUIP_READY}" method="setMaintEquipList" useWeakReference="true"/>
+-->
+		</mate:Injectors>
+	
+		
+		<mate:Injectors target="{RouteSelector}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTOR_POPULATE}" method="rteSelectorPopulate" />
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_LIST_READY}" method="setRouteList" />
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.MIN_MAX_READY}" method="setMinMax"/>
+		</mate:Injectors>
+		
+		<mate:Injectors target="{SLDDiagram}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTION_COMPLETE}" method="setRoute"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.START_RUN}" method="startRun"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.STOP_RUN}" method="stopRun"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.NEXT}" method="next"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.PREVIOUS}" method="previous"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.BEGINNING}" method="gotoBeginning"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.END}" method="gotoEnd"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.UTURN}" method="uturn"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.CHANGE_SPEED}" method="changeSpeed"/>
+			<mate:ListenerInjector eventType="{NavControlEvent.CHANGE_STEP}" method="changeStep"/>
+			<mate:ListenerInjector eventType="{ViewMileEvent.VIEWMILE_SET}" method="setViewMile"/>
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.GUIDEBAR_CHANGED}" method="toggleGuideBar"/>
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.INV_PANEL_VIEW_CHANGED}" method="toggleInvPanelView"/>
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.MEASUREBAR_SWITCH_CHANGED}" method="toggleMeasureBar"/>
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.MEASUREBAR_UNIT_CHANGED}" method="changeMeasureBarUnit"/>
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTION_COMPLETE}" method="setCBButtonDPs"/>
+			
+			<mate:ListenerInjector eventType="{ConfigManagerEvent.ASSET_SWITCH_CHANGED}" method="toggleAssetsOnStick"/>
+			<!--<mate:ListenerInjector eventType="{CameraEvent.NEWPICTURE}" method="handlePicture"/>-->
+			
+			<!--<mate:ListenerInjector eventType="{videoEvent.NEWVIDEO}" method="handleVideo"/>
+			<mate:ListenerInjector eventType="{VoiceEvent.NEWMEMO}" method="handleVoiceMemo"/>
+			<mate:ListenerInjector eventType="{TextMemoEvent.NEWMEMO}" method="handleTextMemo"/>-->
+			<mate:ListenerInjector eventType="{DataEventEvent.NEWPOINTEVENT}" method="handlePointEvent"/>
+			<mate:ListenerInjector eventType="{DataEventEvent.NEWLINEAREVENTSTART}" method="handleLineEventStart"/>
+			<mate:ListenerInjector eventType="{DataEventEvent.NEWLINEAREVENTEND}" method="handleLineEventEnd"/>
+			<mate:ListenerInjector eventType="{GestureControlEvent.CHANGED}" method="controlGestures"/>
+			
+			<mate:ListenerInjector eventType="{SignInvEvent.NEWSIGNEVENT}" method="handleNewSign"/>
+			<!--<mate:ListenerInjector eventType="{videoEvent.NEWVIDEO}" method="handleVideo"/>-->
+			<mate:ListenerInjector eventType="{GPSEvent.UPDATE}" method="handleGPSChange"/>
+			
+			<mate:ListenerInjector eventType="{AssetEvent.NEWCULVERT}" method="handleNewCulvert"/>
+			<mate:ListenerInjector eventType="{GuardrailEvent.NEW_GUARDRAIL}" method="handleNewGuardrail"/>
+
+			<mate:ListenerInjector eventType="{AccessPointEvent.NEWACCESSPOINT}" method="handleNewAP"/>
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP_ROUTE_INFO_READY}" method="setRouteCoords"/>
+			<mate:ListenerInjector eventType="{ElementEvent.ELEMENT_LOAD_COMPLETED}" method="continueLocalSave"/>
+			<mate:ListenerInjector eventType="{RouteGeotagEvent.ROUTE_LOCAL_GEOTAG_REQUESTED}" method="loadLocalGeotags"/>
+			
+			<!-- Load Cached Route Events -->
+			
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_ROUTE}" method="eventLoadLocalDiagram" />
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_1}" method="loadPhase1" />
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_2}" method="loadPhase2" /> 
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_3}" method="loadPhase3" /> 
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_4}" method="loadPhase4" /> 
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_5}" method="loadPhase5" /> 
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_6}" method="loadPhase6" /> 
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_7}" method="loadPhase7" />
+			<mate:ListenerInjector eventType="{LocalRouteEvent.LOAD_8}" method="loadPhase8" />
+			
+			<mate:ListenerInjector eventType="{AssetManagerEvent.ASSET_SELECTED_EVENT}" method="showAssetSelectionPop"/>
+			
+			<mate:ListenerInjector eventType="{ElementEvent.DRAW_ROADWAY_LANES}" method="drawRoadwayLanes" />
+		</mate:Injectors>
+		
+		<mate:Injectors target="{VideoLog}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{NavControlEvent.XY_CHANGE}" method="xyChange"/>
+			<mate:ListenerInjector eventType="{MapInitEvent.MAP_ROUTE_INFO_READY}" method="setRouteCoords"/>
+		</mate:Injectors>
+		<mate:Injectors target="{MainEntryForm}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{UserDataEvent.USER_DOMAIN_READY}" method="populateUser"/>
+		</mate:Injectors>
+		
+<!--		<mate:Injectors target="{SignInventory}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{DropDownViewEvent.CUSBUTFUNCEVENT}" method="CustomButtonClick" />
+			<mate:ListenerInjector eventType="{DropDownViewEvent.NUMSIGNSSELEVENT}" method="NumSignsChanged" />
+			<mate:ListenerInjector eventType="{DropDownViewEvent.POSTTYPESELEVENT}" method="PTSelctedHandler" />
+			<mate:ListenerInjector eventType="{DropDownViewEvent.SIGN_SELECTED}" method="signSelectCompleteHandler" />
+		</mate:Injectors>-->
+		
+		<!--
+		<mate:Injectors target="{SignTabView}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{DropDownViewEvent.CUSBUTFUNCEVENT}" method="CustomButtonClick" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{DropDownViewEvent.POSTTYPESELEVENT}" method="PTSelctedHandler" useWeakReference="true"/>
+			
+		</mate:Injectors>
+		-->
+		
+		<!--<mate:Injectors target="{SignSelector}" debug="{debugFlag}" start="trace('Execution of injectors list started!')">
+			<mate:ListenerInjector eventType="{DropDownViewEvent.CATEGORYSELCTED}" method="getSubCats" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{DropDownViewEvent.SUBCATBUTEVENT}" method="customButClick" useWeakReference="true"/>
+			<mate:ListenerInjector eventType="{DropDownViewEvent.SUBCATEGORYSELCTED}" method="getMutcdDP" useWeakReference="true"/>
+		</mate:Injectors>
+	-->
+		
+		<mate:Injectors target="{ControlBar}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setJumpScale"/>
+			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTION_COMPLETE}" method="changeScale"/>
+			<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setImageSource"/>
+<!--			<mate:ListenerInjector eventType="{MapOperationEvent.MAP_SCALE_CHANGED}" method="setJumpScale"/>
+-->		</mate:Injectors>
+		
+		<mate:Injectors target="{InventoryMenu}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{InventoryMenuEvent.CULVERT_GEOTAG_READY}" method="setGeotagsFromServer" useWeakReference="true"/>
+			
+		</mate:Injectors>
+		
+		<mate:Injectors target="{AssetEditForm}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{AssetEditFormEvent.GEOTAG_READY}" method="setGeotagsFromServer" useWeakReference="true"/>
+		</mate:Injectors>
+		
+		<mate:Injectors target="{GuardrailMenu}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{GuardrailMenuEvent.GUARDRAIL_GEOTAG_READY}" method="setGeotagsFromServer" useWeakReference="true"/>
+			
+		</mate:Injectors>
+		
+		
+	</fx:Declarations>
+</mate:EventMap >

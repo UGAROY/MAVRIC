@@ -1,0 +1,1495 @@
+<?xml version="1.0" encoding="utf-8"?>
+<baseViews:BaseAssetTitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+								xmlns:mx="library://ns.adobe.com/flex/mx"
+								xmlns:s="library://ns.adobe.com/flex/spark"
+								xmlns:components="spark.components.*"
+								xmlns:views="com.transcendss.mavric.views.*"
+								xmlns:controllers="com.transcend.mavric.controllers.*"
+								xmlns:mate="http://mate.asfusion.com/" 
+								width="1072" height="949"  
+								skinClass="skins.MavricTitleWindowSkin"
+								xmlns:baseViews="com.transcendss.mavric.views.baseViews.*"
+								
+								title="{formTitle}"
+								creationComplete="init()"
+								close="handleCloseEvent();">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.asfusion.mate.events.Dispatcher;
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.managers.ArcGISServiceManager;
+			import com.transcendss.mavric.managers.SettingsManager;
+			import com.transcendss.mavric.util.DatePickerView;
+			import com.transcendss.mavric.util.DropDownViewHoriz;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.TextMemoEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			import com.transcendss.transcore.sld.models.components.GeoTag;
+			import com.transcendss.transcore.sld.models.components.Route;
+			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
+			import com.transcendss.transcore.util.Converter;
+			import com.transcendss.transcore.util.TSSAudio;
+			import com.transcendss.transcore.util.TSSMemo;
+			import com.transcendss.transcore.util.TSSPicture;
+			import com.transcendss.transcore.util.TSSVideo;
+			
+			import flash.events.Event;
+			import flash.events.MouseEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.controls.Spacer;
+			import mx.core.FlexGlobals;
+			import mx.core.IVisualElement;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			import mx.validators.Validator;
+			
+			import spark.components.Group;
+			import spark.components.Image;
+			import spark.components.Label;
+			import spark.components.RadioButton;
+			import spark.components.TextArea;
+			import spark.components.TextInput;
+			import spark.components.TileGroup;
+			import spark.events.PopUpEvent;
+			import spark.formatters.NumberFormatter;
+			import spark.skins.mobile.TextInputSkin;
+			import spark.validators.NumberValidator;
+			
+			private static const PX_PER_LINE:Number = 20;
+			private static const HORIZ_LAYOUT:String = "Horiz";
+			private static const VERT_LAYOUT:String = "Vert";
+			private static const TILED_LAYOUT:String = "Tiled";
+			
+			private var dbManager:MAVRICDBManager;
+			private var gtManager:GeotagsManager = new GeotagsManager();
+			private var agsManager:ArcGISServiceManager = new ArcGISServiceManager();
+			private var baseAsset:BaseAsset;
+			private var panels: ArrayList;
+			private var images: Vector.<Image>;
+			private var bigGroup : Group = new Group(); 
+			private var tmpHGroup: HGroup;
+			private var tmpVGroup: VGroup;
+			private var parentVGroup: VGroup;
+			private var parentHGroup: HGroup;
+			private var parentTileGroup: TileGroup;
+			
+			private var viewStackGroup: HGroup = new HGroup();
+			private var invComponents : ArrayList = new ArrayList();
+			private var inspComponents : ArrayList = new ArrayList();
+			private var components:ArrayList = new ArrayList();
+			private var currentDropDown : String;
+			private var dropDowns : ArrayList = new ArrayList();
+			private var formatter:NumberFormatter = new NumberFormatter();
+			private var dataTemplateFilePath:String;
+			
+			private var leftBtn:RadioButton;
+			private var rightBtn : RadioButton;
+			private var radios:Vector.<RadioButton> = new Vector.<RadioButton>();
+			private var ddViews:ArrayCollection = new ArrayCollection();
+			private var milepost:Number =-1;
+			private var dispatcher:Dispatcher = new Dispatcher();
+			
+			private var moveToLat:String="";
+			private var moveToLong:String="";
+			private var moveToPrec:String="";
+			private var moveToRefpt:Number;
+			private var assetMoved:Boolean = false;
+			
+			[Bindable]
+			private var formTitle:String = "Edit Form";
+			// Method to handle initialization of the asset edit form
+			private var timer:Timer;
+			
+			private var setMan:SettingsManager = new SettingsManager();
+			
+			public function init():void
+			{
+				//this.backgroundFill = new SolidColor(0xFFFFFF, 1.0);
+				assetMoved = false;
+				dbManager = MAVRICDBManager.newInstance();
+				var eve:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
+				dispatchEvent(eve);
+				ddViews = new ArrayCollection();
+			}
+			
+			public override function setBaseAsset(asset:BaseAsset):void
+			{
+				baseAsset = asset;
+				assetMoved = false;
+				// Build the form (complete with asset values in fields) here
+				var meFile:File;
+				var path:String=FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.assetTemplates;
+				
+				if(path.indexOf("app-storage")!= -1)
+					meFile = File.applicationStorageDirectory.resolvePath(path.replace("app-storage:/",""));
+				else
+					meFile = File.applicationDirectory.resolvePath(path);
+				
+				var fs:FileStream = new FileStream();
+				fs.open(meFile, FileMode.READ);
+				
+				var jsonString : String = fs.readUTFBytes(fs.bytesAvailable);
+				var templates : Array = JSON.parse(jsonString) as Array;
+				
+				parseConfig(getTemplate(templates,asset.assetType));
+			}
+			
+			private function getTemplate(templates:Array, assetType:String):Object
+			{
+				for each(var obj:Object in templates)
+				{
+					if(obj.DATA_ENTRY_TEMPLATE.ASSET_TYPE == assetType)
+						return obj;
+					
+					
+				}
+				return null;
+			}
+			
+			private function parseConfig(template: Object): void
+			{
+				bigGroup.removeAllElements();
+				components = new ArrayList();
+				tabButtonGroup.removeAllElements();
+				if(template !=null)
+				{
+					var configObj : Object = template;
+					var top : Group = new Group();
+					var tabs : Array = configObj.DATA_ENTRY_TEMPLATE.TABS;
+					panels = new ArrayList();
+					formTitle = configObj.DATA_ENTRY_TEMPLATE.TITLE;
+					
+					if(configObj.DATA_ENTRY_TEMPLATE.RETIRE_AVAILABLE && String(configObj.DATA_ENTRY_TEMPLATE.RETIRE_AVAILABLE).toLowerCase()=="false")
+						this.btnRetire.visible = false;
+					
+					if(configObj.DATA_ENTRY_TEMPLATE.MOVE_AVAILABLE && String(configObj.DATA_ENTRY_TEMPLATE.MOVE_AVAILABLE).toLowerCase()=="false")
+						this.moveBtn.visible = false;
+					
+					//					// Title Label for the form
+					//					var editLabel : Label = new Label();
+					//					editLabel.text = configObj.DATA_ENTRY_TEMPLATE.TITLE;
+					//					editLabel.y += 100;
+					//					tabButtonGroup.addElement(editLabel);
+					
+					var buttons : Vector.<Button> = new Vector.<Button>();
+					var button : Button = new Button();
+					var groups : Array = new Array();
+					var group : Group = new Group();
+					
+					//For every Group within the viewStack
+					for(var ti : int = 0; ti < tabs.length; ti++)
+					{
+						// the var groups does NOT represent the array of panels
+						groups = tabs[ti].GROUPS as Array;
+						group = new Group();
+						
+						// refers to Inventory
+						group.id = tabs[ti].TYPE;
+						group.name = tabs[ti].TYPE;
+						//Take care of the buttons
+						setButton(buttons, button, tabs[ti].ID, group);
+						if(ti == 0)
+						{
+							buttons[0].enabled = false;
+						}
+						
+						var parentLayout:String;
+						var label:Label;
+						var controls:Array;
+						var controlLayout:String;
+						//For every Group within a Group
+						for(var i : int = 0; i < groups.length; i++)
+						{
+							var groupObj : Object = groups[i];
+							
+							// Defining each VGroup
+							if(groupObj.TYPE == "vgroup")
+							{
+								parentVGroup = new VGroup();
+								parentVGroup.name = groupObj.TITLE;
+								parentLayout = VERT_LAYOUT;
+								controls = groupObj.CONTROLS as Array; 
+								if(groupObj.GAP && !isNaN(Number(groupObj.GAP) ))
+									parentVGroup.gap = Number(groupObj.GAP); 
+								//For every control (HGroup or VGroup) within a VGroup
+								for(var j : int = 0; j < controls.length; j++)
+								{
+									label = new Label();
+									label.text = controls[j].LABEL + ": ";
+									label.setStyle("fontWeight", "bold");
+									if(controls[j].LAYOUT)
+										controlLayout = controls[j].LAYOUT;
+									else
+										controlLayout = HORIZ_LAYOUT;
+									
+									setControlinGroup(parentLayout, controlLayout, label, controls[j], groupObj);									
+								}
+								
+								group.addElement(parentVGroup);
+							}
+								
+								// Defining each HGroup
+							else if(groupObj.TYPE == "hgroup")
+							{
+								parentHGroup = new HGroup();
+								parentHGroup.name = groupObj.TITLE;
+								parentLayout = HORIZ_LAYOUT;
+								
+								if(groupObj.GAP && !isNaN(Number(groupObj.GAP) ))
+									parentHGroup.gap = Number(groupObj.GAP); 
+								controls = groupObj.CONTROLS as Array; 
+								
+								//For every control (HGroup or VGroup) within a VGroup
+								for(var k : int = 0; k < controls.length; k++)
+								{
+									label = new Label();
+									label.text = controls[k].LABEL + ": ";
+									label.setStyle("fontWeight", "bold");
+									if(controls[k].LAYOUT)
+										controlLayout = controls[k].LAYOUT;
+									else
+										controlLayout = HORIZ_LAYOUT;
+									
+									setControlinGroup(parentLayout, controlLayout, label, controls[k], groupObj);
+								}
+								
+								group.addElement(parentHGroup);
+								
+							}
+								
+								// Defining every TileGroup
+							else if(groupObj.TYPE == "tilegroup")
+							{
+								parentTileGroup = new TileGroup();
+								parentTileGroup.name = groupObj.TITLE;
+								parentLayout = TILED_LAYOUT;
+								
+								if(groupObj.X)
+									parentTileGroup.x = groupObj.X;
+								if(groupObj.Y)
+									parentTileGroup.y = groupObj.Y;
+								if(groupObj.HEIGHT)
+									parentTileGroup.height = groupObj.HEIGHT;
+								if(groupObj.WIDTH)
+									parentTileGroup.width = groupObj.WIDTH;
+								
+								controls = groupObj.CONTROLS as Array; 
+								
+								//For every control (HGroup or VGroup) within a Group
+								for(var kl : int = 0; kl < controls.length; k++)
+								{
+									label = new Label();
+									label.text = controls[kl].LABEL + ": ";
+									label.setStyle("fontWeight", "bold");
+									if(controls[kl].LAYOUT)
+										controlLayout = controls[kl].LAYOUT;
+									else
+										controlLayout = HORIZ_LAYOUT;
+									
+									setControlinGroup(parentLayout, controlLayout, label, controls[kl], groupObj);
+								}
+								
+								group.addElement(parentTileGroup);
+								
+							}
+						}
+						//						group.percentWidth = 100;
+						bigGroup.addElement(group);
+						
+						panels.addItem(group);
+						if(ti != 0)
+						{
+							group.setVisible(false);	
+						}
+						viewStackGroup.addElement(bigGroup);
+						var boxWidth:Number = parseInt(configObj.DATA_ENTRY_TEMPLATE.WIDTH) - 50;
+						enableGeoTags(group, configObj.DATA_ENTRY_TEMPLATE.TABS[ti].ENABLEGEOTAGS.toUpperCase(), boxWidth);
+						viewStack.addElement(viewStackGroup);
+					}
+					for(var bi: int = 0; bi < buttons.length; bi++)
+					{
+						tabButtonGroup.addElement((Button)(buttons[bi]));
+						//						tabButtonGroup.paddingLeft = 5;
+						//						tabButtonGroup.paddingTop = 5;
+					}
+					//					btnRetire.addEventListener(MouseEvent.CLICK, retireChk_changeHandler);
+					this.width = configObj.DATA_ENTRY_TEMPLATE.WIDTH;
+					this.height = configObj.DATA_ENTRY_TEMPLATE.HEIGHT;
+					
+					//get geotags
+					
+					if (String(baseAsset.invProperties[baseAsset.primaryKey].value) != "-1")
+					{
+						var gtArray:Array = dbManager.getLocalGeoTags(new Number(baseAsset.invProperties[baseAsset.primaryKey].value),baseAsset.assetType );
+						
+						for (var gti:int=0;gti<gtArray.length;gti++)
+						{
+							var tmpMedia:Object = new Object();
+							var tmpGT:GeoTag = gtArray[gti] as GeoTag;	
+							tmpGT.asset_ty_id = baseAsset.assetType;
+							//							var loaderPath:String = setMan.getSetting("geoTagFolder");
+							var viE:* =gtManager.ConvertGeotags(tmpGT,"","local");
+							if(viE)
+							{
+								((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as VGroup).addElement(viE);
+								//								if(tmpGT.is_insp)
+								//									((bigGroup.getChildByName("Attachments") as Group).getChildByName("InspAttach") as Group).addElement(viE);
+								//								else
+								//									((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as Group).addElement(viE);
+							}
+							//FlexGlobals.topLevelApplication.addListenersToGeoTag(tmpMedia);
+							tmpMedia.geoTag = tmpGT;
+							tmpMedia.geoLocalId = tmpGT.id;
+						}
+						
+					}
+					else
+					{
+						baseAsset.setAssetLocation("LATITUDE","LONGITUDE");
+					}
+					//if the tablet is conneted to wifi and if it is not a new asset and if it is not local asset
+					if(FlexGlobals.topLevelApplication.connected && baseAsset.id!=-1 && baseAsset.status!='NEW')
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						var httpServ:HTTPService = new HTTPService();
+						httpServ.method = "GET";
+						httpServ.resultFormat = "text";
+						httpServ.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+						
+						if(FlexGlobals.topLevelApplication.useAgsService  )
+						{
+							var layerID:String =FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerID(baseAsset.description);
+							httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String( baseAsset.id));
+							httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+								var attachments:Object = JSON.parse(event.result as String);
+								
+								setGeotagsFromServer(attachments.attachmentInfos as Array, layerID );
+							});
+							
+						}
+						else if(baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !=""  && baseAsset.invProperties["ASSET_BASE_ID"].value !=null )
+						{
+							httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL+"Geotags/"+String(baseAsset.invProperties["ASSET_BASE_ID"].value);
+							httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+								setGeotagsFromServer(JSON.parse(event.result as String) as Array);
+							});
+						}
+						if(httpServ.url)
+							httpServ.send();
+					}
+					
+					
+					//if editing an asset from server
+					if((baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !="") )
+						//|| (String(baseAsset.invProperties["STATUS"].value) =='EDITED'))
+						this.btnRetire.enabled = true;
+					else
+						this.btnRetire.enabled = false;
+					
+					if(baseAsset.invProperties["RETIRED"] && baseAsset.invProperties["RETIRED"].value == 1)
+					{
+						retireOkay(true);
+						this.btnRetire.selected = true;
+					}
+				}
+			}
+			
+			
+			public function setGeotagsFromServer(gtArray:Array, layerID:String = ""):void
+			{
+				
+				gtManager.setGeotags(
+					((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as Group),
+					gtArray,
+					baseAsset.assetType,
+					String(baseAsset.id),
+					baseAsset.routeName,
+					Number(baseAsset.invProperties[baseAsset.fromMeasureColName].value),
+					"",
+					baseAsset.invProperties[baseAsset.toMeasureColName]?Number(baseAsset.invProperties[baseAsset.toMeasureColName].value):0,layerID);
+				
+					
+			}
+			
+			private function createLabelControl(layout:String, label:Label, controlObj:Object):void
+			{
+				var lbl:Label = new Label();
+				
+				lbl.id = controlObj.ID;
+				
+				if(!baseAsset.invProperties[lbl.id] && !baseAsset.inspProperties[lbl.id])
+					lbl.text = label.text;
+					
+				else if((lbl.id == "X" || lbl.id == "Y") &&
+					(baseAsset.invProperties[lbl.id].value == null || 
+						baseAsset.invProperties[lbl.id].value == "-1"))
+				{
+					if(lbl.id == "X")
+					{
+						lbl.text = label.text + FlexGlobals.topLevelApplication.newCenter.lon.toString();
+					}
+					else if(lbl.id == "Y")
+					{
+						lbl.text = label.text + FlexGlobals.topLevelApplication.newCenter.lat.toString();
+					}
+				}
+				
+				if(controlObj.Width != null)
+				{
+					lbl.width = controlObj.Width;
+				}
+				if(layout == VERT_LAYOUT)
+				{
+					tmpVGroup = new VGroup();
+					tmpVGroup.verticalAlign = "middle";
+					tmpVGroup.addElement(lbl as IVisualElement);
+				}
+				else
+				{
+					tmpHGroup = new HGroup();
+					tmpHGroup.verticalAlign = "middle";
+					tmpHGroup.addElement(lbl as IVisualElement);
+				}
+				
+				components.addItem(lbl);
+				if(lbl.text == "")
+				{
+					lbl.text = label.text;
+					lbl.text += baseAsset.invProperties[lbl.id]? baseAsset.invProperties[lbl.id].value: 
+						baseAsset.inspProperties[lbl.id]?baseAsset.inspProperties[lbl.id].value:"";
+				}
+			}
+			
+			private function createTextControl(layout:String, label:Label, controlObj:Object):void
+			{
+				var txtInp:TextInput = new TextInput();
+				
+				txtInp.id = controlObj.ID;
+				
+				if(controlObj.TIWidth != null)
+				{
+					txtInp.widthInChars = controlObj.TIWidth;
+				}
+				else if(controlObj.Width != null)
+				{
+					txtInp.width = controlObj.Width;
+				}
+				
+				if(controlObj.EDITABLE != null)
+				{
+					txtInp.editable = controlObj.EDITABLE;
+					if(controlObj.EDITABLE == "False")
+					{
+						txtInp.enabled = false;
+					}
+				}
+				
+				if(baseAsset.invProperties[controlObj.ID].type == "INTEGER" || baseAsset.invProperties[controlObj.ID].type == "FLOAT" )
+					txtInp.softKeyboardType = "number";
+					
+				txtInp.text = getInputText(txtInp.id);
+				var tmpHGrp:HGroup;
+				if(layout == VERT_LAYOUT)
+				{
+					tmpVGroup = new VGroup();
+					tmpVGroup.verticalAlign = "middle";
+					if(String(baseAsset.invProperties[controlObj.ID].nullable).toLowerCase()=="false")
+					{
+						tmpHGrp = getRequiredLabel(label);
+						tmpVGroup.addElement(tmpHGrp);
+					}
+					else
+						tmpVGroup.addElement(label);
+					tmpVGroup.addElement(txtInp as IVisualElement);
+				}
+				else
+				{
+					tmpHGroup = new HGroup();
+					tmpHGroup.verticalAlign = "middle";
+					if(String(baseAsset.invProperties[controlObj.ID].nullable).toLowerCase()=="false")
+					{
+						tmpHGrp = getRequiredLabel(label);
+						tmpVGroup.addElement(tmpHGrp);
+					}
+					else
+						tmpHGroup.addElement(label);
+					tmpHGroup.addElement(txtInp as IVisualElement);
+				}
+				
+				components.addItem(txtInp);
+				txtInp.setStyle("skinClass", Class(TextInputSkin));
+			}
+			
+			private function getRequiredLabel(label:Label):HGroup
+			{
+				var hgrp:HGroup = new HGroup();
+				var reqLabel:Label = new Label();
+				reqLabel.text = "(Required)";
+				reqLabel.setStyle("color","Red");
+				reqLabel.setStyle("fontSize","8");
+				hgrp.verticalAlign= "bottom";
+				hgrp.addElement(label);
+				hgrp.addElement(reqLabel);
+				return hgrp;
+			}
+			
+			private function getInputText(id:String):String
+			{
+				var txtStr:String;
+				if(id === "ROUTE" || id === "ROUTE_NAME" || id ==baseAsset.routeIDColName)
+				{
+					var r:Route = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.route; //debugging code
+					txtStr = baseAsset.invProperties[id].value == null? FlexGlobals.topLevelApplication.currentRouteName:
+						baseAsset.invProperties[id].value;
+				}else if(id === "MILEPOST" || id === "REFPT" || id ==baseAsset.fromMeasureColName)
+				{
+					txtStr = baseAsset.invProperties[id].value == null? formatter.format(FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP()):
+						baseAsset.invProperties[id].value;
+				}
+				else if( id ==baseAsset.toMeasureColName)
+				{
+					
+					var lengthVal:Number =(baseAsset.lengthUnit=="FT" && baseAsset.invProperties[baseAsset.lengthMeasureColName].value != null)
+						? Converter.feetToMiles(baseAsset.invProperties[baseAsset.lengthMeasureColName].value)
+						: baseAsset.invProperties[baseAsset.lengthMeasureColName].value;
+					
+					txtStr = baseAsset.invProperties[baseAsset.fromMeasureColName].value == null
+						?formatter.format(FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP()+  lengthVal)
+						:formatter.format(new Number(baseAsset.invProperties[baseAsset.fromMeasureColName].value)+ lengthVal);
+				}else if(id === "INC_DT")
+				{
+					txtStr = baseAsset.invProperties["INC_DT"].value == null?  dateformatter.format(new Date()):
+						dateformatter.format(baseAsset.invProperties["INC_DT"].value);
+				}else
+				{
+					txtStr = baseAsset.invProperties[id]? baseAsset.invProperties[id].value: 
+						baseAsset.inspProperties[id]?baseAsset.inspProperties[id].value:"";
+				}
+				
+				if(txtStr && txtStr.indexOf("<br/>")!=-1)
+					txtStr = txtStr.replace(new RegExp("<br/>", "g"), "\n");
+				return txtStr;
+			}
+			
+			private function textAreaCreationComplete(e:Event):void
+			{
+				(e.target as TextArea).textDisplay.horizontalScrollPosition=0;
+				(e.target as TextArea).textDisplay.verticalScrollPosition=0;
+			}
+			
+			private function createMultiLineTextControl(layout:String, label:Label, controlObj:Object):void
+			{
+				var txtArea:TextArea = new TextArea();
+				txtArea.setStyle("skinClass", Class(spark.skins.mobile.TextAreaSkin));
+				txtArea.height = 2 * PX_PER_LINE;
+				txtArea.addEventListener(FlexEvent.CREATION_COMPLETE, textAreaCreationComplete, false,0,true);
+				
+				txtArea.id = controlObj.ID;
+				
+				if(controlObj.TIWidth != null)
+				{
+					txtArea.widthInChars = controlObj.TIWidth;
+				}
+				else if(controlObj.Width != null)
+				{
+					txtArea.width = controlObj.Width;
+				}
+				if(controlObj.EDITABLE != null)
+				{
+					txtArea.editable = controlObj.EDITABLE;
+					if(controlObj.EDITABLE == "False")
+					{
+						txtArea.enabled = false;
+					}
+				}
+				if(controlObj.NumLines != null)
+				{
+					var numLines:Number = parseInt(controlObj.NumLines);
+					txtArea.height = numLines * PX_PER_LINE;
+					
+				}
+				
+				txtArea.text = getInputText(txtArea.id);
+				
+				var tmpHGrp:HGroup;
+				if(layout == VERT_LAYOUT)
+				{
+					tmpVGroup = new VGroup();
+					tmpVGroup.verticalAlign = "middle";
+					if(String(baseAsset.invProperties[controlObj.ID].nullable).toLowerCase()=="false")
+					{
+						tmpHGrp = getRequiredLabel(label);
+						tmpVGroup.addElement(tmpHGrp);
+					}
+					else
+						tmpVGroup.addElement(label);
+					tmpVGroup.addElement(txtArea as IVisualElement);
+				}
+				else
+				{
+					tmpHGroup = new HGroup();
+					tmpHGroup.verticalAlign = "middle";
+					if(String(baseAsset.invProperties[controlObj.ID].nullable).toLowerCase()=="false")
+					{
+						tmpHGrp = getRequiredLabel(label);
+						tmpVGroup.addElement(tmpHGrp);
+					}
+					else
+						tmpHGroup.addElement(label);
+					tmpHGroup.addElement(txtArea as IVisualElement);
+				}
+				
+				components.addItem(txtArea);
+				//txtArea.setStyle("skinClass", Class(TextInputSkin));
+			}
+			
+			private function createDropDownControl(layout:String, label:Label, controlObj:Object):void
+			{
+				if(layout == VERT_LAYOUT)
+				{
+					var ddview:DropDownViewVert = new DropDownViewVert();
+					
+					ddview.id = controlObj.ID;
+					ddview.domainTableIDColName = controlObj.ID;
+					ddview.name= controlObj.LABEL;
+					ddview.fetchDomainValues();
+					
+					var txtInp:TextInput = ddview.input;
+					var btn : Button = ddview.button;
+					ddview.btnText = label.text.substring(0,label.text.length-1);
+					
+					
+					if(String(baseAsset.invProperties[controlObj.ID].nullable).toLowerCase()=="false")
+					{
+						ddview.isRequired = true;
+					}
+					
+					if(controlObj.inputWidth)
+					{
+						ddview.width_TI = controlObj.InputWidth;
+					}
+					
+					tmpVGroup = new VGroup();
+					tmpVGroup.verticalAlign = "middle";
+					tmpVGroup.addElement(ddview);
+					
+					dropDowns.addItem(txtInp);
+					components.addItem(ddview);
+					if(ddview.domainID == "")
+					{
+						ddview.domainID = baseAsset.invProperties[controlObj.ID]&& baseAsset.invProperties[controlObj.ID].value ? String(baseAsset.invProperties[controlObj.ID].value): 
+							baseAsset.inspProperties[controlObj.ID] && baseAsset.inspProperties[controlObj.ID].value? String(baseAsset.inspProperties[controlObj.ID].value):"";
+					}
+					
+				}
+				else if(layout == HORIZ_LAYOUT)
+				{
+					var ddviewH:DropDownViewHoriz = new DropDownViewHoriz();
+					
+					ddviewH.id = controlObj.ID;
+					ddviewH.domainTableIDColName = controlObj.ID;
+					ddviewH.name= controlObj.LABEL;
+					ddviewH.fetchDomainValues();
+					
+					var txtInp2:TextInput = ddviewH.inputH;
+					var btn2 : Button = ddviewH.buttonH;
+					ddviewH.btnText = label.text.substring(0,label.text.length-1);
+					
+					//ddviewH.isRequired = true;
+					//					ddviewH.leftWidth = 20;
+					
+					if(String(baseAsset.invProperties[controlObj.ID].nullable).toLowerCase()=="false")
+					{
+						ddviewH.isRequired = true;
+					}
+					
+					if(controlObj.InputWidth)
+					{
+						ddviewH.width_TI = controlObj.InputWidth;
+					}
+					
+					tmpVGroup = new VGroup();
+					tmpVGroup.verticalAlign = "middle";
+					tmpVGroup.addElement(ddviewH);
+					
+					dropDowns.addItem(txtInp2);
+					components.addItem(ddviewH);
+					if(ddviewH.domainID == "")
+					{
+						ddviewH.domainID = baseAsset.invProperties[controlObj.ID]&& baseAsset.invProperties[controlObj.ID].value ? String(baseAsset.invProperties[controlObj.ID].value): 
+							baseAsset.inspProperties[controlObj.ID] && baseAsset.inspProperties[controlObj.ID].value? String(baseAsset.inspProperties[controlObj.ID].value):"";
+					}
+				}
+			}
+			
+			private function createDateControl(layout:String, label:Label, controlObj:Object):void
+			{
+				var dpview:DatePickerView = new DatePickerView();
+				dpview.id = controlObj.ID;
+				//ddview.name= controlObj.LABEL;
+				dpview.btnText = controlObj.LABEL;
+				dpview.isRequired = true;
+				if(baseAsset.invProperties[controlObj.ID].value != null)
+				{
+					dpview.value = DateFormatter.parseDateString(baseAsset.invProperties[controlObj.ID].value);
+					dpview.isEnabled = false;
+				}
+				else
+				{
+					dpview.value = new Date();
+				}
+				//dpview.value = baseAsset.invProperties[controlObj.ID]
+				//				group.addElement(dpview);
+				
+				tmpVGroup = new VGroup();
+				//				tmpVGroup.verticalAlign = "middle";
+				tmpVGroup.addElement(dpview);
+				
+				components.addItem(dpview);
+			}
+			
+			
+			private function createRadioControl(layout:String, label:Label, controlObj:Object):void
+			{
+				var radioTemp :RadioButton;
+				var radioGroup:VGroup = new VGroup();
+				var radioH : HGroup = new HGroup();
+				var groupLabel : Label = new Label();
+				var radioObj :Object = new Object();
+				var txtInp:TextInput = new TextInput();
+				groupLabel.text = controlObj.LABEL + ":";
+				groupLabel.setStyle("fontWeight", "bold");
+				
+				radioH.verticalAlign = "middle";
+				radios = new Vector.<RadioButton>();
+				radioH.addElement(groupLabel);
+				for(var k : int = 0; k < controlObj.RADIO_OPTS.length; k++)
+				{
+					radioTemp = new RadioButton();
+					
+					if(baseAsset.invProperties[controlObj.ID]!= null && baseAsset.invProperties[controlObj.ID].value - 1 == k
+						|| baseAsset.inspProperties[controlObj.ID] != null && baseAsset.inspProperties[controlObj.ID].value - 1  == k)
+						radioTemp.selected = true;
+					radioTemp.name = controlObj.RADIO_OPTS[k];
+					radioTemp.id = "" + (k+1);
+					radioTemp.label = controlObj.RADIO_OPTS[k];
+					radioH.addElement(radioTemp);
+					radioGroup.addElement(radioH);
+					radios.push(radioTemp);
+				}
+				radioObj.radios = radios;
+				radioObj.id = controlObj.ID;
+				components.addItem(radioObj);
+				if(txtInp.text == null)
+				{
+					txtInp.text = baseAsset.invProperties[txtInp.id]? baseAsset.invProperties[txtInp.id].value: 
+						baseAsset.inspProperties[txtInp.id].value;
+				}
+				
+				if(layout == VERT_LAYOUT)
+				{
+					tmpVGroup = new VGroup();
+					tmpVGroup.verticalAlign = "middle";
+					tmpVGroup.addElement(radioGroup);
+				}
+				else
+				{
+					tmpHGroup = new HGroup();
+					tmpHGroup.verticalAlign = "middle";
+					tmpHGroup.addElement(radioGroup);
+				}
+			}
+			
+			private function initializeDomain(field:TextInput, domain:String):void
+			{
+				
+			}
+			
+			private function setControlinGroup(parentLayout:String, controlLayout:String, label:Label, 
+																	controlsObj:Object, groupObj:Object):void
+			{
+				//This series of conditionals determines what type of input component to create
+				if(controlsObj.TYPE == "TextInput")
+				{
+					createTextControl(controlLayout, label, controlsObj);
+				}
+				else if(controlsObj.TYPE === "TextArea")
+				{
+					createMultiLineTextControl(controlLayout, label, controlsObj);
+				}
+				else if(controlsObj.TYPE == "DropDownButton")
+				{
+					createDropDownControl(controlLayout, label, controlsObj);
+				}
+				else if (controlsObj.TYPE == "DatePicker")
+				{
+					createDateControl(controlLayout, label, controlsObj);
+				}
+				else if(controlsObj.TYPE === "RADIO")
+				{
+					createRadioControl(controlLayout, label, controlsObj);
+				}
+				else if(controlsObj.TYPE === "Label")
+				{
+					createLabelControl(controlLayout, label, controlsObj);
+				}
+				
+				var space: Spacer;
+				var hgtitle: Label;
+				if(parentLayout == VERT_LAYOUT)
+				{
+					if(parentVGroup.numChildren == 0)
+					{
+						space = new Spacer();
+						hgtitle = new Label();
+						hgtitle.text = groupObj.TITLE;
+						parentVGroup.addElement(hgtitle);
+					}
+					
+					if(controlLayout == VERT_LAYOUT || controlsObj.TYPE == "DropDownButton")
+						parentVGroup.addElement(tmpVGroup);
+					else
+						parentVGroup.addElement(tmpHGroup);
+					parentVGroup.addElement(new Spacer());
+					parentVGroup.addElement(new Spacer());
+					//					parentVGroup.addElement(new Spacer());
+					parentVGroup.x = groupObj.X;
+					parentVGroup.y = groupObj.Y;
+					parentVGroup.height = groupObj.HEIGHT;
+					parentVGroup.width = groupObj.WIDTH;
+				}
+					
+				else
+				{
+					if(parentHGroup.numChildren == 0)
+					{
+						space = new Spacer();
+						hgtitle = new Label();
+						hgtitle.text = groupObj.TITLE;
+						parentHGroup.addElement(hgtitle);
+					}
+					
+					if(controlLayout == VERT_LAYOUT || controlsObj.TYPE == "DropDownButton")
+						parentHGroup.addElement(tmpVGroup);
+					else
+						parentHGroup.addElement(tmpHGroup);
+					parentHGroup.addElement(new Spacer());
+					parentHGroup.addElement(new Spacer());
+					//					parentHGroup.addElement(new Spacer());
+					parentHGroup.x = groupObj.X;
+					parentHGroup.y = groupObj.Y;
+					parentHGroup.height = groupObj.HEIGHT;
+					parentHGroup.width = groupObj.WIDTH;
+				}
+			}
+			
+			private function setgenericPopup(event:Event):void
+			{
+				
+				// ****************** For Setting the Domain of DropBoxes ************************
+				currentDropDown = ((Button)(event.currentTarget)).id;
+				var typeStr : String = baseAsset.inspProperties == null || (baseAsset.inspProperties != null && baseAsset.inspProperties[currentDropDown] == null)? "Inventory" : "Inspection";
+				var property : Object;
+				var list : ArrayCollection = new ArrayCollection();
+				var propertyObj:Object = typeStr === "Inventory"? baseAsset.invProperties:baseAsset.inspProperties;
+				
+				property = propertyObj[currentDropDown];
+				
+				for(var di : int = 0; di < property.d_type.length; di++)
+				{
+					list.addItem(property.d_type.getItemAt(di));
+				}
+				
+				genericPopup.open(this,false);
+				PopUpManager.centerPopUp(genericPopup);
+				popupList.dataProvider = list;
+			}
+			
+			//Instantiates and sets the properties of the tab buttons
+			private function setButton(buttons:Vector.<Button>, button: Button, str: String, group:Group): void
+			{
+				button = new Button();
+				button.addEventListener(MouseEvent.CLICK, 
+					function(e:MouseEvent):void
+					{
+						group.setVisible(true);
+						button.enabled = false;
+						
+						for(var bi : int = 0; bi < buttons.length; bi++)
+						{
+							if(buttons[bi] != button)
+							{
+								buttons[bi].enabled = true;
+								panels.getItemAt(bi).setVisible(false);
+							}
+						}
+					});
+				button.content = str;
+				
+				buttons.push(button);
+			}
+			
+			
+			//private var timer:Timer;
+			private function deselectAsset(eve:Event):void
+			{
+				//baseAsset != null && baseAsset.symbol.fadeAsset();
+				baseAsset.symbol.deselectAsset();	
+			}
+			
+			// Method to handle the close event
+			public override function handleCloseEvent(event:Event=null):void
+			{
+				baseAsset.symbol.deselectAsset();
+				PopUpManager.removePopUp(this);				
+			}
+			
+			// Method to handle saving an asset
+			private function onSave():void
+			{
+				
+				var obj : Object;
+				var validator : Object;
+				var vResult:ValidationResultEvent;
+				var saveLabel : Label = new Label();
+				saveLabel.text = "Saved Asset Values";
+				
+				if(!this.btnRetire.selected)
+				{
+					if(baseAsset.invProperties[baseAsset.primaryKey] && (!baseAsset.invProperties[baseAsset.primaryKey].value || baseAsset.invProperties[baseAsset.primaryKey].value ===""))
+						baseAsset.invProperties[baseAsset.primaryKey].value = -1;
+					//FlexGlobals.topLevelApplication.TSSAlert("Saving Data");
+					
+					var propertyObj:Object;
+					//For all components
+					for (var ci : int = 0; ci < components.length; ci++)
+					{
+						propertyObj = baseAsset.invProperties[components.getItemAt(ci).id]?
+							baseAsset.invProperties[components.getItemAt(ci).id]:baseAsset.inspProperties[components.getItemAt(ci).id];
+						
+						if(propertyObj.type === "INTEGER" || propertyObj.type === "REAL")
+						{
+							validator = new NumberValidator();
+							
+							validator.required = String(propertyObj.nullable).toLowerCase() === "true"?false:true;
+							
+							//validator.required = true;
+							validator.listener = components.getItemAt(ci);
+							if(propertyObj.type === "INTEGER")
+								(validator as NumberValidator).fractionalDigits=0;
+							else
+								(validator as NumberValidator).fractionalDigits=15;//set for data coming from arcgis
+							vResult = validator.validate(validator.listener.text);
+							if (vResult.type==ValidationResultEvent.VALID )
+							{
+								if(!components.getItemAt(ci).hasOwnProperty("radios"))
+									//if(components.getItemAt(ci).text != "0") // might be buggy in some special condition,what if length field = 0
+									propertyObj.value = components.getItemAt(ci).text;
+									//									else
+									//									{
+									//										missingFieldHandler(components.getItemAt(ci).id);
+									//										return;
+									//									}
+								else
+								{
+									var ndx:int;
+									var rads: Vector.<RadioButton> = components.getItemAt(ci).radios;
+									for (ndx = 0; ndx < rads.length && !rads[ndx].selected; ndx++) {} // oops, that was an accident
+									if (ndx < rads.length)
+										propertyObj.value = parseInt(rads[ndx].id);
+								}
+								
+								components.getItemAt(ci).errorString = '';
+							}else
+							{
+								components.getItemAt(ci).text = propertyObj.value;
+								missingFieldHandler(components.getItemAt(ci).id, vResult.message);
+								return;
+							}
+						}
+						else if(propertyObj.type === "TEXT")
+						{
+							validator = new Validator;
+							validator.required = String(propertyObj.nullable).toLowerCase() === "true"?false:true;
+							//validator.required = true;
+							validator.listener = components.getItemAt(ci);
+							vResult = validator.validate(validator.listener.text);
+							if (vResult.type==ValidationResultEvent.VALID)
+							{
+								propertyObj.value = components.getItemAt(ci).text;	
+								components.getItemAt(ci).errorString = '';
+							}else
+							{
+								components.getItemAt(ci).text = propertyObj.value;
+								missingFieldHandler(components.getItemAt(ci).name);
+								return;
+							}
+						}
+						
+					}
+					
+					var lengthVal:Number =0;
+					
+					if(baseAsset.lengthMeasureColName)
+					{
+						lengthVal =(baseAsset.lengthUnit=="FT" && baseAsset.invProperties[baseAsset.lengthMeasureColName].value != null)
+							? Converter.feetToMiles(baseAsset.invProperties[baseAsset.lengthMeasureColName].value)
+							: baseAsset.invProperties[baseAsset.lengthMeasureColName].value;
+						
+					}
+					
+					if(assetMoved)
+						baseAsset.setAssetLocation("LATITUDE","LONGITUDE",this.moveToRefpt, this.moveToLat, this.moveToLong,this.moveToPrec);
+					
+					baseAsset.subtypeDirect = baseAsset.invProperties["SUBTYPE"]? baseAsset.invProperties["SUBTYPE"].value: baseAsset.subType;
+					
+					if(baseAsset.invProperties[baseAsset.primaryKey].value==-1)
+					{
+						baseAsset.invProperties[baseAsset.routeIDColName].value= new String("" + FlexGlobals.topLevelApplication.currentRouteName);
+						FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assignAssetSymbol(baseAsset, baseAsset.assetType,null);
+						
+					}
+					baseAsset.milePost = baseAsset.invProperties[baseAsset.fromMeasureColName]?baseAsset.invProperties[baseAsset.fromMeasureColName].value: 0;
+					
+					if(baseAsset.toMeasureColName)
+						baseAsset.invProperties[baseAsset.toMeasureColName].value  =new Number((baseAsset.milePost + lengthVal).toFixed(2));
+				}
+				else
+				{
+					baseAsset.invProperties["RETIRED"].value = 1;
+				}
+				if(baseAsset.invProperties.hasOwnProperty("INC_DT"))
+					baseAsset.invProperties["INC_DT"].value = this.dateformatter.format(baseAsset.invProperties["INC_DT"].value);
+				
+				
+				var event:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT);
+				event.culvert = baseAsset;
+				event.geoTags = geoTagsArr;
+				
+				dispatchEvent(event);
+				this.handleCloseEvent();
+			}
+			
+			
+			//Enable geotag capture on a specified tab
+			private function enableGeoTags(grp:Group, tabID:String, wid:Number):void
+			{
+				if(tabID.toUpperCase() === "FALSE")
+				{
+					return;
+				}
+				//				setImages();
+				
+				var attchView:AddAttachments = new AddAttachments();
+				attchView.init("AssetEditForm",true,true,true);
+				attchView.width = wid;
+				attchView.bottom=0;
+				bigGroup.addElement(attchView);
+			}
+			
+			// Retrieve the domain list for the specifiec column/dropdown 
+			private function getDomainForControl(columnName:String):ArrayCollection
+			{
+				
+				return new ArrayCollection();
+			}
+			
+			
+			protected function retireChk_changeHandler(event:Event):void
+			{
+				if(btnRetire.selected)
+				{	
+					var _retireResp:mx.rpc.Responder = new mx.rpc.Responder(retireOkay, fault);
+					
+					FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to retire this record? All the local changes made to the asset will be discarded on retirement.", "Retire Asset Confirmation", _retireResp);
+					
+					
+					function fault(data:Object):void
+					{	
+						FlexGlobals.topLevelApplication.TSSAlert("Error in Opening Retire Confirmation Dialog.");
+					}
+					
+				}
+				
+			}
+			protected function retireOkay(data:Object):void
+			{
+				if(data == true)
+				{
+					for (var forIndex:int = 0; forIndex < viewStack.numChildren; forIndex++)
+					{
+						var curr:DisplayObject = viewStack.getChildAt(forIndex);
+						if (curr is UIComponent)
+						{
+							var curr2:UIComponent = curr as UIComponent;
+							curr2.enabled = false;
+						}
+					}
+				}
+			}
+			
+			public override function handlePicture(event:CameraEvent):void
+			{
+				FlexGlobals.topLevelApplication.setBusyStatus(true);
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "AssetEditForm")
+				{
+					var bmp:Bitmap = event.bitmap;
+					var tmpImage:TSSPicture = new TSSPicture();
+					tmpImage.source = bmp; //icon is now the captured image itself
+					tmpImage.bitmap = bmp;
+					tmpImage.width = 60; //120;
+					tmpImage.height = 60; // 120;
+					
+					
+					var fileName:String = new Date().time + ".png";
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = FlexGlobals.topLevelApplication.currentRouteName;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					
+					if(baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !=""  && baseAsset.invProperties["ASSET_BASE_ID"].value !=null)
+					{
+						tmpGT.asset_base_id = String(baseAsset.invProperties["ASSET_BASE_ID"].value);
+						tmpGT.local_asset_id = ""+String(baseAsset.invProperties[baseAsset.primaryKey].value);
+					}
+					else if (baseAsset.invProperties[baseAsset.primaryKey] && String(baseAsset.invProperties[baseAsset.primaryKey].value) !="-1")
+					{
+						tmpGT.local_asset_id = String(baseAsset.invProperties[baseAsset.primaryKey].value);
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					} 
+					
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = fileName;
+					tmpGT.text_memo = event.memo;
+					tmpGT.is_insp = 0;
+					tmpGT.asset_ty_id = this.baseAsset.assetType;
+					geoTagsArr.addItem(tmpGT);
+					tmpImage.geoTag = tmpGT;
+					((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as VGroup).addElement(tmpImage);
+					/*if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+					InvAttachments.addElement(tmpImage);
+					else
+					InspAttachments.addElement(tmpImage); */
+				}
+				try
+				{
+					
+					fileUtility.WritePicture(fileName, bmp);
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+				} catch (er:Error)
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+					FlexGlobals.topLevelApplication.TSSAlert(er.message);
+				}
+			}
+			
+			
+			//function to handle VideoEvent
+			public override function handleVideo(event:videoEvent):void{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "AssetEditForm")
+				{
+					var vid:TSSVideo=new TSSVideo();
+					vid.source=gtManager.video;
+					vid.video=event.video;
+					vid.width=60;
+					vid.height=60;
+					
+					try
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						var fileName:String=new Date().time +".3gp";
+						fileUtility.WriteVideo(vid.video, fileName, event.path);
+						vid.filePath = fileName;
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						
+						
+						var tmpGT:GeoTag=new GeoTag();
+						tmpGT.cached_route_id=FlexGlobals.topLevelApplication.currentRouteName;
+						if(baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !=""  && baseAsset.invProperties["ASSET_BASE_ID"].value !=null)
+						{
+							tmpGT.asset_base_id = String(baseAsset.invProperties["ASSET_BASE_ID"].value);
+							tmpGT.local_asset_id = ""+String(baseAsset.invProperties[baseAsset.primaryKey].valueOf());
+						}
+						else if (baseAsset.invProperties[baseAsset.primaryKey] && String(baseAsset.invProperties[baseAsset.primaryKey].value) !="-1")
+						{
+							tmpGT.local_asset_id = String(baseAsset.invProperties[baseAsset.primaryKey].value);
+							tmpGT.asset_base_id = "";
+						}
+						else
+						{
+							tmpGT.local_asset_id = "";
+							tmpGT.asset_base_id = "";
+						} 
+						
+						if(milepost==-1)
+							milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+						tmpGT.begin_mile_point=milepost;
+						tmpGT.end_mile_point=0;
+						tmpGT.voice_file_name="";
+						tmpGT.image_file_name="";
+						
+						tmpGT.video_file_name = fileName;
+						tmpGT.text_memo = event.memo;
+						tmpGT.is_insp = 0;
+						tmpGT.asset_ty_id = this.baseAsset.assetType;
+						geoTagsArr.addItem(tmpGT);
+						vid.geoTag = tmpGT;
+						((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as VGroup).addElement(vid);
+						/* if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+						InvAttachments.addElement(vid);
+						else
+						InspAttachments.addElement(vid); */
+						
+					} catch (er:Error)
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert(er.message);
+					}
+				}
+			}		
+			
+			public override function handleVoiceMemo(event:VoiceEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "AssetEditForm")
+				{
+					
+					var soundBytes:ByteArray=event.byteArray;
+					var tmpImage:TSSAudio = new TSSAudio();
+					tmpImage.source = gtManager.voice;
+					tmpImage.soundBytes = event.byteArray;
+					
+					tmpImage.width = 60;
+					tmpImage.height = 60;
+					var fileName:String = new Date().time +".wav";
+					
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = FlexGlobals.topLevelApplication.currentRouteName;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;					
+					if(baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !=""  && baseAsset.invProperties["ASSET_BASE_ID"].value !=null)
+					{
+						tmpGT.asset_base_id = String(baseAsset.invProperties["ASSET_BASE_ID"].value);
+						tmpGT.local_asset_id = ""+String(baseAsset.invProperties[baseAsset.primaryKey].valueOf());
+					}
+					else if (baseAsset.invProperties[baseAsset.primaryKey] && String(baseAsset.invProperties[baseAsset.primaryKey].value) !="-1")
+					{
+						tmpGT.local_asset_id = String(baseAsset.invProperties[baseAsset.primaryKey].value);
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					} 
+					
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = "";
+					tmpGT.voice_file_name= fileName;
+					tmpGT.video_file_name="";
+					tmpGT.image_file_name="";
+					tmpGT.text_memo = "";
+					tmpGT.is_insp = 0;
+					tmpGT.asset_ty_id = this.baseAsset.assetType;
+					geoTagsArr.addItem(tmpGT);
+					tmpImage.geoTag = tmpGT;
+					((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as VGroup).addElement(tmpImage);
+					/* if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+					InvAttachments.addElement(tmpImage);
+					else
+					InspAttachments.addElement(tmpImage); */
+					
+					try{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						fileUtility.saveToWAV(event.byteArray, fileName);
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+					}
+					catch(e:Error){
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert(e.message);
+					}
+				}
+			}
+			
+			public override function handleTextMemo(event:TextMemoEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "AssetEditForm")
+				{
+					var tmpMemo:TSSMemo = new TSSMemo();
+					
+					tmpMemo.source = gtManager.memo;
+					tmpMemo.memo=event.memo;
+					tmpMemo.label = event.memo;
+					
+					tmpMemo.width = 40;
+					tmpMemo.height = 40;
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = FlexGlobals.topLevelApplication.currentRouteName;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					
+					if(baseAsset.invProperties["ASSET_BASE_ID"] && String(baseAsset.invProperties["ASSET_BASE_ID"].value) !=""  && baseAsset.invProperties["ASSET_BASE_ID"].value !=null)
+					{
+						tmpGT.asset_base_id = String(baseAsset.invProperties["ASSET_BASE_ID"].value);
+						tmpGT.local_asset_id = ""+String(baseAsset.invProperties[baseAsset.primaryKey].valueOf());
+					}
+					else if (baseAsset.invProperties[baseAsset.primaryKey] && String(baseAsset.invProperties[baseAsset.primaryKey].value) !="-1")
+					{
+						tmpGT.local_asset_id = String(baseAsset.invProperties[baseAsset.primaryKey].value);
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					} 
+					
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = "";
+					tmpGT.text_memo = event.memo;
+					tmpGT.is_insp = 0;
+					tmpGT.asset_ty_id = this.baseAsset.assetType;
+					geoTagsArr.addItem(tmpGT);
+					
+					tmpMemo.geoTag = tmpGT;
+					
+					
+					((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as VGroup).addElement(tmpMemo);
+					/* if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "InventoryForm")
+					InvAttachments.addElement(tmpMemo);
+					else
+					InspAttachments.addElement(tmpMemo); */
+				}
+			}
+			
+			
+			
+			
+			// Close the dropdown popup
+			private function closePopup():void
+			{
+				if(genericPopup == null)
+					return;
+				genericPopup.close(true, popupList.selectedItem);
+				var itemText:String = popupList.selectedItem;
+				var txtInp : TextInput;
+				for(var i : int = 0; i < dropDowns.length; i++)
+				{
+					if(dropDowns.getItemAt(i).id == currentDropDown)
+					{
+						txtInp = (TextInput)(dropDowns.getItemAt(i));
+					}
+				}
+				txtInp.text = itemText;
+			}
+			
+			public function missingFieldHandler(label:String, messg:String = "Missing required field"):void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert(messg +": " +label+" !");
+			}
+			
+			protected function skinnablePopUp_closeHandler(event:PopUpEvent):void
+			{
+				
+			}
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+				//dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			public override function removeGeoTag(tssmedia:Object):void
+			{
+				var elm:IVisualElement = tssmedia as IVisualElement;
+				if(((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as VGroup).containsElement(elm))
+				{
+					((bigGroup.getChildByName("Attachments") as Group).getChildByName("InvAttach") as VGroup).removeElement(elm);
+				}		
+				
+				if(geoTagsArr.getItemIndex(tssmedia.geoTag) != -1)
+					geoTagsArr.removeItemAt(geoTagsArr.getItemIndex(tssmedia.geoTag));
+			}
+			
+			protected function moveBtn_changeHandler(event:Event):void
+			{
+				moveToLat=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Lat;
+				moveToLong=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Long;
+				moveToPrec =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Precision;
+				moveToRefpt = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+				assetMoved = true;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		
+		
+		
+		<s:SkinnablePopUpContainer id="genericPopup" width="300" height="400" name="Material"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin" >
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="popupList" change="closePopup()" width="100%" height="100%" labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false"/>
+					
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		<s:DateTimeFormatter
+			id="dateformatter"
+			dateTimePattern="MM/dd/yyyy"
+			errorText=""
+			useUTC="false"
+			/>
+	</fx:Declarations>
+	
+	
+	<s:HGroup id="tabButtonGroup">  <!-- Placeholder for tab buttons-->
+		
+	</s:HGroup>
+	
+	<views:CBViewStack id="viewStack" width="100%" height="100%" skinClass="skins.CBScrollableSkin">
+		
+	</views:CBViewStack>
+	
+	
+	<s:HGroup width="100%">
+		<s:HGroup  horizontalAlign="center" width="100%">
+			<s:Button label="Save" id="btnSave" click="onSave();"/>
+			<s:Button label="Close" id="btnClose" click="handleCloseEvent();"/>
+		</s:HGroup>
+		
+		<s:CheckBox label="Retire" id="btnRetire" click="retireChk_changeHandler(event);" />
+		<s:Button label="Move to Current Location" id="moveBtn"  click="moveBtn_changeHandler(event)" />
+	</s:HGroup>
+	
+</baseViews:BaseAssetTitleWindow>
+
+

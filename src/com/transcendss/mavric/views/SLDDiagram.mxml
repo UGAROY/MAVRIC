@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:models="com.transcendss.mavric.extended.models.*"
+		 xmlns:views="com.transcendss.mavric.views.*"
+		 creationComplete="init()">
+	
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="assetSelectPopup" width="200" height="240"  name="Select Asset to Edit"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:VGroup width="100%" height="100%" horizontalAlign="center"  >
+				<s:List id="assetSelectorList" change="assetselection_close_handler()" dataProvider="{clickPool}" labelField="list_description"
+						width="100%" height="100%" fontFamily="18" allowMultipleSelection="false"/>
+				
+			</s:VGroup>
+		</s:SkinnablePopUpContainer>
+		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.events.AccessPointEvent;
+			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.events.DataEventEvent;
+			import com.transcendss.mavric.events.GPSEvent;
+			import com.transcendss.mavric.events.GestureControlEvent;
+			import com.transcendss.mavric.events.LocalRouteEvent;
+			import com.transcendss.mavric.events.SignInvEvent;
+			import com.transcendss.mavric.views.componentviews.AttributesForm;
+			import com.transcendss.transcore.events.AssetManagerEvent;
+			import com.transcendss.transcore.events.AttributeEvent;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.ConfigManagerEvent;
+			import com.transcendss.transcore.events.ElementEditEvent;
+			import com.transcendss.transcore.events.ElementEvent;
+			import com.transcendss.transcore.events.MapInitEvent;
+			import com.transcendss.transcore.events.NavControlEvent;
+			import com.transcendss.transcore.events.RouteSelectorEvent;
+			import com.transcendss.transcore.events.TextMemoEvent;
+			import com.transcendss.transcore.events.ViewMileEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.components.Route;
+			import com.transcendss.transcore.util.AssetSymbol;
+			import com.transcendss.transcore.util.Converter;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			
+			private var attrWindow:AttributesForm;
+			private var buffer:Number = FlexGlobals.topLevelApplication.sldGroupBuffer;
+			private var isInvForm:Boolean = FlexGlobals.topLevelApplication.isInvForm;
+			//private var invFormSetUpComplete:Boolean = false;
+						
+			public static const BASE_TOLERANCE:Number =250;
+			private var clickPool:ArrayCollection = new ArrayCollection();
+			
+			private function init():void
+			{		
+				setSLDDiagramWidth();
+				
+			}
+
+			public function setSLDDiagramWidth():void{
+				sldDiagram.sldBorderWidth = screen.width - (buffer*2) - 200;
+			    sldDiagram.invBorderWidth = screen.width - (buffer*2) - 200;
+				
+				
+			}
+			
+			
+			public function setRoute(rse:RouteSelectorEvent):void
+			{
+				var viewMile:Number =0;
+				var curRte:Route = sldDiagram.currentRoute;
+				if(curRte && rse.route.routeName == curRte.routeName && rse.route.beginMi == curRte.beginMi && rse.route.endMi ==  curRte.endMi)
+					viewMile = sldDiagram.viewMile;
+				else
+					viewMile = 0;
+				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.route = rse.route;
+				
+				sldDiagram.updateRoute(rse.route,rse.scale, rse.fromStorage,viewMile);
+				//sldDiagram.viewMile = sldDiagram.viewMile;
+				
+				
+			}
+			public function setScale(scale:Number):void 
+			{
+				sldDiagram.scale = scale;
+			}
+			public function getScale():Number 
+			{
+				return sldDiagram.scale;
+			}
+			public function getRoute():Route{
+				return sldDiagram.getRoute;
+			}
+			
+			public function saveRoute():void{
+				return sldDiagram.saveLocalDiagram();
+			}
+			
+//			public function setRouteByJSON(rteStr:String):void{
+//				// sets current route to passed route JSON val
+//				return sldDiagram.setRouteByJSON(rteStr);
+//			}
+			
+			public function getJSONRoute():String{
+				// returns current route in JSON format
+				return sldDiagram.getJSONRoute();
+			}
+			
+			public function saveLocalDiagram():void
+			{
+				//saves all necessary diagram information into JSON for storage to local db
+				sldDiagram.saveLocalDiagram();
+			}
+			
+			public function loadLocalDiagram(rtePkId:Number, begin:int = -1, end:int = -1):void
+			{
+				//loads all necessary diagram information from the local db
+				sldDiagram.loadLocalDiagram(rtePkId, begin, end);
+			}
+			
+			public function eventLoadLocalDiagram(routeEvent:LocalRouteEvent):void
+			{
+				
+				sldDiagram.loadLocalDiagram(routeEvent.routePkId, routeEvent.begin, routeEvent.end);
+			}
+			
+			public function loadLocalGeotags(e:Event):void
+			{
+				sldDiagram.loadLocalUnattachedGeotags();
+			}
+			
+			public function loadPhase1(event:LocalRouteEvent):void
+			{
+				sldDiagram.loadPhase1(event.routePkId, event.begin, event.end);
+			}
+			
+			public function loadPhase2(event:LocalRouteEvent):void
+			{
+				sldDiagram.loadPhase2(event.cachedRoute, event.stickElement, event.invElement, event.begin, event.end);
+			}
+			
+			public function loadPhase3(event:LocalRouteEvent):void
+			{
+				sldDiagram.loadPhase3(event.cachedRoute, event.stickElement, event.invElement, event.begin, event.end);	
+			}
+			
+			public function loadPhase4(event:LocalRouteEvent):void
+			{
+				sldDiagram.loadPhase4(event.cachedRoute, event.stickElement, event.invElement, event.evtRoute);	
+			}
+			
+			public function loadPhase5(event:LocalRouteEvent):void
+			{
+				sldDiagram.loadPhase5(event.invElement, event.evtRoute);
+			}
+			
+			public function loadPhase6(event:LocalRouteEvent):void
+			{
+				sldDiagram.loadPhase6(event.invElement);
+			}
+			
+			public function loadPhase7(event:LocalRouteEvent):void
+			{
+				sldDiagram.loadPhase7();	
+			}
+			
+			public function loadPhase8(event:LocalRouteEvent):void
+			{
+				sldDiagram.loadPhase8();
+			}
+			
+			public function triangulateMouseUp(event:MouseEvent):void{
+				sldDiagram.triangulateMouseUp(event);
+			}
+			
+			
+			public function startRun(event:NavControlEvent):void{
+				sldDiagram.startRun();
+			}
+			
+			public function stopRun(event:NavControlEvent):void{
+				sldDiagram.stopRun();
+			}
+			
+			public function next(event:NavControlEvent):void{
+				sldDiagram.advanceScroller(event);
+			}
+			
+			public function previous(event:NavControlEvent):void{
+				sldDiagram.retreatScroller(event);
+			}
+			
+			public function gotoBeginning(event:NavControlEvent):void{
+				sldDiagram.scrollToBeginning(event);
+			}
+			
+			public function gotoEnd(event:NavControlEvent):void{
+				sldDiagram.scrollToEnd(event);
+			}
+			
+			public function uturn(event:NavControlEvent):void{
+				sldDiagram.uturn(event);	
+			}
+			
+			public function changeSpeed(event:NavControlEvent):void{
+				sldDiagram.changeSpeed(event);	
+			}
+			
+			public function changeStep(event:NavControlEvent):void{
+				sldDiagram.changeStep(event);	
+			}
+			
+			public function addToolTip(tooltip:Sprite,dType:int):void{
+				sldDiagram.addToolTip(tooltip,dType);
+			}
+			
+			public function removeToolTip(tooltip:Sprite,dType:int):void{
+				sldDiagram.removeToolTip(tooltip,dType);
+			}
+			
+			public function setViewMile(event:ViewMileEvent):void{
+				sldDiagram.viewMile=50;
+			}
+			
+			public function showAttrDropDown(event:AttributeEvent):void {
+				sldDiagram.addattDropDown(event);
+			}
+
+			public function showAttrInput(event:ElementEditEvent, isSplit:Boolean=false):void {
+				sldDiagram.addAttInput(event, isSplit);
+			}
+
+			public function handlePicture(event:CameraEvent):void{
+				sldDiagram.handlePicture(event);
+			}
+			
+			public function handleVideo(event:videoEvent):void{
+				sldDiagram.handleVideo(event);
+			}
+			
+			
+			public function handleVoiceMemo(event:VoiceEvent):void{
+				sldDiagram.handleVoiceMemo(event);
+			}
+			
+			public function handleTextMemo(event:TextMemoEvent):void{
+				sldDiagram.handleTextMemo(event);
+			}
+			
+			public function handleLineEventStart(event:DataEventEvent):void{
+				sldDiagram.handleLineEventStart(event);
+			}
+			
+			public function handleLineEventEnd(event:DataEventEvent):void{
+				sldDiagram.handleLineEventEnd(event);
+			}
+			
+			public function handlePointEvent(event:DataEventEvent):void{
+				sldDiagram.handlePointEvent(event);
+			}
+			
+			public function drawRoadwayLanes(event:ElementEvent):void{
+				sldDiagram.drawRoadwayLanes(event);
+			}
+
+			public function showAttrDetailsTable(attName:String, elem:Object, milePoint:Number, x:Number, y:Number):void {
+				var pixel:Number = Converter.scaleMileToPixel(milePoint,sldDiagram.scale);
+				
+				if (attrWindow)
+					PopUpManager.removePopUp(attrWindow);
+				attrWindow = AttributesForm(PopUpManager.createPopUp(this,AttributesForm,false));
+				PopUpManager.centerPopUp(attrWindow);
+				attrWindow.x = x;
+				attrWindow.y = y;
+				attrWindow.addFormItems(attName, elem, milePoint, FlexGlobals.topLevelApplication.currentBeginMile, 
+					FlexGlobals.topLevelApplication.currentEndMile);
+			}
+			
+			public function toggleGuideBar(event:ConfigManagerEvent):void{
+				if (event.NewValue)
+				{
+					sldDiagram.turnGuideBarOn();
+				}
+				else
+				{
+					sldDiagram.turnGuideBarOff();
+				}
+			}
+			
+			
+			public function toggleAssetsOnStick(event:ConfigManagerEvent):void{
+				sldDiagram.toggleAssetsOnStick(event.assetSwitchObj);
+			}
+				
+						
+			public function toggleMeasureBar(event:ConfigManagerEvent):void{
+				if (event.NewValue)
+				{
+					sldDiagram.turnMeasureBarOn();
+				}
+				else
+				{
+					sldDiagram.turnMeasureBarOff();
+				}
+			}
+			
+			public function changeMeasureBarUnit(event:ConfigManagerEvent):void{
+				sldDiagram.changeMeasureBarUnit(event.NewUnit);
+			}
+			
+			public function toggleInvPanelView(event:ConfigManagerEvent):void{
+				//invFormSetUpComplete = false;
+				sldDiagram.toggleInvPanelView();
+				
+				
+			}
+			
+			public function setCBButtonDPs(event:Event):void{
+				sldDiagram.setCBButtonDPs();
+			}
+			
+			public function controlGestures(event:GestureControlEvent):void{
+				if (event.gestures)
+					sldDiagram.addGestureSupport();
+				else
+					sldDiagram.removeGestureSupport();
+			}
+			
+			public function handleNewSign(event:SignInvEvent):void
+			{
+				sldDiagram.handleNewSign(event);
+			}
+			
+			public function handleGPSChange(event:GPSEvent):void
+			{
+				sldDiagram.moveToXY(event.x, event.y, event);
+			}
+			
+			public function handleNewCulvert(event:AssetEvent):void{
+				sldDiagram.handleNewCulvert(event);
+			}
+			
+			public function handleNewAP(event:AccessPointEvent):void{
+				sldDiagram.handleNewAP(event);
+			}
+			
+			public function exportChanges():void
+			{
+				sldDiagram.exportChanges();
+			}
+
+			public function mavricConfiguredSync():void
+			{
+				sldDiagram.mavricConfiguredSync();
+			}
+			public function RHSync():void 
+			{
+				sldDiagram.RHSync();
+			}
+			public function continueLocalSave(event:ElementEvent):void
+			{
+				sldDiagram.invDrawingCompleted();
+			}
+			public function setRouteCoords(event:MapInitEvent):void
+			{
+				sldDiagram.setRouteCoords(event.routeCoords as ArrayCollection);	
+			}
+			
+			
+			
+			public function showAssetSelectionPop(event:AssetManagerEvent):void{
+				var obj:Object = new Object();
+				var symbol:AssetSymbol ;
+				clickPool.removeAll();
+			
+				var _spriteList:Object = FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.spriteLists;
+				var zoomAdjustment:Number =FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.scale();
+				
+				var tolerance:Number = BASE_TOLERANCE*zoomAdjustment;
+				for (var key:String in _spriteList){
+					if(FlexGlobals.topLevelApplication.GlobalComponents.assetManager.isAssetOnStick(key))
+					{
+						for each(var spriteObj:Object in _spriteList[key]){
+							
+							if(Math.abs(spriteObj.symbol.x - event.asset.symbol.x) <= tolerance && Math.abs(spriteObj.symbol.y - event.asset.symbol.y) <= tolerance){
+								obj = new Object();
+								obj.baseAsset = spriteObj;
+								obj.list_description = obj.baseAsset.description + " " + obj.baseAsset.id;
+								clickPool.addItem(obj);
+								
+							}
+						}
+					}
+				}
+				if(clickPool.length > 1){
+					assetSelectPopup.open(this,false);
+					PopUpManager.centerPopUp(assetSelectPopup);
+				}
+				else if(clickPool.length==0)//just in case
+				{
+					
+					symbol = event.asset.symbol;
+					symbol.selectAsset();
+					FlexGlobals.topLevelApplication.editAsset(symbol.baseAsset, symbol.baseAsset.useCustomForm);
+				}
+				else{
+					symbol= clickPool.getItemAt(0).baseAsset.symbol;
+					symbol.selectAsset();
+					FlexGlobals.topLevelApplication.editAsset(symbol.baseAsset, symbol.baseAsset.useCustomForm);
+				}
+				
+			}
+			
+			private function assetselection_close_handler():void{
+				var obj: Object = assetSelectorList.selectedItem;
+				var symbol:AssetSymbol = obj.baseAsset.symbol;
+				symbol.selectAsset();
+				assetSelectPopup.close(false, null);
+				FlexGlobals.topLevelApplication.editAsset(symbol.baseAsset, symbol.baseAsset.useCustomForm);
+			}
+			
+
+		]]>
+	</fx:Script>
+	
+	<models:MAVRICDiagram id="sldDiagram"/>
+</s:Group>

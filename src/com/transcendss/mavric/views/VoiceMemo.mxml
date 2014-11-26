@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="VoiceMemo"
+		skinClass="skins.MavricTitleWindowSkin"
+		close="handleCloseEvent();">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:layout>
+		<s:VerticalLayout paddingTop="10" paddingBottom="10" paddingRight="10" paddingLeft="10"/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.transcore.events.VoiceEvent;
+			
+			import flash.events.SampleDataEvent;
+			import flash.media.Microphone;
+			import flash.media.Sound;
+			import flash.utils.ByteArray;
+			
+			import mx.managers.PopUpManager;
+			
+			import spark.events.PopUpEvent;
+			
+			
+			private var mic:Microphone;
+			private var soundBytes:ByteArray;
+			private var s:Sound;
+		
+
+			private var rec:Boolean=false;
+			private var volume:Number;
+			private var soundMap:Object;
+			private var pan:Number;
+			
+			private function onToggleRecording(event:MouseEvent):void
+			{
+				this.rec = !rec;
+				
+				if (rec)
+				{
+					if (Microphone.isSupported)
+					{
+						recordBtn.label = "Stop";
+						this.soundBytes = new ByteArray();
+						this.mic = Microphone.getMicrophone();
+						
+						if (this.mic != null)
+						{
+							this.mic.setSilenceLevel(40);
+							this.mic.gain = 100;
+							this.mic.rate = 11;
+							this.mic.setSilenceLevel(0,4000);
+							this.mic.addEventListener(SampleDataEvent.SAMPLE_DATA, onMicSampleData);
+						}
+					}
+					else
+					{
+						trace("Microphone NOT SUPPORTED");
+					}
+				}
+				else
+				{
+					recordBtn.label = "Record";
+					this.mic.removeEventListener(SampleDataEvent.SAMPLE_DATA, onMicSampleData);
+					var tmpEvent:VoiceEvent = new VoiceEvent(VoiceEvent.NEWMEMO,true, true);
+					tmpEvent.byteArray = this.soundBytes;
+					dispatchEvent(tmpEvent);
+					playBtn.enabled = true;
+				}
+			}
+			
+			private function onMicSampleData(event:SampleDataEvent):void
+			{
+				while (event.data.bytesAvailable)
+				{
+					var sample:Number = event.data.readFloat();
+					soundBytes.writeFloat(sample);
+				}
+			}
+			
+			private function playEcho():void
+			{
+				volume = 1;
+				pan = 1;
+				soundMap = new Object();
+				startPlayback();
+			}
+			
+			private function startPlayback():void
+			{
+				if (soundBytes.length > 0)
+				{
+					soundBytes.position=0;
+					var sound:Sound=new Sound();
+					sound.addEventListener(SampleDataEvent.SAMPLE_DATA,onSamplePlayback);
+					sound.play();			
+				}
+			}
+			
+			private function onSamplePlayback(event:SampleDataEvent):void
+			{
+				var sample:Number;
+				for (var i:int = 0; i < 2048; i++)
+				{
+					if (this.soundBytes.bytesAvailable > 0)
+					{
+						sample = soundBytes.readFloat();
+						event.data.writeFloat(sample);
+						event.data.writeFloat(sample);
+						event.data.writeFloat(sample);
+						event.data.writeFloat(sample);
+						
+						event.data.writeFloat(sample);
+						event.data.writeFloat(sample);
+						event.data.writeFloat(sample);
+						event.data.writeFloat(sample);
+					}
+				}
+				
+				while (event.data.length < 65536)
+					event.data.writeFloat(0);
+				
+				var inti:int = 0;
+				/*var sound:Sound = event.target as Sound;
+				var soundCopy:ByteArray = ByteArray(this.soundMap[sound]);
+				for (var i:int = 0; i < 8192 && soundCopy.bytesAvailable > 0; i++)
+				{
+					var sample:Number = soundCopy.readFloat();
+					event.data.writeFloat(sample);
+					event.data.writeFloat(sample);
+				}*/
+			}
+			
+			private function handleCloseEvent():void 
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+			}
+		]]>
+	</fx:Script>
+	
+	<s:HGroup>
+		<s:Button id="recordBtn" label="Record" click="onToggleRecording(event);" width="100"/>
+		<s:Button id="playBtn" label="Play" enabled="false" click="startPlayback();" width="100"/>
+	</s:HGroup>
+	
+</s:TitleWindow>

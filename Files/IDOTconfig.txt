@@ -1,0 +1,5 @@
+[
+	{
+	"ServiceURL": "http://ec2-23-20-37-199.compute-1.amazonaws.com/IowaMavricService/IowaMavricService.svc/"
+	}
+]

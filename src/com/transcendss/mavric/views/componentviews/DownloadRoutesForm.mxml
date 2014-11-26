@@ -1,0 +1,711 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   width="290" height="384"
+			   title="Download Routes"
+			   name="RouteBoundariesForm"
+			   creationComplete="init(event)"
+			   skinClass="skins.MavricTitleWindowSkin"
+			   >
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="typePopUp" width="300" height="400"  name="Select Type"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="typeList" change="{closeType(null)}"  dataProvider="{dp}" labelField="name" width="100%" height="100%" fontSize="18" allowMultipleSelection="false"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:SkinnablePopUpContainer id="boundaryPopUp" width="300" height="400"  name="Select Type"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="boundsList" change="{closeBounds()}"  dataProvider="{boundsDP}" labelField="DESCRIPTION" width="100%" height="100%" fontSize="18" allowMultipleSelection="false"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+	</fx:Declarations>
+	
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.cartogrammar.shp.ShpMap;
+			import com.transcendss.mavric.db.CachedElement;
+			import com.transcendss.mavric.db.CachedRoute;
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.extended.models.MAVRICDiagram;
+			import com.transcendss.mavric.managers.FeatureSetManager;
+			import com.transcendss.mavric.map.MobileMap;
+			import com.transcendss.mavric.util.PopUpUtils;
+			import com.transcendss.mavric.util.TSSRectangle;
+			import com.transcendss.transcore.sld.models.InventoryDiagram;
+			import com.transcendss.transcore.sld.models.components.Culvert;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.core.IFlexDisplayObject;
+			import mx.events.CloseEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			import mx.utils.ObjectUtil;
+			
+			import spark.events.PopUpEvent;
+			
+			[Bindable]
+			public var DLRFTipLabel:String;
+			
+			[Bindable]
+			private var dp:ArrayCollection;
+			
+			[Bindable]
+			private var boundsDP:ArrayCollection;
+			
+			private var loadedRoutes:Array;
+			
+			private var callDict:Object;
+			
+			private var xingDict:Object;
+			
+			private var coordDict:Object;
+			
+			private var gtDict:Object;
+			
+			private var invDict:Object;
+			
+			private var urlDict:Object;
+			
+			private var finalRoutes:ArrayCollection;
+			
+			private var acc:ArrayCollection;
+			
+			private var loadCounter:int = 0;
+			
+			private var typeArr:Array = new Array();
+			private var overrideOkay:Boolean;
+			private var mdbm:MAVRICDBManager = MAVRICDBManager.newInstance();
+			private var shapeMap:ShpMap
+			
+			private var mapDownloadFlag:Boolean = false;
+			
+			protected function init(event:FlexEvent):void
+			{
+				PopUpUtils.closeAll(this);
+				var json:String = ConfigUtility.get("boundary_types");
+				var btypes:Array = JSON.parse(json) as Array;
+				dp = new ArrayCollection(btypes);
+				callDict = new Object();
+				xingDict = new Object();
+				coordDict = new Object();
+				finalRoutes = new ArrayCollection();
+				acc = new ArrayCollection(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.dataElementValues);
+				invDict = new Object();
+				urlDict = new Object();
+				gtDict = new Object();
+				
+				for (var type:String in FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDescriptions)
+				{
+					typeArr.push(type);
+				}
+			}
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+				//dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			private function handleCloseEvent():void 
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			private function openTypeSelect(event:MouseEvent):void
+			{	
+				typePopUp.open(this, false);
+				PopUpManager.centerPopUp(typePopUp);
+			}
+			
+			protected function closeType(event:Event):void
+			{
+				txtBounds.text = "";
+				if (dp.getItemAt(typeList.selectedIndex).name == "Districts")
+					getDistricts();
+				else if (dp.getItemAt(typeList.selectedIndex).name == "Counties")
+					getCounties();
+				else
+					getDivisions();
+				
+				varLabel.label = dp.getItemAt(typeList.selectedIndex).name;
+				btnBounds.label = dp.getItemAt(typeList.selectedIndex).name;
+				txtTypes.text = typeList.dataProvider.getItemAt(typeList.selectedIndex).name;
+				typePopUp.close(true, typeList.selectedItem);
+			}
+			
+			private function openBoundsSelect(event:MouseEvent):void
+			{
+				boundaryPopUp.open(this, false);
+				PopUpManager.centerPopUp(boundaryPopUp);
+			}
+			
+			private function closeBounds():void
+			{
+				txtBounds.text = boundsDP.getItemAt(boundsList.selectedIndex).DESCRIPTION;
+				boundaryPopUp.close(true, boundsList.selectedIndex);
+				
+				var httpService:HTTPService = new HTTPService();
+				
+				if (dp.getItemAt(typeList.selectedIndex).name == "Districts")
+				{
+					httpService.url = ConfigUtility.get("serviceURL") + ConfigUtility.get("routes_d") +   parseInt(boundsDP.getItemAt(boundsList.selectedIndex).ID); 
+				}
+				else if (dp.getItemAt(typeList.selectedIndex).name == "Counties")
+					httpService.url = ConfigUtility.get("serviceURL") + ConfigUtility.get("routes_c") + parseInt(boundsDP.getItemAt(boundsList.selectedIndex).D_COUNTY_ID);
+				else if (dp.getItemAt(typeList.selectedIndex).name == "Divisions")
+					httpService.url = ConfigUtility.get("serviceURL") + ConfigUtility.get("routes_div") + parseInt(boundsDP.getItemAt(boundsList.selectedIndex).ID);
+				
+				httpService.resultFormat = "text";
+				
+				httpService.addEventListener(FaultEvent.FAULT, onFail);
+				
+				httpService.addEventListener(ResultEvent.RESULT, onRoutes);
+				
+				httpService.send();
+			}
+			
+			private function onRoutes(ev:ResultEvent):void
+			{
+				var routes:ArrayCollection = new ArrayCollection(JSON.parse(ev.message.body as String) as Array);
+				var aggMileage:Number = 0.0;
+				
+				
+				var travRoutes:ArrayCollection = ObjectUtil.clone(routes) as ArrayCollection;
+				var index:int = 0;
+				
+				for each (var route:Object in travRoutes)
+				{
+					var mile:Number = Math.abs(parseFloat(route.BEGIN_MP as String) - parseFloat(route.END_MP));
+					
+					if (mile == 0)
+					{
+						routes.removeItemAt(index);
+						continue;
+					}
+					
+					if (isNaN(mile))
+					{
+						trace("Invalid mileage in route list. Skipping. Total mileage may not be accurate.");
+						index++;
+						continue;
+					}
+					
+					index++;
+					aggMileage += mile;
+				}
+				
+				numRoutes.text = routes.length.toString();
+				numMile.text = aggMileage.toFixed(3);
+				loadedRoutes = routes.toArray();
+			}
+			
+			private function getDistricts():void
+			{
+				var httpService:HTTPService = new HTTPService();
+				
+				httpService.url = ConfigUtility.get("serviceURL") +  ConfigUtility.get("district_b"); // baseAsset.get___();
+				
+				httpService.resultFormat = "text";
+				
+				httpService.addEventListener(FaultEvent.FAULT, onFail);
+				
+				httpService.addEventListener(ResultEvent.RESULT, onBoundsSuccess);
+				
+				httpService.send();
+			}
+			
+			private function getCounties():void
+			{
+				var httpService:HTTPService = new HTTPService();
+				
+				httpService.url = ConfigUtility.get("serviceURL") + ConfigUtility.get("county_b"); // baseAsset.get___();
+				
+				httpService.resultFormat = "text";
+				
+				httpService.addEventListener(FaultEvent.FAULT, onFail);
+				
+				httpService.addEventListener(ResultEvent.RESULT, onBoundsSuccess);
+				
+				httpService.send();
+			}
+			
+			private function getDivisions():void
+			{
+				boundsDP = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("DIVISIONS");
+			}
+			
+			/*private function onCountySuccess(ev:ResultEvent):void
+			{
+			var json:String = ev.message.body as String;
+			var counties:Array = JSON.parse(json) as Array;
+			boundDP = new ArrayCollection(districts);
+			}*/
+			
+			private function onBoundsSuccess(ev:ResultEvent):void
+			{
+				var json:String = ev.message.body as String;
+				var districts:Array = JSON.parse(json) as Array;
+				boundsDP = new ArrayCollection(districts);
+			}
+			
+			private function onFail(ev:FaultEvent):void
+			{
+				throw new Error("Failure to retrieve districts!");
+			}
+			
+			
+			
+			protected function btnSubmit_click(event:MouseEvent):void
+			{
+				if(txtTypes.text == null || txtTypes.text === "")
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Please select a boundary type.");
+					return;
+				}else if(txtBounds.text == null || txtBounds.text === "")
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Please select a county or district.");
+					return;
+				}
+				
+				//Turn off GPS if on. If the GPS is on while trying to download routes, it resets the dialog and turns off the spinner as the GPS is updated.
+				if (FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.GPS_ON)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Download Route is not allowed with GPS on. Please turn off GPS and try again.");
+					return;
+				}
+				
+				//***************
+				//loadBoundaryShape();  // Temporariliy add it
+				//cachedDistrictMap();
+				
+				
+				var alreadyPresent:Boolean = mdbm.containsBoundary(txtBounds.text);
+				if(alreadyPresent)
+				{
+					//						FlexGlobals.topLevelApplication.TSSAlert("Whoa there, Buckaroo. We don't wanna add the same boundary twice.");
+					//						return;
+					var resp : mx.rpc.Responder = new mx.rpc.Responder(processRequest,halt);
+					var y:Number = this.height /2;
+					var x:Number = this.width /2;
+					FlexGlobals.topLevelApplication.YesNoPrompt("You've already loaded this boundary. Would you like to override the saved boundary?", "Boundary Conflict!", resp);
+				}
+				else
+				{
+					mdbm.addBoundary(txtBounds.text);
+					overrideOkay = false;
+					processRequest(true, false);
+				}
+				
+			}
+			
+			private function processRequest(data:Object, override:Boolean = true):void{
+				
+				if(override && (data as Boolean) == true)
+				{
+					mdbm.deleteRoutesByBoundary(txtBounds.text);	
+				}
+				
+				if((data as Boolean) == true)
+				{
+					try
+					{
+						loadCounter = 0;
+						
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						//processCounter.text = "Retrieving route data from server.";
+						DLRFTipLabel = "Retrieving route data from server"; 
+						for each (var route:Object in loadedRoutes)
+						{
+							
+							var httpService:HTTPService = new HTTPService();
+							
+							httpService.url = ConfigUtility.get("serviceURL") + ConfigUtility.get("features_xing") + JSON.stringify(typeArr).replace(new RegExp("\"", "g"), "'") + "/" + route.ROUTE_NAME + "/" + route.BEGIN_MP + "/" + route.END_MP; // baseAsset.get___();
+							
+							callDict[httpService.url] = route;
+							
+							httpService.resultFormat = "text";
+							
+							httpService.addEventListener(FaultEvent.FAULT, onFail);
+							
+							httpService.addEventListener(ResultEvent.RESULT, routeResult1);
+							
+							httpService.send();	
+							
+							
+						}
+					}
+					catch (err:Error)
+					{
+						FlexGlobals.topLevelApplication.TSSAlert(err.message + "");
+					}
+				}
+				//btnSubmit.enabled = false;
+				disableSubmit();
+			}
+			
+			private function halt(data:Object):void
+			{
+				//btnSubmit.enabled = false;
+				disableSubmit();
+				//If route has already exist, go on to cache map
+			}
+			
+			protected function routeResult1(ev:ResultEvent):void
+			{
+				trace("call function routeResult1");
+				try
+				{
+					var route:Object = callDict[ev.target.url];
+					
+					var httpService:HTTPService = new HTTPService();
+					
+					httpService.url = ConfigUtility.get("serviceURL") + ConfigUtility.get("route_coords") + route.ROUTE_NAME + "/" + route.BEGIN_MP + "/" + route.END_MP; // baseAsset.get___();
+					
+					xingDict[httpService.url] = ev.message.body;
+					
+					callDict[httpService.url] = route;
+					
+					httpService.resultFormat = "text";
+					
+					httpService.addEventListener(FaultEvent.FAULT, onFail);
+					
+					httpService.addEventListener(ResultEvent.RESULT, routeResult2);
+					
+					httpService.send();
+				}
+				catch (err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.message + "");
+				}
+				
+			}
+			
+			protected function routeResult2(ev:ResultEvent):void
+			{
+				trace("call function routeResult2");
+				try
+				{
+					var route:Object = callDict[ev.target.url];
+					var xingFeats:Object = xingDict[ev.target.url];
+					
+					xingDict[ev.target.url] = xingFeats;
+					callDict[ev.target.url] = route;
+					coordDict[ev.target.url] = ev.message.body;
+					invDict[ev.target.url] = new ArrayCollection();
+					
+					
+					var httpService:HTTPService = new HTTPService();
+					
+					
+					for (var i:int = 0; i < acc.length; i++)
+					{
+						httpService.url = ConfigUtility.get("serviceURL") + ConfigUtility.get("features_inv") + acc.getItemAt(i) + "/" + route.ROUTE_NAME + "/" + route.BEGIN_MP + "/" + route.END_MP; // baseAsset.get___();
+						
+						urlDict[httpService.url] = ev.target.url;
+						
+						httpService.resultFormat = "text";
+						
+						httpService.addEventListener(FaultEvent.FAULT, onFail);
+						
+						httpService.addEventListener(ResultEvent.RESULT, routeResult3);
+						
+						httpService.send();
+					}
+					
+				}
+				catch (err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.message + "");
+				}
+			}
+			
+			protected function routeResult3(ev:ResultEvent):void
+			{
+				trace("call function routeResult3");
+				
+				var url:String = urlDict[ev.target.url] as String;
+				
+				var curColl:ArrayCollection = invDict[url];
+				curColl.addItem(JSON.parse(ev.message.body as String) as Array);
+				
+				var route:Object = callDict[url];
+				var xingFeats:Object = xingDict[url];
+				var coordDicts:Object = coordDict[url];
+				
+				
+				
+				var httpService:HTTPService = new HTTPService();
+				
+				if (curColl.length == acc.length)
+				{
+					
+					httpService.url = ConfigUtility.get("serviceURL") + ConfigUtility.get("all_asset_geotags")  + route.ROUTE_NAME + "/" + route.BEGIN_MP + "/" + route.END_MP; // baseAsset.get___();
+					//httpService.url =  ConfigUtility.get("all_asset_geotags")  + route.ROUTE_NAME + "/" + encodeURIComponent(route.BEGIN_MP) + "/" + encodeURIComponent(route.END_MP); // baseAsset.get___();
+					
+					urlDict[httpService.url] = ev.target.url;
+					xingDict[httpService.url] = xingFeats;
+					callDict[httpService.url] = route;
+					coordDict[httpService.url] = coordDicts;	
+					invDict[httpService.url] = curColl;
+					httpService.resultFormat = "text";
+					
+					httpService.addEventListener(FaultEvent.FAULT, onFail);
+					
+					httpService.addEventListener(ResultEvent.RESULT, routeResult4);
+					
+					httpService.send();
+					
+				}
+				
+			}
+			
+			protected function routeResult4(ev:ResultEvent):void{
+				trace("call function routeResult4");
+				
+				var route:Object = callDict[ev.target.url];
+				var xingFeats:Object = xingDict[ev.target.url];
+				var coords:Object = coordDict[ev.target.url];
+				var curColl:ArrayCollection = invDict[ev.target.url];
+				var gtColl:ArrayCollection  = new ArrayCollection();
+				var Obj:Object = JSON.parse(ev.message.body as String);
+				if(Obj.hasOwnProperty("error"))
+					FlexGlobals.topLevelApplication.TSSAlert( Obj.error);
+				else
+					gtColl.addItem(JSON.parse(ev.message.body as String) as Array);
+				//var feats:Object = ev.message.body;
+				
+				finalRoutes.addItem({route: route, xing:xingFeats, coords:coords, feats:curColl, gtags:gtColl});
+				createCached();
+			}
+			
+			public function createCached():void
+			{
+				trace("in function createCached: Final Routes:" + finalRoutes.length + ". Loaded: "+ loadedRoutes.length);
+				if (finalRoutes.length == loadedRoutes.length)
+				{
+					//try
+					//{
+					for each (var routte:Object in finalRoutes)
+					{
+						
+						CachedRoute.generateFromServices(routte.route, routte.xing, routte.coords, routte.feats, txtBounds.text, routte.gtags);
+						
+						setTimeout(incrementCounter, 5000);
+						
+					}
+					
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+					
+					//Make sure the second donwload is right
+					//finalRoutes.removeAll();
+
+					cachedDistrictMap();
+					
+					
+				}
+				
+			}
+			
+			
+			//newly added code
+			private function cachedDistrictMap():void
+			{
+				//If the map has already existed on the local db
+				var mapExist:Boolean = false;
+				
+				if(mdbm.getMapImageRecordByPrefix(txtBounds.text) != null)
+					mapExist = true;
+				if(mapExist)
+				{
+					var resp2: mx.rpc.Responder = new mx.rpc.Responder(loadBoundaryShape, halt2);
+					FlexGlobals.topLevelApplication.YesNoPrompt("You've already cached the map. Would you like to override the saved map?", "Map Conflict!", resp2);
+				}
+				else
+				{
+					loadBoundaryShape(true, false);
+				}
+			}
+			//newly added code
+			private function halt2(data:Object):void
+			{
+				mapDownloadFlag = false;
+				
+			}
+			//newly added code
+			private function loadBoundaryShape(data:Object, override:Boolean = true):void
+			{
+				if(override && (data as Boolean) == true)
+				{
+					mdbm.deleteMapImageRecordByName(txtBounds.text);
+				}
+				if( (data as Boolean) == true)
+				{
+					try
+					{
+						mapDownloadFlag = true;
+						var myPattern:RegExp = / /g; 
+						
+						if(txtTypes.text == "Districts")
+						{
+							var fl:File = new File("app:/InnerFiles/shape/IOWA_TRANS_DISTRICTS.shp");
+							if (fl.exists)
+							{
+								//shapeMap = new ShpMap("file:C:/Projects/IDOT/route_shp/" + rtID + ".shp","file:C:/Projects/IDOT/route_shp/" + rtID + ".dbf");
+								shapeMap = new ShpMap("app:/InnerFiles/shape/IOWA_TRANS_DISTRICTS.shp","app:/InnerFiles/shape/IOWA_TRANS_DISTRICTS.dbf");
+								shapeMap.addEventListener("attributes loaded", shapesLoaded);
+							}
+						}
+						else // counties
+						{
+							var fl:File = new File("app:/InnerFiles/shape/IOWA_TRANS_COUNTIES.shp");
+							if (fl.exists)
+							{
+								//shapeMap = new ShpMap("file:C:/Projects/IDOT/route_shp/" + rtID + ".shp","file:C:/Projects/IDOT/route_shp/" + rtID + ".dbf");
+								shapeMap = new ShpMap("app:/InnerFiles/shape/IOWA_TRANS_COUNTIES.shp","app:/InnerFiles/shape/IOWA_TRANS_COUNTIES.dbf");
+								shapeMap.addEventListener("attributes loaded", shapesLoaded);
+							}
+						}
+					}
+					
+					catch(e:Error)
+					{
+						trace(e.message);
+					}
+				}
+			}
+			//newly added code
+			protected function shapesLoaded(e:Event):void
+			{
+				var fsm:FeatureSetManager = new FeatureSetManager(shapeMap.features, true);
+				var extentArray:Array;
+				if(txtTypes.text == "Districts")
+				{
+					extentArray = fsm.getPolygonExtent(txtBounds.text.replace("District ", ""));
+					// Add a 10 mile buffer to each dimension of the extent.
+					extentArray[0] = extentArray[0] - .2;
+					extentArray[1] = extentArray[1] - .145;
+					extentArray[2] = extentArray[2] + .2;
+					extentArray[3] = extentArray[3] +  .145;
+				}
+				else
+				{
+					extentArray = fsm.getPolygonExtentByName(txtBounds.text);
+					// Add a 10 mile buffer to each dimension of the extent.
+					extentArray[0] = extentArray[0] - .02;
+					extentArray[1] = extentArray[1] - .0145;
+					extentArray[2] = extentArray[2] + .02;
+					extentArray[3] = extentArray[3] +  .0145;
+				}
+				try 
+				{
+					cachedMapByDistrict(extentArray);
+				}
+				catch(e:Error)
+				{
+					DLRFTipLabel = "Cache routes completed!";
+				}
+				
+			}
+			//newly added code
+			private function cachedMapByDistrict(extArr:Array):void
+			{
+				//FlexGlobals.topLevelApplication.setBusyStatus(true);
+				var minX:Number = extArr[0];
+				var minY:Number = extArr[1];
+				var maxX:Number = extArr[2];
+				var maxY:Number = extArr[3];
+				var mobMap:MobileMap = new MobileMap();
+				mobMap.isDistrictCached = true;
+				mobMap.setInitialMapExtent(minX, minY, maxX, maxY, "D_" + txtBounds.text);
+			}
+			
+			private function incrementCounter():void
+			{
+				loadCounter++;
+				//processCounter.text = "Route " + loadCounter + " of " + loadedRoutes.length + " cached.";
+				DLRFTipLabel = "Route " + loadCounter + " of " + loadedRoutes.length + " cached.";
+				
+				if(loadCounter == loadedRoutes.length)
+				{
+					
+					if(FlexGlobals.topLevelApplication.attachmentDownloadError)
+						FlexGlobals.topLevelApplication.TSSAlert("Attachment download errors encountered");
+					if(mapDownloadFlag == false)
+						DLRFTipLabel = "Cache routes completed!";
+					else
+					{
+						//processCounter.text= "Caching District Maps...";
+						if(txtTypes.text == "Districts")	
+							DLRFTipLabel = "Caching District Maps...";
+						else
+						{
+							DLRFTipLabel = "Caching County Maps...";
+						}
+					}
+				}
+			}
+			
+			private function enableSubmit(eve:Event):void
+			{
+				//btnSubmit.enabled = true;
+				btnSubmit.visible = true;
+				btnSubmit.includeInLayout=true;
+				if(eve.target == txtTypes)
+				{
+					txtBounds.text = "";
+					numRoutes.text = "";
+					numMile.text = "";
+					processCounter.text ="";
+				}
+			}
+			
+			private function disableSubmit():void{
+				btnSubmit.visible = false;
+				btnSubmit.includeInLayout=false;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Form id="formInput" width="288" fontSize="12">
+		<s:FormItem label="Boundary" fontSize="12">
+			<s:Button height="35" label="Types" click="openTypeSelect(event)"/>
+			<s:TextInput id="txtTypes" width="132" change="enableSubmit(event)" editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+		</s:FormItem>
+		
+		<s:FormItem id="varLabel" label="Boundaries">
+			<s:Button id="btnBounds" height="35" label="Boundaries" click="openBoundsSelect(event)" />
+			<s:TextInput id="txtBounds" width="132" change="enableSubmit(event)" editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+		</s:FormItem>
+		
+		<s:FormItem label="# of Routes">
+			<s:Label id="numRoutes" />	
+		</s:FormItem>
+		
+		<s:FormItem label="Total Route Miles">
+			<s:Label id="numMile" />	
+		</s:FormItem>
+		
+		<s:Group>
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="center" />
+			</s:layout>
+			<s:Button id="btnSubmit" label="Submit" click="btnSubmit_click(event)" />
+			<s:Label id="processCounter" text="{DLRFTipLabel}" />
+		</s:Group>
+	</s:Form>
+	
+</s:TitleWindow>

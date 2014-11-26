@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:local="*"
+		 xmlns:views="com.transcendss.maverick.views.FileMenu.*"
+		 width="100%" height="100%">
+	<fx:Declarations>
+		
+		
+	</fx:Declarations>
+
+
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.managers.ConfigurationManager;
+			import com.transcendss.transcore.events.MenuBarEvent;
+			
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			
+			import spark.components.TitleWindow;
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_File_40x40.png")] protected var ifile:Class
+			[Bindable]
+			[Embed(source="../../../../images/edit.png")] protected var iedit:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_Settings_40x40.png")] protected var isettings:Class
+			[Bindable]
+			[Embed(source="../../../../images/tools.png")] protected var itools:Class
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_View_40x40.png")] protected var iview:Class
+			[Bindable]
+			[Embed(source="../../../../images/MAVRIC_Logo_Long_Large_Transp.png")] protected var ilogo:Class;
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_Sync_40x40.png")] protected var isync:Class;
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_Change_User_40x62.png")] protected var iusers:Class;
+			
+		
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_CSV_Sync_40x40.png")] protected var csvsync:Class;
+			[Bindable]
+			[Embed(source="../../../../images/gray_icons/icon_Mav_RH_Indv_Sync_40x40.png")] protected var rhIndvsync:Class;
+			
+			public static const IOWA_SYNC:int=1;
+			public static const NEW_SYNC:int=2;
+			public static const EXPORT_CHANGES:int=3;
+			
+			private var tmpEvent:Event; //Used for syncing. Can't pass params to responder so need to store it here temporarily.
+			
+			private function showFileMenu():void {
+				// Create a non-modal TitleWindow container.
+				var helpWindow:TitleWindow=
+					PopUpManager.createPopUp(this, FileMenu, false) as TitleWindow;
+				PopUpManager.centerPopUp(helpWindow);
+			}
+			
+			
+			private function showViewMenu():void {
+				// Create a non-modal TitleWindow container.
+				var viewMenu:TitleWindow=
+					PopUpManager.createPopUp(this, ViewMenu, false) as TitleWindow;
+				PopUpManager.centerPopUp(viewMenu);
+			}
+			
+			
+			
+			private function showToolsMenu():void {
+				// Create a non-modal TitleWindow container.
+				var toolsMenu:TitleWindow=
+					PopUpManager.createPopUp(this, ToolsMenu, false) as TitleWindow;
+				PopUpManager.centerPopUp(toolsMenu);
+			}
+			
+			private function showSettingsMenu(event:MouseEvent):void {
+				// Create a non-modal TitleWindow container.
+				var settingsMenu:TitleWindow=
+					PopUpManager.createPopUp(this,SettingsMenu, false) as TitleWindow;
+				PopUpManager.centerPopUp(settingsMenu);
+			}
+			
+			public function setDistrict(event:MenuBarEvent):void {
+				lblDist.text = event.dist;//"District: " + event.dist;
+				
+			}
+			
+			public function setInsp1(event:MenuBarEvent):void {
+				
+				lblInsp1.text = event.insp1; 
+			}
+			
+			public function setInsp2(event:MenuBarEvent):void {
+				lblInsp2.text =  event.insp2; 
+			}
+			
+			public function getCurrentUser():String
+			{
+				return lblInsp1.text;
+			}
+			
+			
+			protected function onChangeUserClick(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				FlexGlobals.topLevelApplication.userFormCaller = "Menu Bar Button";
+				FlexGlobals.topLevelApplication.showMainForm();
+			}
+			
+			private function verifySyncChanges(event:Event):void
+			{
+				if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity != ConfigurationManager.EXPORT_CHANGES)
+				{
+					if (!FlexGlobals.topLevelApplication.connected)
+					{
+						FlexGlobals.topLevelApplication.TSSAlert("WiFi is off. Please turn on WiFi, connect to a network, and try again.");
+						return;
+					}
+				}
+				tmpEvent = event;
+				FlexGlobals.topLevelApplication.YesNoPrompt("Are you ready to sync your asset data?" , "", new mx.rpc.Responder(syncCallBack, null));
+			}
+			
+			private function syncCallBack(sync:Boolean):void
+			{
+				if (sync)
+				{
+					syncChanges(tmpEvent)
+					tmpEvent = null;
+				}
+			}
+			
+			// Synchronize the changes
+			protected function syncChanges(event:Event):void
+			{
+				if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity == ConfigurationManager.MC_SYNC)
+					FlexGlobals.topLevelApplication.sldDiagram.mavricConfiguredSync();
+				else if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity == ConfigurationManager.RH_SYNC)
+				{
+					FlexGlobals.topLevelApplication.sldDiagram.RHSync();
+				}
+				else if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity == ConfigurationManager.EXPORT_CHANGES)
+					FlexGlobals.topLevelApplication.sldDiagram.exportChanges();
+			}
+			
+			
+			public function setSyncIcon(e:Event):void
+			{
+				if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager)
+				{
+				if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity== ConfigurationManager.MC_SYNC)
+					syncIcon.source = this.isync;
+				else if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity == ConfigurationManager.RH_SYNC)
+					syncIcon.source = this.rhIndvsync;
+				else if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.syncActivity == ConfigurationManager.EXPORT_CHANGES)
+					syncIcon.source = this.csvsync;
+				}
+			}
+			
+			
+			
+		]]>
+	</fx:Script>
+
+<!-- 		
+	
+	<local:SparkMenuBar id="menuBar" fontFamily="Tahoma" fontSize="18" change="choice.text = SparkMenuEvent(event).item.@label.toString()" 
+						itemRenderer="SparkMenuBarItemRenderer" labelField="@label" dataProvider="{menuDP}" >
+		<local:layout>
+			<s:HorizontalLayout />
+		</local:layout>
+	</local:SparkMenuBar>  
+
+	<s:Label y="100" id="choice" />
+	<mx:MenuBar id="menuBar" fontFamily="Tahoma" fontSize="18" menuStyleName="menuBar" width="100%" height="100%" itemClick="onMenuItemClick(event)" click="onMenuBarClick(event)"  /> -->
+ 	<s:HGroup id="Buttons" width="100%" height="100%" verticalAlign="middle">
+		<s:Spacer width="50"/>
+		<s:VGroup horizontalAlign="center">
+			<s:Image toolTip="File"  source="{ifile}" width="32" height="32" click="showFileMenu();"/>
+			<!--<s:Label text="FILE"  fontSize="12">
+			</s:Label>-->
+		</s:VGroup>
+		
+		<s:Spacer/>
+		<s:Spacer/>
+		<!--<s:VGroup horizontalAlign="center">
+		<s:Image toolTip="Edit" source="{iedit}" width="32" height="32" />
+			<s:Label text="EDIT"  fontSize="12">
+			</s:Label>
+		</s:VGroup>
+		<s:Spacer/>
+		<s:Spacer/>-->
+		<s:VGroup horizontalAlign="center">
+		<s:Image toolTip="View" source="{iview}" width="32" height="32" click="showViewMenu();" />
+			<!--<s:Label text="VIEW"  fontSize="12">
+			</s:Label>-->
+		</s:VGroup>
+		<s:Spacer/>
+		<s:Spacer/>
+		<!--<s:VGroup horizontalAlign="center">
+		<s:Image toolTip="Tools" source="{itools}" width="32" height="32" click="showToolsMenu();"/>
+			<s:Label text="TOOLS"  fontSize="12">
+			</s:Label>
+		</s:VGroup>
+		<s:Spacer/>
+		<s:Spacer/>-->
+		<s:VGroup horizontalAlign="center">
+		<s:Image toolTip="Settings" source="{isettings}" width="32" height="32" click="showSettingsMenu(event)"/>
+			<!--<s:Label text="SETTINGS"  fontSize="12">
+			</s:Label>-->
+		</s:VGroup>
+		<s:Spacer width="100"/>
+		
+		<s:VGroup horizontalAlign="center">
+			<s:Image id="syncIcon" toolTip="Sync" source="{isync}" width="32" height="32" click="verifySyncChanges(event);"/>
+		</s:VGroup>
+		
+		<s:Spacer width="40%"/>
+		
+		<s:Spacer width="50"/>
+		<s:Label text="User 1: " /><s:Label text="" fontWeight="bold" id="lblInsp1"/>
+		<s:Spacer/>
+		<s:Label text="User 2: "/><s:Label text="None" fontWeight="bold" id="lblInsp2"/>
+		<s:Spacer/>
+		<s:Image source="{iusers}" click="onChangeUserClick(event);"/>
+		<!--<s:Button label="Change User" click="onChangeUserClick(event)"/>-->
+		<s:Label text="District: " visible="false" /><s:Label text="2" fontWeight="bold" id="lblDist" visible="false"/>
+		
+		<s:Group width="100%">
+			<s:layout>
+				<s:HorizontalLayout horizontalAlign="right" />
+			</s:layout>
+			
+			<s:Image source="{ilogo}" width="220" height="45"/>
+			
+		</s:Group>
+		<s:Spacer/>
+		<s:Spacer/>
+	</s:HGroup>
+
+
+</s:Group>

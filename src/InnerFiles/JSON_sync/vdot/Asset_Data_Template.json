@@ -1,0 +1,1176 @@
+[
+    {
+        "ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "1",
+            "DESCRIPTION": "CULV",
+            "PRIMARY_KEY": "ID",
+            "LENGTH_COLUMN":"CULV_LENGTH_FT",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"ROUTE_ID_COLUMN" : "ROUTE_NAME",
+	      	"TO_MEASURE_COLUMN" : "",
+            "BASE_ID": "asset_base_id",
+            "INV_COLUMNS": [
+             	{
+                    "NAME": "ASSET_BASE_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ID",
+                    "Nullable": "False",
+                    "TYPE": "INTEGER"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "TYPE": "FLOAT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "D_GARAGE_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATION",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "PROJECT_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "Nullable": "True",
+                    "NAME": "CROSS_ST_NUM",
+                    "TYPE": "INTEGER"
+                },
+                {
+                    "NAME": "CROSS_ST_NM",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "CULV_LENGTH_FT",
+                    "TYPE": "TEXT",
+                    "D_TYPE": "BeamList",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "CULV_LENGTH_FLG",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "NUM_BARRELS",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "SKEW_FLG",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                                {
+                    "NAME": "D_BEAM_MAT_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_ABUTMENT_MAT_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_CULV_MAT_ID",
+                    "TYPE": "FLOAT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_CULV_MAT_ID_2",
+                    "TYPE": "FLOAT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_CULV_SHAPE_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_JOINT_SEP_LOC_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_CULV_PLACEMENT_TY_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "LOCATION_CMT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "CULV_SIZE_HORIZ_INCH",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "CULV_SIZE_VERT_INCH",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "CULV_SIZE3",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "INV_CMT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_ORIG_DATA_SOURCE_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "FEATURE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "MODIFY_DT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_USER_ID",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                
+                {
+                    "NAME": "RETIRE_DT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "Nullable": "True",
+                    "NAME": "LATITUDE",
+                    "TYPE": "TEXT"
+                },
+                {
+                    "NAME": "LONGITUDE",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PRECISION",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PDOP",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                	"NAME": "RETIRED",
+                	"TYPE": "INTEGER",
+                	"Nullable": "False"
+                }
+            ],
+            "INSP_COLUMNS": [
+                 {
+                    "NAME": "INSP_DT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "INSP_CMT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+               
+                {
+                    "NAME": "D_JOINT_COND_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_CHNL_COND_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_BARL_COND_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_ENDS_COND_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_FLOW_COND_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_JOINT_RMK_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_CHNL_RMK_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_BARL_RMK_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_ENDS_RMK_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_FLOW_RMK_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "INSP_RETIRE_DT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "CREATE_DT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "MODIFY_DT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_USER_ID",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "RETIRE_DT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_REFER_TO_ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "D_MAINT_EQUIP_ID1",
+					"TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "D_MAINT_EQUIP_ID2",
+					"TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "D_MAINT_EQUIP_ID3",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+        }
+    },
+    
+    {
+    	"ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "2",
+            "DESCRIPTION": "MILEMARKER",
+            "PRIMARY_KEY": "ID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"ROUTE_ID_COLUMN" : "ROUTE_NAME",
+	      	"TO_MEASURE_COLUMN" : "",
+	      	"VALUE_KEY": "SIGN_VALUE",
+            "BASE_ID": "asset_base_id",
+            "INV_COLUMNS": [
+	            {
+					"NAME": "ID",
+					"TYPE": "REAL",
+					"Nullable": "FALSE"
+				},
+				{
+					"NAME": "ASSET_BASE_ID",
+					"TYPE": "REAL",
+					"Nullable": "FALSE"
+				},
+				{
+					"NAME": "SIGN_VALUE",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "LINK_OFFSET",
+					"TYPE": "REAL",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "REFPT",
+					"TYPE": "REAL",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "EFFECTIVE_START_DT",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "EFFECTIVE_END_DT",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "CREATE_DT",
+					"TYPE": "TEXT",
+					"Nullable": "FALSE"
+				},
+				{
+					"NAME": "MODIFY_DT",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_USER_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "RETIRE_DT",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "MUTCD",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "FEATURE_NAME",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "ROUTE_NAME",
+					"TYPE": "TEXT",
+					"Nullable": "FALSE"
+				}
+            ],
+            "INSP_COLUMNS": [
+            	{
+					"NAME": "SIGN_INSP_ID",
+					"TYPE": "REAL",
+					"Nullable": "FALSE"
+				},
+				{
+					"NAME": "SIGN_INV_ID",
+					"TYPE": "REAL",
+					"Nullable": "False"
+				},
+				{
+					"NAME": "INSPECTION_BASE_ID",
+					"TYPE": "REAL",
+					"Nullable": "False"
+				},
+				{
+					"NAME": "CREATE_DT",
+					"TYPE": "TEXT",
+					"Nullable": "False"
+				},
+				{
+					"NAME": "MODIFY_DT",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_USER_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "RETIRE_DT",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+                {
+                    "NAME": "d_maint_equip_id1",
+					"TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "d_maint_equip_id2",
+					"TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "d_maint_equip_id3",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+    	}
+    },
+	{
+    	"ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "3",
+            "DESCRIPTION": "ACCESSPOINT",
+            "PRIMARY_KEY": "ID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"ROUTE_ID_COLUMN" : "ROUTE_NAME",
+	      	"TO_MEASURE_COLUMN" : "",
+            "BASE_ID": "asset_base_id",
+            "INV_COLUMNS": [
+	            {
+	            	"NAME": "ID",
+	            	"TYPE": "INTEGER",
+	            	"Nullable":"FALSE"
+	            },
+	            {
+	            	"NAME": "asset_base_id",
+	            	"TYPE": "INTEGER",
+	            	"Nullable":"FALSE"
+	            },
+	            {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+				{
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+				{
+	            	"NAME": "SUBTYPE",
+	            	"TYPE": "INTEGER",
+	            	"Nullable":"FALSE"
+	            },
+                {
+                    "Nullable": "True",
+                    "NAME": "LATITUDE",
+                    "TYPE": "TEXT"
+                },
+                {
+                    "NAME": "LONGITUDE",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PRECISION",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PDOP",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                	"NAME": "RETIRED",
+                	"TYPE": "INTEGER",
+                	"Nullable": "False"
+                }
+            ],
+            "INSP_COLUMNS": [
+            	{
+                    "NAME": "INSP_CMT",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "d_maint_equip_id1",
+					"TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "d_maint_equip_id2",
+					"TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "d_maint_equip_id3",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+    	}
+    },
+	{
+    	"ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "4",
+            "DESCRIPTION": "INT",
+            "PRIMARY_KEY": "ID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"ROUTE_ID_COLUMN" : "ROUTE_NAME",
+	      	"TO_MEASURE_COLUMN" : "",
+            "BASE_ID": "asset_base_id",
+            "INV_COLUMNS": [
+	            {
+	            	"NAME": "ID",
+	            	"TYPE": "INTEGER",
+	            	"Nullable":"FALSE"
+	            },
+				{
+	            	"NAME": "FEATURE_NAME",
+	            	"TYPE": "TEXT",
+	            	"Nullable":"FALSE"
+	            },
+				{
+	            	"NAME": "ROUTE_NAME",
+	            	"TYPE": "TEXT",
+	            	"Nullable":"FALSE"
+	            },
+				{
+	            	"NAME": "REFPT",
+	            	"TYPE": "REAL",
+	            	"Nullable":"FALSE"
+	            }
+            ],
+            "INSP_COLUMNS": [
+            ]
+    	}
+    },
+    {
+    	"ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "5",
+            "DESCRIPTION": "SIGN",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "ASSET_BASE_ID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"ROUTE_ID_COLUMN" : "ROUTE_NAME",
+	      	"TO_MEASURE_COLUMN" : "",
+            "INV_COLUMNS": [
+	            {
+					"NAME": "ASSET_BASE_ID",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "ID",
+					"TYPE": "INTEGER",
+					"Nullable": "False"
+				},
+				{
+					"NAME": "ROUTE_NAME",
+					"TYPE": "TEXT",
+					"Nullable": "FALSE"
+				},
+				{
+					"NAME": "REFPT",
+					"TYPE": "REAL",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "COUNTY_NUM",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "ASSEMBLY_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "ASSEMBLY_LOCAL_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "HAS_SIBLINGS",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+                {
+                	"NAME": "RETIRED",
+                	"TYPE": "INTEGER",
+                	"Nullable": "False"
+                },
+				{
+					"NAME": "D_SIDE_ROAD_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_DIR_TRAVEL_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_POST_SIZE_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_POST_TY_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_POST_RATING_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "NUM_OF_SIGNS",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "NUM_OF_POSTS",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "LATERAL_OFFSET",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "POST_LENGTH",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "LOC_COMMENT",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "SIGN_VALUE",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "SIGN_DESC",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "MUTCD",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "MUTCD_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_COLOR_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_IN_CATALOG",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_DIMENSION_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_SHEETING_MAT_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_BLANK_MAT_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "D_DIRECTION_ID",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "SIGN_CMT",
+					"TYPE": "TEXT",
+					"Nullable": "TRUE"
+				},
+				{
+					"NAME": "DATE_IN_SERVICE",
+					"TYPE": "TEXT",
+					"SHORT_DATE":"TRUE",
+					"Nullable": "TRUE"
+				},
+                {
+                    "Nullable": "True",
+                    "NAME": "LATITUDE",
+                    "TYPE": "TEXT"
+                },
+                {
+                    "NAME": "LONGITUDE",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PRECISION",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PDOP",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "SUB_CAT_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "MAJ_CAT_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "COLOR_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "DIM1",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "DIM2",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "DIM3",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ],
+            "INSP_COLUMNS": [
+            	{
+					"NAME": "SIGN_INSP_RATING_ID",
+					"TYPE": "TEXT",
+					"Nullable": "FALSE"
+				},
+				{
+					"NAME": "REFLECTIVITY_REVIEW",
+					"TYPE": "TEXT",
+					"Nullable": "False"
+				},
+				{
+					"NAME": "D_REFER_TO_ID",
+					"TYPE": "TEXT",
+					"Nullable": "False"
+				},
+				{
+					"NAME": "INSP_DT",
+					"TYPE": "TEXT",
+					"Nullable": "False"
+				},
+                {
+                    "NAME": "d_maint_equip_id1",
+					"TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "d_maint_equip_id2",
+					"TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "d_maint_equip_id3",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+    	}
+    },
+	{
+    	"ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "7",
+            "DESCRIPTION": "INCIDENT",
+            "PRIMARY_KEY": "ID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"ROUTE_ID_COLUMN" : "ROUTE_NAME",
+	      	"TO_MEASURE_COLUMN" : "",
+            "BASE_ID": "",
+            "INV_COLUMNS": [
+				{
+					"NAME": "ASSET_BASE_ID",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "ID",
+					"TYPE": "REAL",
+					"Nullable": "FALSE"
+				},
+				{
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+				{
+                    "NAME": "REFPT",
+                    "TYPE": "FLOAT",
+                    "Nullable": "True"
+                },
+                {
+					"NAME": "D_URGENCY_ID",
+					"TYPE": "INTEGER",
+					"Nullable": "False"
+				},
+				{
+					"NAME": "INCIDENT_CMT",
+					"TYPE": "TEXT",
+					"Nullable": "False"
+				},				
+				{
+					"NAME": "RETIRE_DT",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+                {
+                    "Nullable": "True",
+                    "NAME": "LATITUDE",
+                    "TYPE": "TEXT"
+                },
+                {
+                    "NAME": "LONGITUDE",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PRECISION",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PDOP",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                	"NAME": "INC_DT",
+                	"TYPE": "TEXT",
+                	"SHORT_DATE":"TRUE",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "RETIRED",
+                	"TYPE": "INTEGER",
+                	"Nullable": "True"
+                }
+				 ],
+            "INSP_COLUMNS": [	
+            	
+            ]
+    	}
+    },
+    {
+    	"ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "8",
+            "DESCRIPTION": "GUARDRAIL",
+            "LENGTH_COLUMN":"LENGTH_FT",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"ROUTE_ID_COLUMN" : "ROUTE_NAME",
+	      	"TO_MEASURE_COLUMN" : "",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "INV_COLUMNS": [
+				{
+					"NAME": "ASSET_BASE_ID",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "ID",
+					"TYPE": "INTEGER",
+					"Nullable": "FALSE"
+				},
+				
+				{
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "REFPT",
+                    "TYPE": "REAL",
+                    "Nullable": "False"
+                },
+                {
+					"NAME": "D_GRAIL_PURPOSE_ID",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "D_GRAIL_MATERIAL_ID",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "D_GRAIL_LOC_ID",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "BRIDGE_ATTACH_FLG",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "LENGTH_FT",
+					"TYPE": "REAL",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "LAT_BEGIN",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "LON_BEGIN",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "LAT_END",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "LON_END",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "PRECISION",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "PDOP",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+                {
+                	"NAME": "RETIRED",
+                	"TYPE": "INTEGER",
+                	"Nullable": "False"
+                }],
+            "INSP_COLUMNS": [{
+					"NAME": "D_GRAIL_CONDITION_ID",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+
+				{
+					"NAME": "INSP_DT",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				}	
+            ]
+    	}
+    },
+    {
+    	"ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "13",
+            "DESCRIPTION": "PROJECT",
+            "LENGTH_COLUMN":"LENGTH_FT",
+            "ROUTE_ID_COLUMN" : "ROUTE_NAME",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "INV_COLUMNS": [
+				{
+					"NAME": "ASSET_BASE_ID",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "ID",
+					"TYPE": "INTEGER",
+					"Nullable": "FALSE"
+				},
+				
+				{
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "REFPT",
+                    "TYPE": "REAL",
+                    "Nullable": "True"
+                },
+				{
+					"NAME": "LENGTH_FT",
+					"TYPE": "REAL",
+					"Nullable": "False"
+				},
+				{
+					"NAME": "LATITUDE",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "LONGITUDE",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "LAT_END",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "LON_END",
+					"TYPE": "TEXT",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "PRECISION",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+				{
+					"NAME": "PDOP",
+					"TYPE": "INTEGER",
+					"Nullable": "True"
+				},
+                {
+                	"NAME": "RETIRED",
+                	"TYPE": "INTEGER",
+                	"Nullable": "True"
+                },
+		        {
+		          "NAME": "MODIFY_DT",
+		          "TYPE": "TEXT",
+		          "Nullable": "TRUE"
+		        },
+                {
+                	"NAME": "SCHEDULE",
+                	"TYPE": "TEXT",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "UPC",
+                	"TYPE": "REAL",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "WIDTH_FT",
+                	"TYPE": "REAL",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "NO_LANES",
+                	"TYPE": "INTEGER",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "LANE",
+                	"TYPE": "TEXT",
+                	"Nullable": "False"
+                },
+                {
+                	"NAME": "LANE_DIR",
+                	"TYPE": "INTEGER",
+                	"Nullable": "False"
+                },
+                {
+                	"NAME": "LNMILES",
+                	"TYPE": "REAL",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "SYSTEM",
+                	"TYPE": "TEXT",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "DISTRICTS",
+                	"TYPE": "INTEGER",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "D_COUNTY_ID",
+                	"TYPE": "INTEGER",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "MP_BDESC",
+                	"TYPE": "TEXT",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "MP_EDESC",
+                	"TYPE": "TEXT",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "FROM_INT",
+                	"TYPE": "TEXT",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "TO_INT",
+                	"TYPE": "TEXT",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "YEAR",
+                	"TYPE": "INTEGER",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "LOC_ERROR",
+                	"TYPE": "TEXT",
+                	"Nullable": "True"
+                },
+                {
+                	"NAME": "INV_CMT",
+                	"TYPE": "TEXT",
+                	"Nullable": "True"
+                }
+                
+                ],
+            "INSP_COLUMNS": [
+            ]
+    	}
+    }
+    
+]

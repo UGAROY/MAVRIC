@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" creationComplete="init()">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.DropDownViewEvent;
+			import com.transcendss.mavric.events.SignInvEvent;
+			import com.transcendss.mavric.managers.ImageManager;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.TitleWindow;
+		
+			private var signCatDDView:DropDownViewVert = new DropDownViewVert();
+			private var signDiServDDView:DropDownViewVert = new DropDownViewVert();
+			private var signFDDDView:DropDownViewVert = new DropDownViewVert();
+			private var signSheMatDDView:DropDownViewVert = new DropDownViewVert();
+			private var signBlaMatDDView:DropDownViewVert = new DropDownViewVert();
+			
+			private var signCatInput:TextInput;
+			private var signDiServInput:TextInput;
+			private var signFDInput:TextInput;
+			private var signSheMatInput:TextInput;
+			private var signBlaMatInput:TextInput;
+			
+			private var PSIDmin:Number;
+			private var PSIDmax:Number;
+			
+			public var mutcdID:Number;
+			public var colorID:String;
+			public var dimensionID:String;
+			
+			private var signSelectorForm:TitleWindow;
+			
+			private var lastPressed:String;
+			
+			[Bindable]
+			private var unknownButH:Number;
+			
+			[Bindable]
+			private var routeList:ArrayCollection=new ArrayCollection();
+			
+			private var dbManager:MAVRICDBManager;
+			private var msgKeyUpHandler:Function;
+			
+			
+			
+			public function init():void
+			{
+				
+				//*****************Sign Tab
+				signCatDDView.domainTableIDColName =  "IN_CATALOG";
+				//signCatDDView.fetchDomainValues("DESCRIPTION");
+				signCatDDView.domain = new ArrayCollection([{ID:1,DESCRIPTION:"Yes"},{ID:2,DESCRIPTION:"No"}]);
+				signCatDDView.width_TI = 150;
+				signCatInput = signCatDDView.input;
+				var Catbutton:Button = signCatDDView.button;
+				signCatDDView.btnText = "In Catalog";
+				signCatDDView.genericPopup.height = 200;
+				SCatGroup.addElement(signCatDDView);
+				
+				signFDDDView.domainTableIDColName =  "D_DIRECTION_ID";
+				signFDDDView.fetchDomainValues();
+				signFDInput = signFDDDView.input;
+				signFDDDView.width_TI = 250;
+				var FDbutton:Button = signFDDDView.button;
+				signFDDDView.btnText = "Facing Direction";
+				signFDDDView.isRequired = true;
+				signFDDDView.genericPopup.height = 200;
+				signFDDDView.genericPopup.width = 150;
+				SFDGroup.addElement(signFDDDView);
+				
+				signSheMatDDView.domainTableIDColName =  "D_SHEETING_MAT_ID";
+				signSheMatDDView.fetchDomainValues();
+				signSheMatInput = signSheMatDDView.input;
+				var SheMatbutton:Button = signSheMatDDView.button;
+				signSheMatDDView.btnText = "Sheeting Mat";
+				signSheMatDDView.genericPopup.height = 200;
+				SSheMatGroup.addElement(signSheMatDDView);
+				
+				signBlaMatDDView.domainTableIDColName =  "D_BLANK_MAT_ID";
+				signBlaMatDDView.fetchDomainValues();
+				signBlaMatInput = signBlaMatDDView.input;
+				var BlaMatbutton:Button = signBlaMatDDView.button;
+				signBlaMatDDView.btnText = "Blank Mat";
+				signBlaMatDDView.genericPopup.height = 200;
+				SBlaMatGroup.addElement(signBlaMatDDView);
+			}
+			
+
+			protected function DatePicker_Click(evt:MouseEvent):void
+			{	
+				var button:Button = evt.target as Button;
+				lastPressed = button.label;
+				if(lastPressed == "Date in Service")
+				{
+					unknownButH = 40;
+				}
+				if(lastPressed == "Inspection Date")
+				{
+					unknownButH = 0;
+				}
+				DatePopUp.open(this,false);
+				PopUpManager.centerPopUp(DatePopUp);
+				
+			}
+			
+			protected function closeDatePop():void
+			{
+				DateInServInput.text = formatter.format(datePicker.selectedDate);
+			}
+			
+			protected function unknownHandler(event:MouseEvent):void
+			{
+				if(lastPressed == "Date in Service")
+					DateInServInput.text = "Unknown";
+				DatePopUp.close(false);
+			}
+			
+			public function loadSelectedSignInfo(baseAsst:BaseAsset):void
+			{
+				if(baseAsst!= null)
+				{
+					
+				this.signMessage.text = baseAsst.invProperties["SIGN_VALUE"].value  ;
+				this.signDescription.text = baseAsst.invProperties["SIGN_DESC"].value; 
+				
+				setSignImage();
+				
+				this.mutcdID = baseAsst.invProperties["MUTCD_ID"].value ;
+				this.signDescription.text = baseAsst.invProperties["MUTCD"].value; 
+				
+				dimensionID = baseAsst.invProperties["D_DIMENSION_ID"].value ;
+//				var dimension:String = dbManager.getAssetDomainRecordDescByID("DIMENSION_ID",String(dimensionID));
+//				if(dimension!="")
+//				{
+//					var dimArray:Array = dimension.split('x');
+//					this.signWidth.text= dimArray[0];
+//					this.signHeight.text= dimArray[1];
+//				}
+				
+				//var majCat:String = dbManager.getAssetDomainRecordDescByID("SIGN_MAJOR_CAT_ID",String());
+				this.Category.text = baseAsst.invProperties["MAJ_CAT_DESC"].value;
+				this.Sub_Cat.text = baseAsst.invProperties["SUB_CAT_DESC"].value;
+				this.signColor.text = baseAsst.invProperties["COLOR_DESC"].value;
+				this.signWidth.text = baseAsst.invProperties["DIM1"].value;
+				this.signHeight.text = baseAsst.invProperties["DIM2"].value;
+				
+				signCatDDView.domain = new ArrayCollection([{ID:1,DESCRIPTION:"Yes"},{ID:2,DESCRIPTION:"No"}]);
+				signCatDDView.domainID = baseAsst.invProperties["D_IN_CATALOG"].value?baseAsst.invProperties["D_IN_CATALOG"].value:"";
+				this.signSheMatDDView.domainID = baseAsst.invProperties["D_SHEETING_MAT_ID"].value?baseAsst.invProperties["D_SHEETING_MAT_ID"].value:"";
+				this.signBlaMatDDView.domainID = baseAsst.invProperties["D_BLANK_MAT_ID"].value?baseAsst.invProperties["D_BLANK_MAT_ID"].value:"";
+				colorID = baseAsst.invProperties["D_COLOR_ID"].value?baseAsst.invProperties["D_COLOR_ID"].value:"";
+				this.signFDDDView.domainID = baseAsst.invProperties["D_DIRECTION_ID"].value?baseAsst.invProperties["D_DIRECTION_ID"].value:"" ;
+				this.signComment.text= baseAsst.invProperties["SIGN_CMT"].value?decodeURI(baseAsst.invProperties["SIGN_CMT"].value):"";
+				DateInServInput.text =baseAsst.invProperties["DATE_IN_SERVICE"].value?formatter.format(baseAsst.invProperties["DATE_IN_SERVICE"].value):"";
+				}
+				
+			}
+			
+			//The second parameter is used as a sign ID
+			public function exportSignInfoToBaseAsset(baseAsst:BaseAsset, i:Number = 0):void
+			{
+				if(isNaN(this.mutcdID) || this.mutcdID==-1)
+					throw new Error("Sign/MUTCD not selected in sign " + i);
+				baseAsst.invProperties["SIGN_VALUE"].value = this.signMessage.text;
+				baseAsst.invProperties["SIGN_DESC"].value = this.signDescription.text;
+				baseAsst.invProperties["MUTCD_ID"].value = this.mutcdID==-1?"":mutcdID;
+				baseAsst.invProperties["MUTCD"].value = this.signDescription.text;
+				baseAsst.invProperties["D_IN_CATALOG"].value =signCatDDView.domainIDStr;
+				baseAsst.invProperties["D_DIMENSION_ID"].value = dimensionID;
+				baseAsst.invProperties["D_SHEETING_MAT_ID"].value=this.signSheMatDDView.domainIDStr;
+				baseAsst.invProperties["D_BLANK_MAT_ID"].value=this.signBlaMatDDView.domainIDStr;
+				baseAsst.invProperties["D_COLOR_ID"].value = colorID;
+				if(this.signFDDDView.domainIDStr !="")
+					baseAsst.invProperties["D_DIRECTION_ID"].value = this.signFDDDView.domainIDStr;
+				else
+					throw new Error("Facing Direction not selected in sign " + i);
+				baseAsst.invProperties["SIGN_CMT"].value = encodeURI(this.signComment.text);
+				baseAsst.invProperties["DATE_IN_SERVICE"].value = formatter.format(DateInServInput.text);
+				
+				baseAsst.invProperties["MAJ_CAT_DESC"].value=this.Category.text;
+				baseAsst.invProperties["SUB_CAT_DESC"].value = this.Sub_Cat.text;
+				baseAsst.invProperties["COLOR_DESC"].value = this.signColor.text;
+				baseAsst.invProperties["DIM1"].value=this.signWidth.text;
+				baseAsst.invProperties["DIM2"].value=this.signHeight.text;
+				
+			}
+			
+			public function set messageKeyUpHandler(fun:Function):void
+			{
+				msgKeyUpHandler = fun;
+			}
+			
+			protected function signMessage_keyUpHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				msgKeyUpHandler.call(null, this.signMessage.text)
+			}
+			
+			protected function confirmDateHandler(event:MouseEvent):void
+			{
+				DatePopUp.close(false);
+				DateInServInput.text = formatter.format(datePicker.selectedDate);
+			}
+			
+			public function setSignImage():void
+			{
+				var uiCom:UIComponent = new UIComponent();
+				var imgManager:ImageManager = new ImageManager();
+				
+				selSignImgHolder.removeAllElements();
+				
+				var bmp:Bitmap = imgManager.getById(this.signDescription.text);
+				if(bmp!=null)
+				{
+					bmp = imgManager.scaleImage(bmp, selSignImgHolder);
+					uiCom.addChild(bmp);
+					selSignImgHolder.addElement(uiCom);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="DatePopUp" height="270"  name="Date"  skinClass="skins.TSSSkinnablePopUpContainerSkin"  >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup id="DateVGroup" width="100%" height="100%" horizontalAlign="center" gap="0">
+					<s:DateSpinner id="datePicker" width="100%" height="100%" maxDate ="{new Date()}" change="closeDatePop()"/>
+					<s:Button id="unknownDateButton" label="UNKNOWN" width="100%" height="{unknownButH}" click="unknownHandler(event)"/>
+					<s:Spacer height="10"/>
+					<s:Button id="confirmDateButton" label="OK" width="100%" height="{unknownButH}" click="confirmDateHandler(event)"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		<s:DateTimeFormatter
+			id="formatter"
+			dateTimePattern="MM/dd/yyyy"
+			errorText=""
+			useUTC="false"
+			/>
+		<s:DateTimeFormatter
+			id="saveformatter"
+			dateTimePattern="MM/dd/yyyy HH:mm:ss"
+			errorText=""
+			useUTC="false"
+			/>
+	</fx:Declarations>
+	
+	<s:VGroup paddingLeft="20" paddingTop="10" paddingRight="10" paddingBottom="10" gap="20">
+		<s:HGroup verticalAlign="middle">
+			<s:HGroup verticalAlign="middle" id="SCatGroup"></s:HGroup>
+			<s:Spacer width="75"/>
+			<!--<s:HGroup verticalAlign="middle" id="SDiServGroup"></s:HGroup>-->
+			<s:VGroup>
+				<s:Button label="Date in Service" click="DatePicker_Click(event)" />
+				<s:TextInput id="DateInServInput" width="200" skinClass="spark.skins.mobile.TextInputSkin" editable="false"/>
+			</s:VGroup>
+			<s:Spacer width="100"/>
+			<s:HGroup verticalAlign="middle" id="SFDGroup"></s:HGroup>
+		</s:HGroup>
+		<s:HGroup verticalAlign="middle" gap="10">
+			<s:Label  text="Category:" fontWeight="bold"/>
+			<s:TextInput id="Category" width="150" skinClass="spark.skins.mobile.TextInputSkin" editable="false"/>
+			<s:Spacer width="10"/>
+			<s:Label  text="Sub-Cat:" fontWeight="bold"/>
+			<s:TextInput id="Sub_Cat" width="150" skinClass="spark.skins.mobile.TextInputSkin" editable="false"/>
+			<s:Spacer width="20"/>
+			<s:Label text="Width:" fontWeight="bold"/>
+			<s:TextInput id="signWidth" width="60" skinClass="spark.skins.mobile.TextInputSkin" editable="false"/>
+			<s:Spacer width="2"/>
+			<s:Label text="Height:" fontWeight="bold"/>
+			<s:TextInput id="signHeight" width="60" skinClass="spark.skins.mobile.TextInputSkin" editable="false"/>
+		</s:HGroup>
+		<s:HGroup verticalAlign="middle" gap="10">
+			<s:VGroup>
+				<s:Label   text="Description:" fontWeight="bold"/>
+				<s:TextInput  width="450" id="signDescription" skinClass="spark.skins.mobile.TextInputSkin" editable="false"/>
+			</s:VGroup>
+			<s:Spacer width="80"/>
+			<s:VGroup>
+				<s:Label text="Color:" fontWeight="bold"/>
+				<s:TextInput id="signColor" width="180" skinClass="spark.skins.mobile.TextInputSkin" editable="false"/>
+			</s:VGroup>
+		</s:HGroup>
+		
+		<s:HGroup>
+			<s:VGroup gap="20">
+				<s:VGroup  >
+					<s:Label  text="Message:" fontWeight="bold" />
+					<s:TextInput width="450" id="signMessage" skinClass="spark.skins.mobile.TextInputSkin" keyUp="signMessage_keyUpHandler(event)" change="signMessage_keyUpHandler(event)"/>
+				</s:VGroup>
+				<s:HGroup gap="20">
+					<s:VGroup gap="20">
+						<s:HGroup verticalAlign="middle" id="SSheMatGroup"></s:HGroup>
+						<s:HGroup verticalAlign="middle" id="SBlaMatGroup"></s:HGroup>
+					</s:VGroup>
+					<s:VGroup width="100" height="100" id="selSignImgHolder">
+						
+					</s:VGroup>
+				</s:HGroup>
+				
+			</s:VGroup>
+			
+					  
+			<s:VGroup >
+				<s:Label text="Comment:" fontWeight="bold"/>
+				<s:TextArea height="220" width="300" id="signComment" skinClass="spark.skins.mobile.TextAreaSkin"  />
+			</s:VGroup>
+		</s:HGroup>
+	</s:VGroup>
+	
+</s:Group>

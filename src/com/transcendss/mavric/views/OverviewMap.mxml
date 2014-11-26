@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:maps="com.google.maps.*"
+		 xmlns:map="com.transcendss.mavric.map.*"
+		 xmlns:controllers="com.transcendss.mavric.controllers.*"
+		 width="100%" height="100%"
+		 creationComplete="mapinit()"
+		 xmlns:mate="http://mate.asfusion.com/"
+		 >
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<mate:Dispatcher id="myDispatcher" />
+		
+		<s:SkinnablePopUpContainer id="cachedMapsPopup" width="300" height="180" name="Cached Map Found"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:VGroup width="100%" height="100%" horizontalAlign="center" paddingTop="10" >
+				<s:List id="mapList" change="mapList_changeHandler(event)" dataProvider="{dDList}" labelField="FILE_PREFIX"
+						width="100%" height="100%" fontFamily="Tahoma" fontSize="18" allowMultipleSelection="false"/>
+				
+			</s:VGroup>
+		</s:SkinnablePopUpContainer>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.google.maps.*;
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.map.MobileMap;
+			import com.transcendss.mavric.util.ArrayColUtil;
+			import com.transcendss.transcore.events.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			import mx.utils.ObjectUtil;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.PopUpEvent;
+			
+			[Bindable]
+			public var routeCoords:ArrayCollection;
+			private var mapSR:String;
+			
+			public var map:MobileMap;
+//			private var mapSR:String = BaseConfigUtility.get("basemapSR");
+			
+			//Newly added code
+			[Bindable]
+			public var dDList:ArrayCollection = new ArrayCollection();
+			private var selectedString:String;
+			
+			private var minx:Number;
+			private var miny:Number;
+			private var maxx:Number;
+			private var maxy:Number;
+			
+			private var dbManager:MAVRICDBManager;	
+			
+			private var currentRouteName:String;
+			private var currentBeginMile:Number = -1;
+			private var currentEndMile:Number = -1 ;
+			
+			public function mapinit():void{
+				
+				map = new MobileMap();
+				map.percentHeight = 100;
+				map.percentWidth = 100;
+				mapGroup.addElement(map);
+
+				mapSR = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.baseMapSR;
+				if (FlexGlobals.topLevelApplication.routeCoords)
+				{
+					this.routeCoords = FlexGlobals.topLevelApplication.routeCoords;
+					//calculateMinMax();
+					//displayMapHandler();
+				}
+			}
+					
+			
+			public function xyChange(event:NavControlEvent):void
+			{
+				try
+				{
+					var currMP:Number = event.mp;
+					var cnter:int = 0;
+					if (this.routeCoords == null && map.routeCoords != null)
+					{
+						this.routeCoords = map.routeCoords;
+					}
+					if (this.routeCoords != null)
+					{
+						for (cnter=0;cnter<this.routeCoords.length-1;cnter++)
+						{
+							//position the tracking point propotionally between two points
+							
+							if (currMP >= this.routeCoords[cnter].M && currMP <= this.routeCoords[cnter + 1].M)
+							{
+								var lowX:Number;
+								var lowY:Number;
+								var highX:Number;
+								var highY:Number;
+								
+								if (mapSR == "4623")
+								{
+									lowX = this.routeCoords[cnter].X;
+									lowY = this.routeCoords[cnter].Y;
+									highX = this.routeCoords[cnter + 1].X;
+									highY = this.routeCoords[cnter + 1].Y;
+								} else
+								{
+									lowX = this.routeCoords[cnter].utmX;
+									lowY = this.routeCoords[cnter].utmY;
+									highX = this.routeCoords[cnter + 1].utmX;
+									highY = this.routeCoords[cnter + 1].utmY;
+								}
+								
+								var lowMP:Number = this.routeCoords[cnter].M;
+								var highMP:Number = this.routeCoords[cnter + 1].M;
+								var percMP:Number = (currMP - lowMP) / (highMP - lowMP);
+								var currX:Number = lowX + ((highX - lowX) * percMP);
+								var currY:Number = lowY + ((highY - lowY) * percMP);
+								
+								map.positionTrackingPoint(currX, currY, 0, "current");
+								break;
+							}
+						}
+					}
+				}
+				catch(err:Error)
+				{
+					//FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
+					trace(err.getStackTrace());
+				}
+			}
+			
+			public function positionTrackingPoint(event:TSSMapEvent):void
+			{
+				map.positionTrackingPoint(event.x, event.y, event.tpangle, event.tpname);
+			}
+			
+			public function drawRoute(event:MapInitEvent):void
+			{
+				event.stopPropagation();
+				var cont:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.invPanelContent;
+				//this.routeCoords = FlexGlobals.topLevelApplication.routeCoords;
+				//if(!ArrayColUtil.compare(this.routeCoords, event.routeCoords) && cont == "map") //reload a new route
+				if(isNewRoute(event.currentTarget.currentRouteName, event.currentTarget.currentBeginMile, event.currentTarget.currentEndMile) && cont == "map")
+				{
+					mapGroup.removeAllElements();
+					map = new MobileMap();
+					map.percentHeight = 100;
+					map.percentWidth = 100;
+					mapGroup.addElement(map);
+					
+					this.routeCoords = event.routeCoords;	
+					this.currentRouteName = event.currentTarget.currentRouteName;
+					this.currentBeginMile = event.currentTarget.currentBeginMile;
+					this.currentEndMile = event.currentTarget.currentEndMile;
+					
+					//if(isNaN(minx)) // if the minx, miny,... havn't been calculated yet, do so
+					//	calculateMinMax();
+					
+					calculateMinMax(); //recalculate the boundary each time the new route is loaded
+					
+					displayMapHandler();
+				}
+				
+				
+				
+			}
+			
+			public function isNewRoute(rteName:String,rteBegMile:Number,rteEndMile:Number):Boolean
+			{
+				if(this.currentRouteName == null || this.currentBeginMile == -1 || this.currentEndMile == -1)
+					return true;
+				if(this.currentRouteName == rteName && this.currentBeginMile == rteBegMile && this.currentEndMile == rteEndMile)
+					return false;
+				return true;
+			}
+			
+			
+			public function reDrawRoute(event:TSSMapEvent):void
+			{
+				event.stopPropagation();
+				this.routeCoords = FlexGlobals.topLevelApplication.routeCoords;
+				toggleMapHandler();
+			}
+			
+			protected function calculateMinMax():void
+			{
+				try{
+					if (mapSR == "4623")
+					{
+						minx = this.routeCoords[0].X;
+						miny = this.routeCoords[0].Y;
+						maxx = this.routeCoords[0].X;
+						maxy = this.routeCoords[0].Y;
+					} else
+					{
+						minx = this.routeCoords[0].utmX;
+						miny = this.routeCoords[0].utmY;
+						maxx = this.routeCoords[0].utmX;
+						maxy = this.routeCoords[0].utmY;
+					}
+					
+					var tmpCnt:int;
+					
+				}
+				catch(e:Error){
+					trace(e.message);
+				}
+				for (tmpCnt=1;tmpCnt<this.routeCoords.length;tmpCnt++)
+				{
+					if (mapSR == "4623")
+					{
+						if (this.routeCoords[tmpCnt].X < minx)
+						{
+							minx = this.routeCoords[tmpCnt].X;
+						}
+						if (this.routeCoords[tmpCnt].X > maxx)
+						{
+							maxx = this.routeCoords[tmpCnt].X;
+						}
+						if (this.routeCoords[tmpCnt].Y < miny)
+						{
+							miny = this.routeCoords[tmpCnt].Y;
+						}
+						if (this.routeCoords[tmpCnt].Y > maxy)
+						{
+							maxy = this.routeCoords[tmpCnt].Y;
+						}
+					} else
+					{
+						if (this.routeCoords[tmpCnt].utmX < minx)
+						{
+							minx = this.routeCoords[tmpCnt].utmX;
+						}
+						if (this.routeCoords[tmpCnt].utmX > maxx)
+						{
+							maxx = this.routeCoords[tmpCnt].utmX;
+						}
+						if (this.routeCoords[tmpCnt].utmY < miny)
+						{
+							miny = this.routeCoords[tmpCnt].utmY;
+						}
+						if (this.routeCoords[tmpCnt].utmY > maxy)
+						{
+							maxy = this.routeCoords[tmpCnt].utmY;
+						}
+					}
+				}
+			}
+			
+			protected function displayMapHandler():void
+			{
+				//make sure the minx, miny ... are not null;
+				map.routeCoords =  ObjectUtil.clone(this.routeCoords) as ArrayCollection;
+				dbManager = MAVRICDBManager.newInstance();
+				dDList = dbManager.getMapImageList(FlexGlobals.topLevelApplication.currentRouteName, FlexGlobals.topLevelApplication.currentBeginMile, FlexGlobals.topLevelApplication.currentEndMile);
+				if(!FlexGlobals.topLevelApplication.cacheLocalMaps)
+				{
+					if(dDList.length != 0) //ONLY POPUP THE WINDOW WHEN THERE ARE CACHED MAP IN LOCAL DB
+					{
+						if (FlexGlobals.topLevelApplication.connected)
+						{
+							var liveMapItem:Object = {FILE_PREFIX: "Live Map"};
+							dDList.addItemAt(liveMapItem,0);
+						}
+						if (this.parent != null)
+						{
+							cachedMapsPopup.open(this.parent, false);
+						} else
+						{
+							cachedMapsPopup.open(this, false);
+						}
+						
+						PopUpManager.centerPopUp(cachedMapsPopup);
+					}
+					else
+					{
+						map.toggleMapButton.visible = false;
+						if (FlexGlobals.topLevelApplication.connected) 
+						{
+							map.setInitialMapExtent(minx,miny,maxx,maxy, "Live Map");
+						}
+						else
+						{
+							FlexGlobals.topLevelApplication.TSSAlert("No network or local maps available.");
+						}
+					}
+				}
+				else
+				{
+					map.setInitialMapExtent(minx, miny, maxx, maxy, this.currentRouteName + "_" + this.currentBeginMile + "_" + this.currentEndMile);
+				}
+			}
+			
+			protected function toggleMapHandler():void
+			{
+				//FlexGlobals.topLevelApplication.cacheLocalMaps = false; //once the map is cached, set it to false
+				map.routeCoords =  ObjectUtil.clone(this.routeCoords) as ArrayCollection;
+				dbManager = MAVRICDBManager.newInstance();
+				dDList = dbManager.getMapImageList(FlexGlobals.topLevelApplication.currentRouteName, FlexGlobals.topLevelApplication.currentBeginMile, FlexGlobals.topLevelApplication.currentEndMile);
+				if (FlexGlobals.topLevelApplication.connected)
+				{
+					var liveMapItem:Object = {FILE_PREFIX:"Live Map"};
+					dDList.addItemAt(liveMapItem,0);
+				}
+				cachedMapsPopup.open(this.parent, false);
+				PopUpManager.centerPopUp(cachedMapsPopup);
+			}
+			
+			//Newly added code
+			protected function mapList_changeHandler(event:IndexChangeEvent):void
+			{
+				selectedString = dDList.getItemAt(mapList.selectedIndex).FILE_PREFIX;
+				cachedMapsPopup.close(true, mapList.selectedIndex);
+				map.setInitialMapExtent(minx, miny, maxx, maxy, selectedString);
+			}
+		]]>
+	</fx:Script>
+	
+	
+	<s:BorderContainer id="mapBorder" cornerRadius="3" borderWeight="1" 
+					   borderColor="0x444444" dropShadowVisible="true"
+					   backgroundColor="0xffffff" width="100%" height="100%">			
+		<s:Group id="mapGroup" clipAndEnableScrolling="true" horizontalScrollPosition="0" width="100%" height="100%">
+			<s:layout>
+				<s:HorizontalLayout/>
+			</s:layout>
+			 <!--<map:MobileMap id="map" width="100%" height="100%"/>-->
+		</s:Group>
+	</s:BorderContainer>
+	
+</s:Group>

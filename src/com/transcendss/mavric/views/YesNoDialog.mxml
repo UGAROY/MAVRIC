@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:SkinnablePopUpContainer
+	xmlns:fx="http://ns.adobe.com/mxml/2009" 
+	xmlns:s="library://ns.adobe.com/flex/spark" 
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	creationComplete="init()">
+	<fx:Script>
+		<![CDATA[
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			private var _responder:mx.rpc.Responder;
+			private function init ( ) : void
+			{
+				PopUpManager.centerPopUp ( this );
+			}
+			
+			private function closeYes():void
+			{
+				_responder.result(true);
+				close();
+			}
+			
+			private function closeNo():void
+			{
+				responder.result(false);
+				close();	
+			}
+			
+			public function get responder():mx.rpc.Responder
+			{
+				return _responder;
+			}
+
+			public function set responder(value:mx.rpc.Responder):void
+			{
+				_responder = value;
+			}
+			
+			public function get title():String 
+			{
+				return this.window.title;
+			}
+			
+			public function set title(value:String):void 
+			{
+				this.window.title = value;
+			}
+			
+			public function get message():String 
+			{
+				return txtLabel.text;	
+			}
+			
+			public function set message(value:String):void 
+			{
+				txtLabel.text = value;	
+			}
+
+		]]>
+	</fx:Script>
+	<s:TitleWindow id="window" title="NoTitleSet" close="close()">
+		<s:VGroup horizontalAlign="center" paddingTop="8" paddingBottom="8" paddingLeft="8" paddingRight="8" gap="5" width="100%">
+			<s:Label id="txtLabel" text="My alert message text here..."/>
+			<s:HGroup>
+				<s:Button fontSize="16" label="Yes" width="100" height="50" click="closeYes()"/>
+				<s:Spacer width="8" />
+				<s:Button fontSize="16" label="No" width="100" height="50" click="closeNo()"/>
+			</s:HGroup>
+		</s:VGroup>
+	</s:TitleWindow>
+</s:SkinnablePopUpContainer>

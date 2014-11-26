@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:components="spark.components.*"
+			   xmlns:views="com.transcendss.mavric.views.*"
+			   
+			   width="1000" height="800"
+			   skinClass="skins.MavricTitleWindowSkin"
+			   
+			   title="Media"
+			   close="handleCloseEvent()">
+	<fx:Script>
+		<![CDATA[
+			import com.VideoPlayer.toky.video.TokyVideoPlayer;
+			
+			import mx.core.*;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			
+			import spark.components.Group;
+			import spark.components.HScrollBar;
+			import spark.components.Image;
+			import spark.components.Scroller;
+			import spark.components.VideoPlayer;
+			import spark.events.PopUpEvent;
+			
+			private static const BUFFER:int = 40;
+			private var _geotagId:Number;
+			
+			private function handleCloseEvent():void 
+			{
+				PopUpManager.removePopUp(this);
+				
+			}
+			
+			public function addPicture(pic:Image):void
+			{
+				var scroller:Scroller = new Scroller();
+				var group:Group = new Group();
+				group.addElement(pic);
+				adjustDimensions(pic);
+				this.addElement(pic);
+			}
+			
+			public function addVideoPlayer(vid:VideoPlayer):void
+			{
+				try
+				{
+					adjustDimensions(vid);
+					this.addElement(vid);
+				}catch(e:Error)
+				{
+					throw new Error("Could not display video content.");
+				}
+			}
+			
+			public function addTokyVideoPlayer(vid:TokyVideoPlayer):void
+			{
+				try
+				{
+					//adjustDimensions(vid);
+					var cont:UIComponent = new UIComponent();
+					cont.addChild(vid);
+					this.addElement(cont);
+				}catch(e:Error)
+				{
+					throw new Error("Could not display video content.");
+				}
+				
+				
+			}
+			
+			public function addVideo(vid:Video):void
+			{
+				var movie:MovieClip = new MovieClip();
+				movie.addChild(vid);
+				var cont:UIComponent = new UIComponent();
+				cont.addChild(movie);
+				this.addElement(cont);
+			}
+			
+			private function adjustDimensions(pic:UIComponent):void
+			{
+				var pic_dim:Number;
+				var pop_dim:Number;
+				if(pic.height > height || pic.width > width)
+				{
+					if(pic.height - height > pic.width - width)
+					{
+						pic_dim = pic.height;
+						pop_dim = height;
+					}
+					else
+					{
+						pic_dim = pic.width;
+						pop_dim = width;
+					}
+					pic.scaleX = pop_dim/pic_dim;
+					pic.scaleY = pop_dim/pic_dim;
+				}
+				pic.y += BUFFER/2;
+				height = pic.height * pic.scaleY + BUFFER * 2;
+				width = pic.width * pic.scaleX;
+			}
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+				dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			private function onDelete(event:MouseEvent):void
+			{
+				var resp:mx.rpc.Responder = new mx.rpc.Responder(processDecision, halt);
+				FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to delete this Geo Tag?", "Delete Geotag?",resp);
+			}
+			
+			private function processDecision(data:Object):void
+			{
+				if((data as Boolean))
+				{
+					deleteGeoTag();
+					closeButton_clickHandler(null);
+				}
+				
+			}
+			
+			private function halt():void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("Error in Y/N Dialog for MediaPopUp");	
+			}
+			
+			private function deleteGeoTag():void
+			{
+				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.mdbm.deleteGeoTag();	
+			}
+
+			public function get geotagId():Number
+			{
+				return _geotagId;
+			}
+
+			public function set geotagId(value:Number):void
+			{
+				_geotagId = value;
+			}
+
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Group id="mediaGroup"/>
+</s:TitleWindow>

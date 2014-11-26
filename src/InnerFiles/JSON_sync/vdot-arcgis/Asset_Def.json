@@ -1,0 +1,597 @@
+[
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "1",
+            "DESCRIPTION": "CULV",
+            "CAPTURE_AVAILABLE": "true",
+            "VISIBLE_ON_STICK": "true",
+            "UI_NAME": "Culvert",
+            "LRM": "1",
+            "EVENT_LAYER_ID":17,
+	      	"LENGTH_UNIT":"FT",
+            "TYPE_KEY": "D_CULV_PLACEMENT_TY_ID",
+			"SYNC": "true",
+      		"SYNC_COL_LIST":"ASSET_BASE_ID|ASSET_LOCAL_ID|ROUTE_NM|REF_PT|COUNTY_NUM|GARAGE|STATION|PROJECT|CROSS_ST_NUM|CROSS_ST_NM|LENGTH_FT|LEN_FLG|NUM_BARREL|SKEW_FLG|BEAM_MAT|ABUT_MAT|CULV_MAT1|CULV_MAT2|SHAPE|JOINT_SEP_LOC|CULV_PLACEMENT|LOC_CMT|SIZE_HORZ|SIZE_VERT|SIZE3|CMT|LAT|LONG|PRECISION|PDOP|INSP_DT|INSP_CMT|D_JOINT_COND_ID|D_CHNL_COND_ID|D_BARL_COND_ID|D_ENDS_COND_ID|D_FLOW_COND_ID|D_JOINT_RMK_ID|D_CHNL_RMK_ID|D_BARL_RMK_ID|D_ENDS_RMK_ID|D_FLOW_RMK_ID|D_REFER_TO_ID|D_MAINT_EQUIP_ID1|D_MAINT_EQUIP_ID2|D_MAINT_EQUIP_ID3|RETIRED",
+      
+            "FORM_CLASS": "com.transcendss.mavric.views.InventoryMenu",
+            "DEFINITION": {
+                "SUBTYPES": [
+                    {
+                    	"SUBTYPE":"1",
+                        "SUBTYPE_DESC": "Crossing",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing.json",
+                            "CENTER_VERTICALLY": "True",
+                            "CENTER_HORIZONTALLY": "True",
+                            "PLACEMENT_Y": "50",
+                            "TEXT": null,
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing.json"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "SUBTYPE":"2",
+                        "SUBTYPE_DESC": "Entrance Culvert Right",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt.json",
+                            "PLACEMENT_Y": "65",
+                            "TEXT": null,
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt.json"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "SUBTYPE":"3",
+                        "SUBTYPE_DESC": "Entrance Culvert Left",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft.json",
+                            "PLACEMENT_Y": "25",
+                            "TEXT": null,
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft.json"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "SUBTYPE":"4",
+                        "SUBTYPE_DESC": "Other",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft.json",
+                            "PLACEMENT_Y": "25",
+                            "TEXT": null,
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft.json"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "SUBTYPE":"5",
+                        "SUBTYPE_DESC": "Median",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing.json",
+                            "CENTER_VERTICALLY": "True",
+                            "CENTER_HORIZONTALLY": "True",
+                            "PLACEMENT_Y": "50",
+                            "TEXT": null,
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culv_crossing.json"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "SUBTYPE":"6",
+                        "SUBTYPE_DESC": "Off-Ramp Primary",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft.json",
+                            "PLACEMENT_Y": "65",
+                            "TEXT": "R",
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft.json"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "SUBTYPE":"7",
+                        "SUBTYPE_DESC": "Off-Ramp Opposite",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt.json",
+                            "PLACEMENT_Y": "25",
+                            "TEXT": "R",
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt.json"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "SUBTYPE":"8",
+                        "SUBTYPE_DESC": "On-Ramp Primary",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt.json",
+                            "PLACEMENT_Y": "65",
+                            "TEXT": "R",
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_rt.json"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                       "SUBTYPE":"9",
+                        "SUBTYPE_DESC": "On-Ramp Opposite",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "URL": "images/icon.png",
+                            "WIDTH": "30",
+                            "HEIGHT": "30",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft.json",
+                            "PLACEMENT_Y": "25",
+                            "TEXT": "R",
+                            "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+                            "ALTERNATES": [
+                                {
+                                    "VALUE": "1",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_pipe.json"
+                                },
+                                {
+                                    "VALUE": "2",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_arch.json"
+                                },
+                                {
+                                    "VALUE": "3",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft_box.json"
+                                },
+                                {
+                                    "VALUE": "4",
+                                    "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_culvert_lft.json"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "SUBTYPE_FIELD": "ASSET_TYPE"
+            },
+            "LAYER_ORDER": "95"
+        }
+    },
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "2",
+            "CAPTURE_AVAILABLE": "false",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "MILEMARKER",
+            "UI_NAME": "Mile Marker",
+            "LRM": "1",
+            "EVENT_LAYER_ID":0,
+            "LENGTH_UNIT":"",
+            "TYPE_KEY": "MUTCD",
+            "FORM_CLASS": "com.transcendss.mavric.views.SignInventory",
+            "DEFINITION": {
+                "SUBTYPES": []
+            }
+        }
+    },
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "4",
+            "CAPTURE_AVAILABLE": "false",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "INT",
+            "LENGTH_UNIT":"",
+            "UI_NAME": "Intersection",
+            "LRM": "1",
+            "EVENT_LAYER_ID":2,
+            "TYPE_KEY": "",
+            "SYNC": "false",
+            "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+            "TIP_FIELD": "RTE_ALL_INTERSECTION_DSC",
+            "DEFINITION": {
+                "SUBTYPES": [
+                    {
+                        "SUBTYPE": "1",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/Interchang.png",
+                            "WIDTH": "13",
+                            "HEIGHT": "110",
+                            "CENTER_VERTICALLY": "True",
+                            "CENTER_HORIZONTALLY": "True",
+                            "PLACEMENT_Y": "10",
+                            "TEXT": null
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "5",
+            "CAPTURE_AVAILABLE": "true",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "SIGN",
+            "UI_NAME": "Sign",
+            "LRM": "1",
+            "EVENT_LAYER_ID":19,
+            "TYPE_KEY": "MUTCD",
+            "LENGTH_UNIT":"",
+            "SYNC": "true",
+      		"SYNC_COL_LIST":"ASSET_BASE_ID|ASSET_LOCAL_ID|ROUTE_NM|REF_PT|COUNTY_NUM|ASSEMBLY_ID|ASSEMBLY_LOCAL_ID|SIDE_OF_ROAD_ID|DIR_TRAVEL_ID|POST_SIZE_ID|POST_TY_ID|POST_RATING_ID|NUM_SIGNS|NUM_POSTS|POST_LENGTH_FT|LATERAL_OFFSET_FT|LOCATION_CMT|SIGN_VALUE|SIGN_DESC|MUTCD_ID|COLOR_ID|DIMENSION_ID|IN_CATALOG|SHEETING_MAT_ID|BLANK_MAT_ID|DIRECTION_ID|SIGN_CMT|DATE_IN_SERVICE|LAT_BEGIN|LON_BEGIN|PREC|PDOP|INSP_DT|SIGN_INSP_RATING_ID|REFLECTIVITY_REVIEW|D_REFER_TO_ID|D_MAINT_EQUIP_ID1|D_MAINT_EQUIP_ID2|D_MAINT_EQUIP_ID3|RETIRED",
+            "FORM_CLASS": "com.transcendss.mavric.views.vdot.SignInv",
+            "DEFINITION": {
+                "SUBTYPES": [
+                    {
+                        "SUBTYPE": "1",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "DRAWSTRING": "",
+                            "SCALE": "True",
+                            "WIDTH": "80",
+                            "HEIGHT": "60",
+                            "CENTER_VERTICALLY": "True",
+                            "CENTER_HORIZONTALLY": "True",
+                            "PLACEMENT_Y": "0",
+                            "TEXT": null
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "7",
+            "CAPTURE_AVAILABLE": "true",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "INCIDENT",
+            "UI_NAME": "Incident",
+            "LRM": "1",
+            "EVENT_LAYER_ID":18,
+            "TYPE_KEY": "",
+            "SYNC": "true",
+            "LENGTH_UNIT":"",
+      		"SYNC_COL_LIST":"ASSET_BASE_ID|ASSET_LOCAL_ID|ROUTE_NM|REF_PT|COUNTY_NUM|D_INCIDENT_TY|D_URGENCY_ID|INCIDENT_CMT|LAT|LONG|PREC|PDOP|INC_DT|RETIRED",
+            "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+            "DEFINITION": {
+                "SUBTYPES": [
+                    {
+                        "SUBTYPE": "1",
+                        "LOCATION": "STICK",
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/warning_icon.png",
+                            "SCALE": "true",
+                            "WIDTH": "70",
+                            "HEIGHT": "60",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "True",
+                            "PLACEMENT_Y": "10",
+                            "TEXT": null
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "8",
+            "CAPTURE_AVAILABLE": "true",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "GUARDRAIL",
+            "UI_NAME": "Guardrail",
+            "LRM": "1",
+            "EVENT_LAYER_ID":5,
+	      	"LENGTH_UNIT":"FT",
+            "TYPE_KEY": "CRS_LOC",
+      		"SYNC": "false",
+      		"SYNC_COL_LIST":"ASSET_BASE_ID|ASSET_LOCAL_ID|ROUTE_NM|REF_PT|COUNTY_NUM|D_GRAIL_PURPOSE_ID|D_GRAIL_MATERIAL_ID|D_GRAIL_LOC|BRIDGE_ATTACH_FLG|LENGTH_FT|LAT_BEGIN|LON_BEGIN|LAT_END|LON_END|PREC|PDOP|INSP_DT|D_GRAIL_CONDITION_ID|D_REFER_TO_ID|D_MAINT_EQUIP_ID1|D_MAINT_EQUIP_ID2|D_MAINT_EQUIP_ID3|RETIRED",
+            "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+            "DEFINITION": {
+                "SUBTYPES": [
+                    {
+                        "SUBTYPE": "LEFT",
+                        "LOCATION": "STICK",
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_guardrail_lft.json",
+                            "SCALE": "true",
+                            "WIDTH": "80",
+                            "HEIGHT": "150",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "PLACEMENT_Y": "42",
+                            "TEXT": null
+                        }
+                    },
+                    {
+                        "SUBTYPE": "RIGHT",
+                        "LOCATION": "STICK",
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_guardrail_rt.json",
+                            "SCALE": "true",
+                            "WIDTH": "80",
+                            "HEIGHT": "150",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "PLACEMENT_Y": "53",
+                            "TEXT": null
+                        }
+                    },
+                    {
+                        "SUBTYPE": "MEDIAN",
+                        "LOCATION": "STICK",
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_guardrail_median.json",
+                            "SCALE": "true",
+                            "WIDTH": "80",
+                            "HEIGHT": "150",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "PLACEMENT_Y": "7",
+                            "TEXT": null
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "13",
+            "CAPTURE_AVAILABLE": "true",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "PROJECT",
+            "UI_NAME": "Project",
+            "LRM": "1",
+            "TYPE_KEY": "LANE",
+            "SYNC": "false",
+            "EVENT_LAYER_ID":12,
+            "LENGTH_UNIT":"MI",
+            "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+            "DEFINITION": {
+                "SUBTYPES": [
+                    {
+                        "SUBTYPE": "EB",
+                        "LOCATION": "STICK",
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_project.json",
+                            "SCALE": "true",
+                            "WIDTH": "80",
+                            "HEIGHT": "150",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "PLACEMENT_Y": "39",
+                            "TEXT": null
+                        }
+                    },
+                    {
+                        "SUBTYPE": "NB",
+                        "LOCATION": "STICK",
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_project.json",
+                            "SCALE": "true",
+                            "WIDTH": "80",
+                            "HEIGHT": "150",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "PLACEMENT_Y": "39",
+                            "TEXT": null
+                        }
+                    },
+                    {
+                        "SUBTYPE": "WB",
+                        "LOCATION": "STICK",
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_project.json",
+                            "SCALE": "true",
+                            "WIDTH": "80",
+                            "HEIGHT": "150",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "PLACEMENT_Y": "50",
+                            "TEXT": null
+                        }
+                    },
+                    {
+                        "SUBTYPE": "SB",
+                        "LOCATION": "STICK",
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/vdot-arcgis/drawstring_project.json",
+                            "SCALE": "true",
+                            "WIDTH": "80",
+                            "HEIGHT": "150",
+                            "CENTER_VERTICALLY": "False",
+                            "CENTER_HORIZONTALLY": "False",
+                            "PLACEMENT_Y": "50",
+                            "TEXT": null
+                        }
+                    }
+                ]
+            }
+        }
+    }
+]

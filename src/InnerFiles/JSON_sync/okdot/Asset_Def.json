@@ -1,0 +1,241 @@
+[
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "1",
+      "CAPTURE_AVAILABLE": "false",
+      "VISIBLE_ON_STICK": "false",
+      "SYNC": "false",
+      "DESCRIPTION": "MILEMARKER",
+      "UI_NAME": "Mile Marker",
+      "LRM": "1",
+      "TYPE_KEY": "MUTCD",
+      "FORM_CLASS": "com.transcendss.mavric.views.SignInventory",
+      "DEFINITION": {
+        "SUBTYPES": []
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "12",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "SYNC": "true",
+      "DESCRIPTION": "MARKER",
+      "UI_NAME": "Marker",
+      "LRM": "1",
+      "TYPE_KEY": "",
+      "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+      "SYNC_COL_LIST": "ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|OKDOT_OID|D_USER_ID|D_DIVISION_ID|D_COUNTY_ID|D_INTERSECT_TYPE_ID|D_MARKER_TYPE_ID|D_SIGN_LOCATION_ID|CROSSING_NAME|NLF_ID|SUBSECTION_ID|LATITUDE|LONGITUDE|INV_CMT|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/okdot/markerThin.png",
+              "SCALE": "True",
+              "WIDTH": "50",
+              "HEIGHT": "50",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "10",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "5",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "SYNC": "true",
+      "DESCRIPTION": "SIGN",
+      "UI_NAME": "Sign",
+      "LRM": "1",
+      "TYPE_KEY": "MUTCD",
+      "FORM_CLASS": "com.transcendss.mavric.views.okdot.SignInv",
+      "SYNC_COL_LIST": "ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|SIGN_OKDOT_ID|D_USER_ID|D_DIVISION_ID|D_COUNTY_ID|D_DIR_TRAVEL_ID|D_LOC_ID|SIGN_HEIGHT|SIGN_WIDTH|CLEARANCE_BOTTOMSIGN|MUTCDNAME|MUTCDCATEGORY|MUTCD|SIGN_TEXT|D_OTHERSIGN_BACK_COLOR_ID|SUPPORT_MATERIAL_ID|LATITUDE|LONGITUDE|ELEVATION|OFFSET|LENGTH_FT|CTL_SECT|INV_CMT|SIGN_MAJOR_CAT_ID|SIGN_SUB_CATEGORY_ID|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "DRAWSTRING": "",
+              "SCALE": "True",
+              "WIDTH": "80",
+              "HEIGHT": "60",
+              "CENTER_VERTICALLY": "True",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "0",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "9",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "False",
+      "SYNC": "true",
+      "DESCRIPTION": "SUBSECTION",
+      "LENGTH_UNIT":"FT",
+      "UI_NAME": "Subsection",
+      "LRM": "1",
+      "TYPE_KEY": "",
+      "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+      "SYNC_COL_LIST": "ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|LENGTH_FT|OKDOT_SUBSECTION_ID|D_COUNTY_ID|LANE_ID|HIWAY_COMM_DIST|COUNTY_COMM_DIST|NO_LANES|D_OUT_SHLDR_TYPE_ID|OUT_SHLDR_WIDTH|D_IN_SHLDR_TYPE_ID|IN_SHLDR_WIDTH|D_MEDIAN_TYPE_ID|MEDIAN_WIDTH|D_DIVISION_ID|MAINTENANCE_DISTR|LANE_WIDTH|INV_CMT|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/okdot/drawstring_subsection.json",
+              "SCALE": "False",
+              "WIDTH": "50",
+              "HEIGHT": "50",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "5",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "8",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "SYNC": "true",
+      "DESCRIPTION": "GUARDRAIL",
+      "UI_NAME": "Guardrail",
+      "LRM": "1",
+      "LENGTH_UNIT":"FT",
+      "TYPE_KEY": "D_GRAIL_LOC_ID",
+      "FORM_CLASS": "com.transcendss.mavric.views.okdot.GuardRail",
+      "SYNC_COL_LIST": "ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|GUARDRAIL_OKDOT_ID|D_USER_ID|D_DIVISION_ID|D_COUNTY_ID|D_DIR_TRAVEL_ID|D_GRAIL_LOC_ID|D_GRAIL_OFFSET_TENDENCY_ID|D_GRAIL_TREATMENT_START_ID|D_GRAIL_TREATMENT_END_ID|D_GRAIL_BLOCK_TYPE_ID|STARTMP|ENDMP|LAT_DEC_DEG_BEG|LONG_DEC_DEG_BEG|ELEVATION_BEG|LAT_DEC_DEG_END|LONG_DEC_DEG_END|ELEVATION_END|OFFSET|INV_CMT|LENGTH_FT|CTL_SECT|D_GRAIL_POST_TYPE_ID|D_GRAIL_CONDITION_ID|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/okdot/drawstring_guardrail_lft.json",
+              "SCALE": "true",
+              "WIDTH": "80",
+              "HEIGHT": "150",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "PLACEMENT_Y": "42",
+              "TEXT": null
+            }
+          },
+          {
+            "SUBTYPE": "2",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/okdot/drawstring_guardrail_rt.json",
+              "SCALE": "true",
+              "WIDTH": "80",
+              "HEIGHT": "150",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "PLACEMENT_Y": "53",
+              "TEXT": null
+            }
+          },
+          {
+            "SUBTYPE": "3",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/okdot/drawstring_guardrail_median.json",
+              "SCALE": "false",
+              "WIDTH": "80",
+              "HEIGHT": "150",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "PLACEMENT_Y": "7",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "10",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "SYNC": "true",
+      "DESCRIPTION": "CRASH",
+      "UI_NAME": "Crash",
+      "LRM": "1",
+      "TYPE_KEY": "",
+      "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+      "SYNC_COL_LIST": "ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|DPS_CASE_NO|D_USER_ID|D_DIVISION_ID|D_COUNTY_ID|CRASH_LOCATION|INV_CMT|CONTACT_INFO|LATITUDE|LONGITUDE|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/okdot/crash.png",
+              "SCALE": "False",
+              "WIDTH": "50",
+              "HEIGHT": "45",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "10",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "11",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "SYNC": "true",
+      "DESCRIPTION": "SIGNAL",
+      "UI_NAME": "Signal",
+      "LRM": "1",
+      "TYPE_KEY": "",
+      "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+      "SYNC_COL_LIST": "ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|OKDOT_SIGNAL_ID_NO|D_USER_ID|D_DIVISION_ID|D_COUNTY_ID|D_SIGNAL_TYPE_ID|INV_CMT|CONTACT_INFO|LATITUDE|LONGITUDE|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/okdot/signal.png",
+              "SCALE": "False",
+              "WIDTH": "50",
+              "HEIGHT": "49",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "10",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  }
+]

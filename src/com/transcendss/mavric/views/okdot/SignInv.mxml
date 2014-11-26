@@ -1,0 +1,933 @@
+<?xml version="1.0" encoding="utf-8"?>
+<baseViews:BaseAssetTitleWindow  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+								 xmlns:s="library://ns.adobe.com/flex/spark" title="Sign Inventory"
+								 width="1030" height="750"
+								 close="handleCloseEvent()"
+								 creationComplete="init()"
+								 skinClass="skins.MavricTitleWindowSkin"
+								 xmlns:baseViews="com.transcendss.mavric.views.baseViews.*" xmlns:views="com.transcendss.mavric.views.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.utils.StringUtil;
+			import com.asfusion.mate.events.Dispatcher;
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.events.DropDownViewEvent;
+			import com.transcendss.mavric.managers.ImageManager;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.util.FileUtility;
+			import com.transcendss.mavric.util.PopUpUtils;
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.transcore.events.*;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
+			import com.transcendss.transcore.sld.models.components.GeoTag;
+			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
+			import com.transcendss.transcore.sld.models.managers.LRMManager;
+			import com.transcendss.transcore.util.TSSAudio;
+			import com.transcendss.transcore.util.TSSPicture;
+			import com.transcendss.transcore.util.TSSVideo;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.ArrayList;
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			
+			import spark.components.Button;
+			import spark.components.TextInput;
+			import spark.events.IndexChangeEvent;
+			import spark.events.PopUpEvent;
+			
+			
+			[Bindable]
+			private var mutcdListDP:ArrayCollection;
+			private var menuEvent:MenuBarEvent;
+			private var dbManager:MAVRICDBManager;
+			private var dispatcher:Dispatcher = new Dispatcher();
+			private var fileUtil:FileUtility = new FileUtility();
+			private var picArray:ArrayList = new ArrayList();
+			private var milepost:Number =-1;
+			private var PSID:Number;
+			private var moveToLat:String="";
+			private var moveToLong:String="";
+			private var moveToPrec:String="";
+			private var moveToRefpt:Number;
+			private var assetMoved:Boolean = false;
+			
+			private var asset_base_id:String ="";
+			private var sign_id:Number = -1;
+			private var gtManager:GeotagsManager = new GeotagsManager();
+			private var signselCatDDView:DropDownViewVert = new DropDownViewVert();
+			private var signselsubCatDDView:DropDownViewVert = new DropDownViewVert();
+			private var signselSizeDDView:DropDownViewVert = new DropDownViewVert();
+			private var signselColorDDView:DropDownViewVert = new DropDownViewVert();
+			private var countyDDView:DropDownViewVert = new DropDownViewVert();
+			private var dirDDView:DropDownViewVert = new DropDownViewVert();
+			private var supMatDDView:DropDownViewVert = new DropDownViewVert();
+			
+			private var signselCatInput:TextInput = new TextInput();
+			private var signselsubCatInput:TextInput = new TextInput();
+			private var signselSizeInput:TextInput = new TextInput();
+			private var signselColorInput:TextInput = new TextInput();
+			public var signSelectedCallback:Function;
+			private var currentSign:BaseAsset = null;
+			
+			
+			private var btmp:Bitmap;
+			private function init():void{
+				try
+				{
+					PopUpUtils.closeAll(this);
+					this.closeButton.visible=true;
+					dbManager = MAVRICDBManager.newInstance();
+					
+					signselCatDDView.domainTableIDColName =  "SIGN_MAJOR_CAT_ID";
+					signselCatDDView.fetchDomainValues();
+					signselCatInput = signselCatDDView.input;
+					
+					signselCatDDView.customCPCallback = getSubCats;
+					signselCatDDView.customCPEvent = new DropDownViewEvent(DropDownViewEvent.CATEGORYSELCTED);
+					
+					var Catbutton:Button = signselCatDDView.button;
+					signselCatDDView.btnText = "Category";
+					signselCatDDView.genericPopup.height = 200;
+					signselCatDDView.genericPopup.width = 180;
+					SSCatGroup.addElement(signselCatDDView);
+					
+					signselsubCatDDView.domainTableIDColName =  "SIGN_SUB_CATEGORY_ID";
+					//signselsubCatDDView.fetchDomainValues("SUB_CAT_DESC");
+					signselsubCatInput = signselsubCatDDView.input;
+					//signselsubCatDDView.input.prompt = "Select Category to retrieve Sub-Cat options";
+					signselsubCatDDView.isEnabled = false;
+					signselsubCatDDView.customCPCallback = getMutcdDP;
+					signselsubCatDDView.customCPEvent = new DropDownViewEvent(DropDownViewEvent.SUBCATEGORYSELCTED);
+					
+					var subCatbutton:Button = signselsubCatDDView.button;
+					signselsubCatDDView.customBCCallback= beforSubCatBtnClickEvent;
+					signselsubCatDDView.customBCEvent = new DropDownViewEvent(DropDownViewEvent.SUBCATBUTEVENT);
+					signselsubCatDDView.btnText = "Sub-Cat";
+					signselsubCatDDView.genericPopup.height = 200;
+					signselsubCatDDView.genericPopup.width = 200;
+					SSSubCatGroup.addElement(signselsubCatDDView);
+					
+					
+					countyDDView.domainTableIDColName = "D_COUNTY_ID";
+					countyDDView.fetchDomainValues();
+					//guardrailConditionInput = countyDDView.input;
+					//var btn : Button = countyDDView.button;
+					countyDDView.btnText = "County";
+					countyDDView.isRequired = true;
+					countyDDView.genericPopup.height=200;
+					countyGroup.addElement(countyDDView);
+					
+					dirDDView.domainTableIDColName = "D_DIR_TRAVEL_ID";
+					dirDDView.fetchDomainValues();
+					//guardrailConditionInput = countyDDView.input;
+					//var btn : Button = countyDDView.button;
+					dirDDView.btnText = "Direction of Travel";
+					dirDDView.isRequired = true;
+					dirDDView.genericPopup.height=200;
+					dirGroup.addElement(dirDDView);
+					
+					supMatDDView.domainTableIDColName = "SUPPORT_MATERIAL_ID";
+					supMatDDView.fetchDomainValues();
+					//guardrailConditionInput = countyDDView.input;
+					//var btn : Button = countyDDView.button;
+					supMatDDView.btnText = "Support Material";
+//					supMatDDView.isRequired = true;
+					supMatDDView.genericPopup.height=200;
+					suppMatGroup.addElement(supMatDDView);
+					
+					var attchView:AddAttachments = new AddAttachments();
+					attchView.init("SignInv",true,true,true);
+					addAttchmentsHolder.addElement(attchView);
+					var eve:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
+					dispatchEvent(eve);
+				}catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
+					
+				}
+				
+				
+			}
+			public function getSubCats(evt:Event):void
+			{
+				PSID= new Number(signselCatDDView.domainID);
+				
+				
+				
+				var ac:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGN_SUB_CATEGORY_ID");
+				ac.filterFunction = Domain_FilterFunc;
+				
+				ac.refresh();
+				signselsubCatDDView.domain = ac;
+				
+				signselsubCatDDView.isEnabled = true;
+				
+			}
+			
+			public function beforSubCatBtnClickEvent(evet:Event):void
+			{
+				if(!signselsubCatDDView.domain || signselsubCatDDView.domain.length==0)
+					FlexGlobals.topLevelApplication.TSSAlert("Please select a value for Sign Catergory to retrieve sub-catergories");	
+				else
+					signselsubCatDDView.openPopup();
+			}
+			
+			public function getMutcdDP(evnt:Event):void
+			{			
+				PSID= new Number(signselsubCatDDView.domainID);
+				
+				var ac:ArrayCollection =  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("MUTCD");
+				ac.filterFunction = filterMutcdBySubCat_FilterFunc;
+				ac.refresh();
+				mutcdList.dataProvider =ac
+				
+			}
+			
+			
+			
+			private function Domain_FilterFunc(item:Object):Boolean
+			{
+				return ( item.SIGN_MAJOR_CAT_ID ==PSID || item.FILTER_COLUMN_DATA == PSID );
+			}
+			
+			private function filterMutcdBySubCat_FilterFunc(item:Object):Boolean
+			{
+				return ( item.SIGN_SUB_CATEGORY_ID==PSID);
+			}
+			
+			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				var eve:PopUpEvent = new PopUpEvent(PopUpEvent.CLOSE);
+				handleCloseEvent();
+				//dispatchEvent(new CloseEvent(CloseEvent.CLOSE));
+			}
+			
+			
+			protected function mutcdList_changeHandler(event:IndexChangeEvent):void
+			{
+				// Retrieve the sign image from teh image manager
+				signdesc.text = StringUtil.trim(mutcdList.selectedItem.DESCRIPTION);
+				mutcdImagegrp.removeAllElements();
+				
+				var imageMngr:ImageManager = new ImageManager();
+				btmp = imageMngr.getById(signdesc.text);
+				
+				btmp = imageMngr.scaleImage(btmp,mutcdImagegrp);
+				// If the sign is valid
+				if(btmp!=null)
+				{
+					var uicomp:UIComponent = new UIComponent();
+					uicomp.addChild(btmp);
+					mutcdImagegrp.addElement(uicomp);
+				}	
+			}
+			public function showRequiredFieldError(colName:String):void
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("Please enter/select a value for "+colName);	
+				
+			}
+			
+			private function onSave():void
+			{
+				var culEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT , true, true);
+				culEvent.geoTags = geoTagsArr; 	
+				
+				
+				var cul:BaseAsset;
+				
+				
+				
+				if (currentSign != null)
+				{
+					cul = currentSign;
+				}
+				else
+				{
+					cul = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.createAsset( "SIGN", -1, 1);
+					cul.setAssetLocation("LATITUDE","LONGITUDE");
+				}
+				
+				if(this.dirDDView.input.text != null && dirDDView.input.text != "")
+					cul.invProperties["D_DIR_TRAVEL_ID"].value = this.dirDDView.domainID;
+				else
+				{
+					showRequiredFieldError("Direction of Travel");
+					return;
+				}
+				if(this.countyDDView.input.text != null && countyDDView.input.text != "")
+					cul.invProperties["D_COUNTY_ID"].value = this.countyDDView.domainID;
+				else
+				{
+					showRequiredFieldError("County");
+					return;
+				}
+				
+				if(this.controlSectionInput.text != null && controlSectionInput.text != "")
+					cul.invProperties["CTL_SECT"].value = this.controlSectionInput.text;
+				else
+				{
+					showRequiredFieldError("Control Section");
+					return;
+				}
+				
+				if(this.retireChk.selected)
+				{
+					cul.invProperties["RETIRED"].value=1;
+					//cul.inspProperties["INSP_DT"].value =saveformatter.format(cul.inspProperties["INSP_DT"].value);
+					
+				}
+				else
+				{	
+					cul.invProperties[cul.routeIDColName].value =this.signRouteInput.text;
+					cul.invProperties["ASSET_BASE_ID"].value =asset_base_id;
+					
+					cul.invProperties["MUTCD"].value = this.signdesc.text ;
+					cul.invProperties["SIGN_MAJOR_CAT_ID"].value =this.signselCatDDView.domainIDStr;
+					cul.invProperties["SIGN_SUB_CATEGORY_ID"].value =signselsubCatDDView.domainIDStr;
+					cul.invProperties["SUPPORT_MATERIAL_ID"].value =this.supMatDDView.domainIDStr;
+					cul.invProperties["CLEARANCE_BOTTOMSIGN"].value =this.signClearenceInput.text;
+					cul.invProperties["SIGN_HEIGHT"].value =this.signHeightInput.text;
+					cul.invProperties["SIGN_WIDTH"].value =this.signWidthInput.text; 
+					
+					
+					cul.invProperties["INV_CMT"].value =this.signCommentsInput.text  ;
+					
+					
+					
+					
+					cul.id = sign_id;
+					cul.subType = this.signdesc.text;
+					if(assetMoved)
+						cul.setAssetLocation("LATITUDE","LONGITUDE", this.moveToRefpt, this.moveToLat, this.moveToLong, this.moveToPrec);
+				}
+				culEvent.culvert = cul;
+				this.currentSign	= cul;
+				handleCloseEvent(culEvent);
+				
+			}
+			
+			
+			public override function setBaseAsset(legacyValues:BaseAsset):void
+			{
+				
+				assetMoved = false;
+				currentSign = legacyValues;
+				geoTagsArr = new ArrayCollection();
+				var lrmManager:LRMManager = new LRMManager();
+				
+				asset_base_id=legacyValues.invProperties["ASSET_BASE_ID"].value ;
+				sign_id = new Number(legacyValues.invProperties[legacyValues.primaryKey].value);
+				this.signCommentsInput.text = legacyValues.invProperties["INV_CMT"].value?String(legacyValues.invProperties["INV_CMT"].value).replace(new RegExp("<br/>", "g"), "\n"):""; 
+				this.signRouteInput.text=legacyValues.invProperties[legacyValues.routeIDColName].value?legacyValues.invProperties[legacyValues.routeIDColName].value:FlexGlobals.topLevelApplication.currentRouteName;
+				
+				this.signLatInput.text=legacyValues.invProperties["LATITUDE"].value;
+				this.signLongInput.text=legacyValues.invProperties["LONGITUDE"].value;
+				
+				this.signdesc.text = legacyValues.invProperties["MUTCD"].value  ;
+				mutcdImagegrp.removeAllElements();
+				
+				var imageMngr:ImageManager = new ImageManager();
+				btmp = imageMngr.getById(signdesc.text);
+				
+				btmp = imageMngr.scaleImage(btmp,mutcdImagegrp);
+				// If the sign is valid
+				if(btmp!=null)
+				{
+					var uicomp:UIComponent = new UIComponent();
+					uicomp.addChild(btmp);
+					mutcdImagegrp.addElement(uicomp);
+				}	
+				
+				this.signselCatDDView.domainID =  legacyValues.invProperties["SIGN_MAJOR_CAT_ID"].value ;
+				signselsubCatDDView.domainID = legacyValues.invProperties["SIGN_SUB_CATEGORY_ID"].value ;
+				
+				supMatDDView.domainID = legacyValues.invProperties["SUPPORT_MATERIAL_ID"].value ;
+				countyDDView.domainID = legacyValues.invProperties["D_COUNTY_ID"].value ;
+				dirDDView.domainID = legacyValues.invProperties["D_DIR_TRAVEL_ID"].value ;
+				
+				this.controlSectionInput.text=legacyValues.invProperties["CTL_SECT"].value;
+				
+				this.modifyDateInput.text=legacyValues.invProperties["MODIFY_DT"].value;
+				
+				this.signClearenceInput.text = legacyValues.invProperties["CLEARANCE_BOTTOMSIGN"].value ;
+				this.signHeightInput.text = legacyValues.invProperties["SIGN_HEIGHT"].value ;
+				this.signWidthInput.text = legacyValues.invProperties["SIGN_WIDTH"].value ; 
+				
+				
+				if(legacyValues.invProperties[legacyValues.fromMeasureColName].value)			
+				{
+					milepost = Number(legacyValues.invProperties[legacyValues.fromMeasureColName].value);
+					this.signBegMPInput.text= parseFloat(String(lrmManager.milepointToMilepostPlusOffset(new Number(legacyValues.invProperties[legacyValues.fromMeasureColName].value), "GUARDRAIL",new ArrayCollection(FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.getAllMilePostsAsBaseAssets())))).toFixed(3);
+				}
+				
+				//				// load local geotags
+				if (sign_id != -1)
+				{
+					var gtArray:Array = dbManager.getLocalGeoTags(sign_id, currentSign.assetType);
+					
+					for (var gti:int=0;gti<gtArray.length;gti++)
+					{
+						var tmpMedia:Object = new Object();
+						var tmpGT:GeoTag = gtArray[gti] as GeoTag;	
+						tmpGT.asset_ty_id = currentSign.assetType;
+						var viE:* = new GeotagsManager().ConvertGeotags(tmpGT,"","local");
+						if(viE)
+						{
+							if(viE is TSSPicture)
+								picArray.addItem(viE);
+							if (tmpGT.is_insp == 0)
+								InvAttachments.addElement(viE);
+							
+						}
+						tmpMedia.geoTag = tmpGT;
+						tmpMedia.geoLocalId = tmpGT.id;
+					}
+					
+				}
+				else
+				{
+					//set lat long from GPS if new GR
+					currentSign.setAssetLocation("LATITUDE","LONGITUDE");
+					milepost = currentSign.invProperties[legacyValues.fromMeasureColName].value;
+					this.signBegMPInput.text= parseFloat(String(lrmManager.milepointToMilepostPlusOffset(new Number(currentSign.invProperties[legacyValues.fromMeasureColName].value), "SIGN",new ArrayCollection(FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.getAllMilePostsAsBaseAssets())))).toFixed(3);
+				}
+				
+				if(FlexGlobals.topLevelApplication.connected  && currentSign.id!=-1 && currentSign.status!='NEW')
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(true);
+					var httpServ:HTTPService = new HTTPService();
+					httpServ.method = "GET";
+					httpServ.resultFormat = "text";
+					httpServ.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+					
+					if(FlexGlobals.topLevelApplication.useAgsService  )
+					{
+						var layerID:String =FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerID(currentSign.description);
+						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String( currentSign.id));
+						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							var attachments:Object = JSON.parse(event.result as String);
+							
+							setGeotagsFromServer(attachments.attachmentInfos as Array, layerID );
+						});
+						
+					}
+					else if(currentSign.invProperties["ASSET_BASE_ID"] && String(currentSign.invProperties["ASSET_BASE_ID"].value) !=""  && currentSign.invProperties["ASSET_BASE_ID"].value !=null )
+					{
+						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL+"Geotags/"+String(currentSign.invProperties["ASSET_BASE_ID"].value);
+						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							setGeotagsFromServer(JSON.parse(event.result as String) as Array);
+						});
+					}
+					if(httpServ.url)
+						httpServ.send();
+				}
+				
+				
+				//if editing an asset from server
+				if((currentSign.invProperties["ASSET_BASE_ID"] && String(currentSign.invProperties["ASSET_BASE_ID"].value) !="") )
+					//|| (String(baseAsset.invProperties["STATUS"].value) =='EDITED'))
+					this.retireChk.enabled = true;
+				else
+					this.retireChk.enabled = false;
+				
+				
+				
+				
+				
+				if(currentSign.invProperties["RETIRED"].value==1)
+				{
+					this.retireChk.selected = true;
+					this.retireOkay(true);
+					
+				}
+				//				setMilePostDiagram();
+			}
+			
+			private function setGeotagsFromServer( gtArray:Array, layerID:String=""):void
+			{
+//				FlexGlobals.topLevelApplication.setBusyStatus(false);
+//				
+//				for (var gti:int=0;gti<gtArray.length;gti++)
+//				{
+//					var insp:Number = (String(gtArray[gti].IS_INSP)=="0")?0:1;
+//					var tmpGT:GeoTag = new GeoTag(Number(gtArray[gti].ATTACH_ID),String(gtArray[gti].ASSET_TYPE)!=""?String(gtArray[gti].ASSET_TYPE):"1", String(gtArray[gti].ROUTE_NAME),String(gtArray[gti].ASSET_BASE_ID),""
+//						,(String(gtArray[gti].IS_INSP)=="0")?0:1,Number(gtArray[gti].BEGIN_MILE),Number(gtArray[gti].END_MILE),String(gtArray[gti].IMAGE_FILENAME),String(gtArray[gti].VIDEO_FILENAME),String(gtArray[gti].VOICE_FILENAME),String(gtArray[gti].TEXT_MEMO));
+//					
+//					var viE:* = gtManager.ConvertGeotags(tmpGT, String(gtArray[gti].URL));
+//					if(viE)
+//					{
+//						this.InvAttachments.addElement(viE);
+//					}
+//					
+//				}
+				
+				gtManager.setGeotags(
+					InvAttachments,
+					gtArray,
+					currentSign.assetType,
+					String(currentSign.id),
+					currentSign.routeName,
+					Number(currentSign.invProperties[currentSign.fromMeasureColName].value),
+					"",
+					currentSign.invProperties[currentSign.toMeasureColName]?
+					Number(currentSign.invProperties[currentSign.toMeasureColName].value):
+					0,layerID);
+			}
+			
+			public override function handlePicture(event:CameraEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
+				{
+					var bmp:Bitmap = event.bitmap;
+					var tmpImage:TSSPicture = new TSSPicture();
+					tmpImage.source = bmp; //icon is now the captured image itself
+					tmpImage.bitmap = bmp;
+					//					tmpImage.x = stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+					//					tmpImage.y =getIconY("image");
+					tmpImage.width = 40;//120;
+					tmpImage.height = 40;//120;
+					
+					
+					var fileName:String = new Date().time + ".png";
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = signRouteInput.text;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					if(asset_base_id != null && asset_base_id !="")
+					{
+						tmpGT.asset_base_id = asset_base_id;
+						tmpGT.local_asset_id = ""+sign_id;
+					}
+					else if (sign_id !=-1)
+					{
+						tmpGT.local_asset_id = sign_id.toString();
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					}
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = fileName;
+					tmpGT.text_memo = event.memo;
+					tmpGT.is_insp = 0;
+					
+					tmpGT.asset_ty_id = currentSign!=null?currentSign.assetType:"1";
+					//					if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+					geoTagsArr.addItem(tmpGT);
+					//					else
+					//						tmpImage.geoLocalId = "" + dbManager.addGeoTag(tmpGT);
+					
+					tmpImage.geoTag = tmpGT;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
+						InvAttachments.addElement(tmpImage);
+					//					else
+					//						InspAttachments.addElement(tmpImage);
+				}
+				try
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(true);
+					fileUtility.WritePicture(fileName, bmp);
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+				} catch (er:Error)
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+					FlexGlobals.topLevelApplication.TSSAlert(er.message);
+				}
+			}
+			
+			//function to handle VideoEvent
+			public override function handleVideo(event:videoEvent):void{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
+				{
+					var vid:TSSVideo =new TSSVideo();
+					vid.source=gtManager.video;
+					vid.video=event.video;
+					//					vid.x=stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+					//					vid.y=getIconY("video");
+					vid.width=40;
+					vid.height=40;
+					
+					try
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						var fileName:String=new Date().time +".3gp";
+						fileUtility.WriteVideo(vid.video, fileName, event.path);
+						//vid.filePath="file:///mnt/sdcard/geotags/" + fileName;
+						vid.filePath = fileName;
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						
+						
+						var tmpGT:GeoTag=new GeoTag();
+						tmpGT.cached_route_id=signRouteInput.text;
+						if(asset_base_id != null && asset_base_id !="")
+						{
+							tmpGT.asset_base_id = asset_base_id;
+							tmpGT.local_asset_id = ""+sign_id;
+						}
+						else if (sign_id != -1)
+						{
+							tmpGT.local_asset_id = sign_id.toString();
+							tmpGT.asset_base_id = "";
+						}
+						else
+						{
+							tmpGT.local_asset_id = "";
+							tmpGT.asset_base_id = "";
+						}
+						if(milepost==-1)
+							milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+						tmpGT.begin_mile_point=milepost;
+						tmpGT.end_mile_point=0;
+						tmpGT.voice_file_name="";
+						tmpGT.image_file_name="";
+						//tmpGT.video_file_name = vid.filePath;
+						tmpGT.video_file_name = fileName;
+						tmpGT.text_memo = event.memo;
+						tmpGT.is_insp = 0;
+						
+						tmpGT.asset_ty_id = currentSign!=null?currentSign.assetType:"1";
+						//						if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+						geoTagsArr.addItem(tmpGT);
+						//						else
+						//							vid.geoLocalId = ""+ dbManager.addGeoTag(tmpGT);
+						vid.geoTag = tmpGT;
+						if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
+							InvAttachments.addElement(vid);
+						//						else
+						//							InspAttachments.addElement(vid);
+						
+					} catch (er:Error)
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert(er.message);
+					}
+					
+					
+				}
+				
+			}		
+			
+			public override function handleVoiceMemo(event:VoiceEvent):void
+			{
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
+				{
+					
+					var soundBytes:ByteArray=event.byteArray;
+					var tmpImage:TSSAudio = new TSSAudio();
+					tmpImage.source = gtManager.voice;
+					tmpImage.soundBytes = event.byteArray;
+					//					tmpImage.x = stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
+					//					
+					//					tmpImage.y =  getIconY("voice");
+					tmpImage.width = 40;
+					tmpImage.height = 40;
+					var fileName:String = new Date().time +".wav";
+					//saving the sound file
+					/*
+					var fTemp:File = new File("/sdcard/VoiceMemos/" + fileName);
+					var writer:WAVWriter = new WAVWriter();
+					writer.numOfChannels=1;
+					writer.sampleBitRate=16;
+					writer.samplingRate=8000;
+					soundBytes.position=0;
+					var stream:FileStream=new FileStream();
+					stream.open(fTemp,FileMode.WRITE);
+					writer.processSamples(stream, soundBytes, 8000, 1);
+					
+					stream.close();
+					*/
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = signRouteInput.text;
+					if(milepost==-1)
+						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.begin_mile_point = milepost;
+					if(asset_base_id != null && asset_base_id !="")
+					{
+						tmpGT.asset_base_id = asset_base_id;
+						tmpGT.local_asset_id = ""+sign_id;
+					}
+					else if (sign_id !=-1)
+					{
+						tmpGT.local_asset_id = sign_id.toString();
+						tmpGT.asset_base_id = "";
+					}
+					else
+					{
+						tmpGT.local_asset_id = "";
+						tmpGT.asset_base_id = "";
+					}
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = "";
+					tmpGT.voice_file_name= fileName;
+					tmpGT.video_file_name="";
+					tmpGT.image_file_name="";
+					tmpGT.text_memo = "";
+					tmpGT.is_insp = 0;
+					
+					tmpGT.asset_ty_id = currentSign!=null?currentSign.assetType:"1";
+					//						if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
+					geoTagsArr.addItem(tmpGT);
+					//						else
+					//							tmpImage.geoLocalId = "" + dbManager.addGeoTag(tmpGT);
+					//	
+					tmpImage.geoTag = tmpGT;
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
+						InvAttachments.addElement(tmpImage);
+					//					else
+					//						InspAttachments.addElement(tmpImage);
+					
+					try{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						fileUtility.saveToWAV(event.byteArray, fileName);
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+					}
+					catch(e:Error){
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert(e.message);
+					}
+					
+					
+				}
+			}
+			
+			
+			public  override function handleCloseEvent(event:Event = null):void 
+			{
+				if(event!=null )
+				{
+					dispatchEvent(event);
+				}
+				else if(currentSign != null )
+				{
+					var gEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT, true, true);
+					gEvent.saveCulvert = false;
+					gEvent.culvert = currentSign;
+					dispatchEvent(gEvent);
+					
+					deleteUnsavedGeotagFiles();
+				}
+				
+				closeAllPopUps();
+				
+				
+				
+				PopUpManager.removePopUp(this);
+				
+			}
+			
+			private function closeAllPopUps():void
+			{
+				this.signselCatDDView.closeDropDown();
+				this.signselsubCatDDView.closeDropDown();
+				
+				
+				
+			}
+			
+			protected function moveBtn_changeHandler(event:Event):void
+			{
+				moveToLat=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Lat;
+				moveToLong=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Long;
+				moveToPrec =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Precision;
+				moveToRefpt = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+				assetMoved = true;
+			}
+			
+			protected function retireChk_changeHandler(event:Event):void
+			{
+				if(this.retireChk.selected)
+				{	
+					var _retireResp:mx.rpc.Responder = new mx.rpc.Responder(retireOkay, fault);
+					
+					FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to retire this record? All the local changes made to the asset will be discarded on retirement.", "Retire Asset Confirmation", _retireResp);
+					
+					
+					function fault(data:Object):void
+					{	
+						FlexGlobals.topLevelApplication.TSSAlert("Error in Opening Retire Confirmation Dialog.");
+					}
+					
+				}
+			}
+			protected function retireOkay(data:Object):void
+			{
+				if(data == true)
+				{
+					for (var forIndex:int = 0; forIndex < viewStack.numChildren; forIndex++)
+					{
+						var curr:DisplayObject = viewStack.getChildAt(forIndex);
+						if (curr is UIComponent)
+						{
+							var curr2:UIComponent = curr as UIComponent;
+							curr2.enabled = false;
+						}
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		
+	</fx:Declarations>
+	<s:HGroup>
+		<s:Button label="Inventory" enabled="{viewStack.selectedChild !=Inventory}" click="{viewStack.selectedChild=Inventory}"/>
+		<s:Button label="Attachments" enabled="{viewStack.selectedChild !=Attachments}" click="{viewStack.selectedChild=Attachments}"/>
+	</s:HGroup>
+	<views:CBViewStack id="viewStack" width="100%" height="100%" skinClass="skins.CBScrollableSkin">
+		<s:VGroup id="Inventory">
+			<s:VGroup gap="15" width="100%"  height="485" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20" paddingBottom="10">
+				<s:HGroup gap="50">
+					<s:HGroup verticalAlign="middle">
+						<s:Label text="NLFID:" fontWeight="bold"  />
+						<s:TextInput id="signRouteInput" width="100" editable="false"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<s:Label text="Begin Milepoint:" fontWeight="bold" />
+						<s:TextInput id="signBegMPInput" width="100"  editable="false" text="{FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMPost().toFixed(3)}"/>
+					</s:HGroup>
+					<s:HGroup verticalAlign="middle">
+						<s:Label text="Last Modified on:" fontWeight="bold" />
+						<s:TextInput id="modifyDateInput" width="100"  editable="false" />
+					</s:HGroup>
+				</s:HGroup>
+				
+				<s:HGroup gap="10" width="100%"  verticalAlign="top">
+					
+					<s:VGroup>
+						<s:HGroup>
+							<s:HGroup verticalAlign="middle" id="SSCatGroup"></s:HGroup>
+							<s:HGroup verticalAlign="middle" id="SSSubCatGroup"></s:HGroup>
+
+						</s:HGroup>
+						<s:HGroup >
+							
+							<s:HGroup verticalAlign="middle" id="countyGroup"></s:HGroup>
+							<s:VGroup gap="5" paddingTop="27">
+								<s:Label text="Selected MUTCD Code:" fontWeight="bold" fontSize="14"/>
+								<s:TextInput id="signdesc" prompt="Select from MUTCD List on the right" text="" editable="false" width="300"/>
+							</s:VGroup>
+						</s:HGroup>
+						<s:HGroup>
+							
+							<s:HGroup verticalAlign="middle" id="dirGroup"></s:HGroup>
+							<s:HGroup verticalAlign="middle" id="suppMatGroup"></s:HGroup>
+						</s:HGroup>
+						
+					</s:VGroup>
+					
+					
+					<s:VGroup width="100%" paddingTop="10" gap="3">
+						
+						
+						<s:HGroup height="160" width="100%" verticalAlign="bottom" gap="5" >
+							
+							<s:VGroup>
+								<s:Label text="Select MUTCD:" fontWeight="bold" fontSize="14">
+									
+								</s:Label>
+								<s:List left="0" id="mutcdList" width="50%" height="150" borderVisible="true" labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false" change="mutcdList_changeHandler(event)"/>
+							</s:VGroup>
+							
+							<s:Group id="mutcdImagegrp" width="225" height="150"/>
+							
+						</s:HGroup>
+					
+					</s:VGroup>
+					
+				</s:HGroup>
+				<s:HGroup verticalAlign="top" gap="15">
+				
+					<s:VGroup >
+						<s:VGroup horizontalAlign="left" >
+							<s:Label text="Height:" fontWeight="bold" textAlign="left"/>
+							<s:TextInput id="signHeightInput" width="150" softKeyboardType="number" restrict="0-9" />
+							
+						</s:VGroup>
+						<s:VGroup horizontalAlign="left" >
+							<s:Label text="Width:" fontWeight="bold" textAlign="left"/>
+							<s:TextInput id="signWidthInput" width="150" softKeyboardType="number" restrict="0-9" />
+							
+						</s:VGroup>
+						
+					</s:VGroup>
+					<s:VGroup>
+						<s:VGroup horizontalAlign="left" >
+							<s:HGroup>
+								<s:Label text="Control Section:" fontWeight="bold" textAlign="left"/>
+								<s:Label text="(Required)"  fontSize="8" color="0xFF0000" />
+							</s:HGroup>	
+							<s:TextInput id="controlSectionInput" prompt="ex: 20-04"  width="150" softKeyboardType="number" restrict="0-9 \- "  />
+							
+						</s:VGroup>
+						<s:VGroup horizontalAlign="left" >
+							<s:Label text="Bottom Clearance:" fontWeight="bold" textAlign="left"/>
+							<s:TextInput id="signClearenceInput" width="150" softKeyboardType="number" restrict="0-9" />
+							
+						</s:VGroup>
+					</s:VGroup>
+					<s:VGroup>
+						
+						<s:VGroup horizontalAlign="left" >
+							<s:Label text="Longitude:" fontWeight="bold" textAlign="left"/>
+							<s:TextInput id="signLongInput" width="150" softKeyboardType="number" restrict="0-9" />
+							
+						</s:VGroup>
+						<s:VGroup horizontalAlign="left">
+							<s:Label text="Latitude:" fontWeight="bold" textAlign="left"/>
+							<s:TextInput id="signLatInput" width="150" softKeyboardType="number" restrict="0-9" />
+							
+						</s:VGroup>
+					</s:VGroup>
+					
+					
+					<s:VGroup verticalAlign="middle">
+						<s:Label text="Notes:" fontWeight="bold" textAlign="left"/>
+						<s:TextArea  id="signCommentsInput" height="100"  />
+						
+					</s:VGroup>
+				</s:HGroup>
+				
+				
+				<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="90%" />
+			</s:VGroup>	
+		</s:VGroup>
+		
+		<s:VGroup id ="Attachments"  paddingLeft="20" paddingTop="10">
+			<s:Label text="Inventory Attachments" fontWeight="bold"/>
+			<s:Group id ="InvAttachments"  height="99%">
+				<s:layout>
+					<s:TileLayout/>
+					
+				</s:layout>
+			</s:Group>
+		</s:VGroup>
+		
+	</views:CBViewStack>
+	<s:HGroup width="100%">
+		<s:HGroup horizontalAlign="center" width="100%">
+			<s:Button label="Save" click="onSave();"/>
+			<s:Button label="Close" id="clbtn" click="handleCloseEvent();"/>
+		</s:HGroup>
+		<s:CheckBox label="Retire" id="retireChk" change="retireChk_changeHandler(event);"/>
+		<s:Button label="Move to Current Location" id="moveBtn"  click="moveBtn_changeHandler(event)" />
+	</s:HGroup>
+</baseViews:BaseAssetTitleWindow>

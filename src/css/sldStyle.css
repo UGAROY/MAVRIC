@@ -1,0 +1,93 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+s|Panel #titleDisplay {
+	color: #444444;
+	font-size:14px;
+}
+
+s|TitleWindow #titleDisplay {
+	color: #444444;
+	font-size:14px;
+}
+
+s|Panel {
+	backgroundColor: #fafafa;
+}
+
+global
+{
+	chromeColor: #DFDFDF;
+}
+	
+
+
+mx|ToolTip 
+{
+	fontFamily: "Arial";
+	fontSize: 12;
+	fontStyle: "italic";
+	color: #000000;
+	backgroundColor: #FFF249;
+}
+.gridItem
+{
+	borderColor:"black";
+	borderVisible:"true";
+	borderStyle:"solid";
+	verticalAlign:"middle";
+	paddingTop:5px;
+	paddingLeft:5px;
+	paddingRight:5px;
+	paddingBottom:5px;
+}
+
+#AttrForm
+{
+	paddingBottom:5px;
+	paddingLeft:5px;
+	paddingRight:5px;
+	paddingTop:5px;
+	verticalGap:-1px;
+	horizontalGap:-1px;
+}
+
+.blueGridRow
+{
+	backgroundColor:"0xDDF2FF";
+}
+
+.greyGridRow
+{
+	backgroundColor:"0xEFEFEF";
+}
+
+.customDropdown {
+	vertical-scroll-bar-style-name:customVertScroll;
+}
+
+.customVertScroll {
+	up-arrow-up-skin:Embed(source="images/util/upArrowUp.png");
+	up-arrow-down-skin:Embed(source="images/util/upArrowUp.png");
+	up-arrow-over-skin:Embed(source="images/util/upArrowOver.png");
+	up-arrow-disabled-skin:Embed(source="images/util/upArrowUp.png");
+	
+	down-arrow-up-skin:Embed(source="images/util/downArrowUp.png");
+	down-arrow-down-skin:Embed(source="images/util/downArrowUp.png");
+	down-arrow-over-skin:Embed(source="images/util/downArrowOver.png");
+	down-arrow-disabled-skin:Embed(source="images/util/downArrowUp.png");
+	
+	track-skin:Embed(source="images/util/scrollTrack.png");
+	
+	thumb-up-skin:Embed(source="images/util/scrollThumb.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="26", scaleGridBottom="26");
+	thumb-over-skin:Embed(source="images/util/scrollThumb.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="26", scaleGridBottom="26");
+	thumb-down-skin:Embed(source="images/util/scrollThumb.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="26", scaleGridBottom="26");
+	thumb-disabled-skin:Embed(source="images/util/scrollThumb.png", scaleGridLeft="4", scaleGridTop="4", scaleGridRight="26", scaleGridBottom="26");
+}
+s|Button
+{
+	height:32px;
+	fontSize:14px;
+}
+

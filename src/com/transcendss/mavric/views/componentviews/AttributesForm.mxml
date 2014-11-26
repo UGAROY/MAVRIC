@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+<!-- containers\spark\myComponents\MyLoginForm.mxml -->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:mx="library://ns.adobe.com/flex/mx" 
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:Validators="Validators.*" 
+			   close="handleCloseEvent(null);" 
+			   title="Attributes" width="350"
+			   skinClass="skins.MavricTitleWindowSkin">
+
+	<s:layout>
+		<s:VerticalLayout verticalAlign="middle" horizontalAlign="center" paddingBottom="10" paddingTop="10" paddingLeft="10" paddingRight="10">
+			
+		</s:VerticalLayout>
+		
+	</s:layout>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.transcore.events.AttributeEvent;
+			import com.transcendss.transcore.sld.models.components.AttrObj;
+			
+			import flash.events.EventDispatcher;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.*;
+			import mx.core.ByteArrayAsset;
+			import mx.managers.PopUpManager;
+			import mx.rpc.events.ResultEvent;
+			import mx.utils.ObjectUtil;
+			import mx.utils.OrderedObject;
+			
+			import spark.components.*;
+			
+			[Bindable]
+			private var lbl:String;
+			[Bindable]
+			private var itemID:Number;
+			
+			[Bindable]
+			private var attObj:AttrObj = new AttrObj();
+
+			private var formItem:FormItem;
+			private var text:TextInput;
+			
+			// Method to handle the close event
+			public function handleCloseEvent(event:Event=null):void
+			{
+				PopUpManager.removePopUp(this);				
+			}
+
+			// Needed to make the "X" close button in the title window work properly
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				handleCloseEvent();
+			}
+			
+
+			public function addFormItems(attName:String, elem:Object, mp:Number, bmp:Number, emp:Number):void
+			{
+				lbl = attName;
+//				attrJSONObject= jsonObj.DATA[0];
+				itemID = elem.ID;
+				// Added this to make it work?
+				attObj.attrType = elem.ID;
+				attObj.route_Begin_Mile = bmp;
+				attObj.route_End_Mile = emp;
+				
+				getAttrObj(elem);
+				 
+				attObj.Clicked_Milepoint = new Number(mp.toFixed(2));
+				this.title = this.title + " - " + lbl;
+				
+			}
+			
+			private function addButton(name:String, listner:Function):Button{
+				var btn:Button = new Button();
+				btn.label = name;
+				btn.id = name;
+				btn.addEventListener(MouseEvent.CLICK, listner);
+				return btn;
+			}
+				
+			private function saveAttr(event:MouseEvent):void{
+				attObj.Begin_Mile = parseFloat(REFPTtxt.text);
+				attObj.End_Mile = parseFloat(ENDREFPTtxt.text);
+				if(ELEM_VALUEtxt.text.indexOf(".") >= 0)
+					attObj.Value = parseFloat(ELEM_VALUEtxt.text);
+				else
+					attObj.Value = parseInt(ELEM_VALUEtxt.text);
+				handleCloseEvent();
+				attObj.saveAttr(attObj);				
+			}
+			
+				
+			private function getAttrObj(attr:Object):void
+			{
+				for (var i:* in attr)
+				{
+					switch (i)
+					{
+						case "ELEM_DESC":
+							this.attObj.Description= attr[i] == null ? null : String(attr[i]);
+							break;
+						case "ID":
+							this.attObj.ID = new Number(attr[i]);
+							break;
+						case "ROUTE":
+							this.attObj.Route_Name = attr[i] == null ? null : String(attr[i]);
+							break;
+						case "ENDREFPT":
+							this.attObj.End_Mile =new Number(attr[i]);
+							break;
+						case "REFPT":
+							this.attObj.Begin_Mile=new Number(attr[i]);
+							break;
+						case "ELEM_VALUE":
+							this.attObj.Value= new Number(attr[i]);
+							break;
+						case "ROUTE_NAME":
+							this.attObj.RouteFullName= attr[i] == null ? null : String(attr[i]);
+							break;
+						case "STATUS":
+							this.attObj.status= attr[i] == null ? null : String(attr[i]);
+							break;
+					}
+				}
+			}
+			
+		]]>
+	</fx:Script>
+
+	
+		<s:VGroup paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5" width="100%">
+			<mx:Grid id ="AttrForm" width="100%"  >
+				<mx:GridRow styleName="blueGridRow" width="100%">
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:Label text="Clicked Milepoint"/>
+					</mx:GridItem>
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:Label id="CLICKED_MPtxt" text="{attObj.Clicked_Milepoint}"/>
+					</mx:GridItem>
+				</mx:GridRow>
+				<mx:GridRow visible="false" includeInLayout="false" width="100%">
+					<mx:GridItem styleName="gridItem"> 
+						<s:Label text="ID"/>
+					</mx:GridItem>
+					<mx:GridItem styleName="gridItem">
+						<s:Label id="IDtxt" text="{attObj.ID}"/>
+					</mx:GridItem>
+				</mx:GridRow>
+				<mx:GridRow styleName="greyGridRow" width="100%" >
+					<mx:GridItem  width="50%" styleName="gridItem">
+						<s:Label text="Route"/>
+					</mx:GridItem>
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:Label id="ROUTEtxt" text="{attObj.Route_Name}"/>
+					</mx:GridItem>
+				</mx:GridRow>
+				<mx:GridRow styleName="blueGridRow" width="100%">
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:Label text="Route Name" />
+					</mx:GridItem>
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:Label id="ROUTE_NAMEtxt" text="{attObj.RouteFullName}" />
+					</mx:GridItem>
+				</mx:GridRow>
+				<mx:GridRow styleName="greyGridRow" width="100%">
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:Label text="Begin Mile" />
+					</mx:GridItem>
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:TextInput id="REFPTtxt" styleName="attElemValue" text="{attObj.Begin_Mile}" height="100%" width="100%" borderVisible="false"/>
+					</mx:GridItem>
+				</mx:GridRow>
+				<mx:GridRow styleName="blueGridRow" width="100%">
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:Label text="End Mile" />
+					</mx:GridItem>
+					<mx:GridItem width="50%" styleName="gridItem">
+						<s:TextInput id="ENDREFPTtxt" styleName="attElemValue" text="{attObj.End_Mile}" height="100%" width="100%" borderVisible="false"/>
+					</mx:GridItem>
+				</mx:GridRow>
+				<mx:GridRow styleName="greyGridRow" width="100%">
+					<mx:GridItem  width="50%" styleName="gridItem">
+						<s:Label text="{lbl}"/>
+					</mx:GridItem>
+					<mx:GridItem styleName="gridItem" paddingTop="1" paddingLeft="1" paddingRight="1" paddingBottom="1" width="50%" >
+						<s:TextInput id="ELEM_VALUEtxt" styleName="attElemValue" text="{attObj.Value}" height="100%" width="100%" borderVisible="false"/>
+					</mx:GridItem>
+				</mx:GridRow>
+			</mx:Grid>
+			
+			<s:HGroup horizontalAlign="center" paddingTop="10" width="100%">
+				<s:Button label="Save" click="saveAttr(event)" enabled="true"/><mx:Spacer width="40"/><s:Button label="Close" click="handleCloseEvent(event)" />
+			</s:HGroup> 
+		</s:VGroup>
+</s:TitleWindow>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:s="library://ns.adobe.com/flex/spark" 
+		xmlns:fb="http://ns.adobe.com/flashbuilder/2009" alpha.disabled="0.5" 
+		xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:util="com.transcendss.mavric.util.*"
+		>
+	<fx:Metadata>
+		[HostComponent("com.transcendss.mavric.util.TSSBusy")]
+	</fx:Metadata>
+	
+	<fx:Script fb:purpose="styling">
+		<![CDATA[         		
+			import com.transcendss.mavric.util.AnimatedGIFImage;
+			import mx.controls.SWFLoader;
+			import spark.effects.animation.RepeatBehavior;
+			
+			override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number) : void {
+				super.updateDisplayList(unscaledWidth, unscaledHeight);
+				
+				//check for source
+				if(styleManager.isValidStyleValue(getStyle("source"))){
+					loader.source = getStyle("source");
+				}
+				
+				//check if the loader should be scaled.
+				if(styleManager.isValidStyleValue(getStyle("scale"))){
+					var scale:Boolean = getStyle("scale");
+					trace("scale:"+scale);
+					if(scale){
+						if(unscaledWidth > unscaledHeight){
+							loader.width = unscaledHeight/2;
+							loader.height = unscaledHeight / 2;
+						}
+						else {
+							loader.width = unscaledWidth / 2;
+							loader.height = unscaledWidth / 2;
+						}            
+					}
+				}
+				
+				//position the loader so it is always centered
+				loader.x = unscaledWidth/2 - loader.width/2;
+				loader.y = unscaledHeight/2 - loader.height/2;
+			}
+			
+			override protected function stateChanged(oldState:String, newState:String, recursive:Boolean):void {
+				super.stateChanged(oldState,newState,recursive);
+				setAnimation(newState);
+				if (newState == "busy") {
+					loader.visible = true;
+				} else if (newState == "normal") {
+					loader.visible = false;
+				}
+			}
+			
+			private function setAnimation(state:String):void {
+				if(loader.content != null){
+					if(state == "busy"){
+						//play the animation since the swf will be visible on screen during the busy state
+						try{
+							MovieClip(loader.content).playAnimation();
+						}
+						catch(e:Error){}
+						glower.play();
+					}
+					else {
+						//stop the animation since the swf will not be visible on the screen.
+						try{
+							MovieClip(loader.content).stopAnimation();
+						}
+						catch(e:Error){}
+						glower.stop();
+					}
+				}
+			}
+			
+			protected function status_completeHandler(event:Event):void {
+				//reset the loaders filter, so it doesn't build up each time the source is changed
+				loader.filters = null;
+				
+				//when the swf loads, check if we need to play the swf animation
+				setAnimation(currentState);
+			}
+
+		]]>        
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="normal" />
+		<s:State name="disabled" />
+		<s:State name="busy" />
+	</s:states>
+	
+	
+	<fx:Declarations>
+		<s:GlowFilter id="glow" blurX="10" blurY="10" />
+		<s:AnimateFilter id="glower" bitmapFilter="{glow}" target="{loader}" 
+						 duration="600" repeatCount="0" repeatBehavior="{RepeatBehavior.REVERSE}">
+			<s:SimpleMotionPath property="alpha" valueFrom="0" valueTo="1" />
+		</s:AnimateFilter>
+	</fx:Declarations>
+	
+	<s:Group id="contentGroup" left="0" right="0" top="0" bottom="0" minWidth="0" minHeight="0" 
+			 mouseChildren.busy="false" mouseChildren.normal="true">
+		<s:layout>
+			<s:BasicLayout/>
+		</s:layout>
+	</s:Group>
+	
+	<s:Rect id="overlayBackground" left="0" right="0" top="0" bottom="0" 
+			visible.busy="true" visible.normal="false">
+		<s:fill>
+			<s:SolidColor id="bgFill2" color="0x222222" alpha=".8"/>
+		</s:fill>
+	</s:Rect>
+	
+<util:AnimatedGIFImage id="loader" source="images/loading.gif"/>	
+</s:Skin>
