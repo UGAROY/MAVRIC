@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="utf-8"?>
+<baseViews:BaseAssetTitleWindow  xmlns:fx="http://ns.adobe.com/mxml/2009" 
+								 xmlns:s="library://ns.adobe.com/flex/spark" title="Support Inventory"
+								 width="1030" height="750"
+								 close="handleCloseEvent()"
+								 creationComplete="init()"
+								 skinClass="skins.MavricTitleWindowSkin"
+								 xmlns:baseViews="com.transcendss.mavric.views.baseViews.*" xmlns:views="com.transcendss.mavric.views.*" xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:ddot="com.transcendss.mavric.views.ddot.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.util.DatePickerViewHoriz;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			
+			import com.transcendss.mavric.views.ddot.SignInventory;
+			import com.transcendss.mavric.views.ddot.Inspections;
+			
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.Button;
+			
+			
+			[Bindable]
+			private var textInputWidth:Number = 300;
+			
+			private var locDDView:DropDownViewVert = new DropDownViewVert();
+			private var signSupportDDView:DropDownViewVert = new DropDownViewVert();
+			private var supportStatusDDView:DropDownViewVert = new DropDownViewVert();
+			private var baseTypeDDView:DropDownViewVert = new DropDownViewVert();
+			private var numberOfBasesDDView:DropDownViewVert = new DropDownViewVert();
+			private var subBaseDDView:DropDownViewVert = new DropDownViewVert();
+			private var attchView:AddAttachments = new AddAttachments();
+			
+			private var startDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
+			private var endDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
+
+			private function init():void
+			{
+				try
+				{
+					locDDView.domainTableIDColName =  "LOCATION";
+					locDDView.fetchDomainValues();
+					locDDView.btnText = "Location";
+					locDDView.genericPopup.height = 200;
+					LocDDGroup.addElement(locDDView);
+					
+					signSupportDDView.domainTableIDColName =  "POLEMATERIAL";
+					signSupportDDView.fetchDomainValues();
+					signSupportDDView.btnText = "Sign Support";
+					signSupportDDView.genericPopup.height = 200;
+					SignSupportDDGroup.addElement(signSupportDDView);
+					
+					supportStatusDDView.domainTableIDColName =  "POLESTATUS";
+					supportStatusDDView.fetchDomainValues();
+					supportStatusDDView.btnText = "Sign Status";
+					supportStatusDDView.genericPopup.height = 200;
+					SignStatusDDGroup.addElement(supportStatusDDView);
+					
+					baseTypeDDView.domainTableIDColName =  "BASETYPE";
+					baseTypeDDView.fetchDomainValues();
+					baseTypeDDView.btnText = "Base Type";
+					baseTypeDDView.genericPopup.height = 200;
+					BaseTypeDDGroup.addElement(baseTypeDDView);
+					
+					numberOfBasesDDView.domainTableIDColName =  "NOOFHEADS";
+					numberOfBasesDDView.fetchDomainValues();
+					numberOfBasesDDView.btnText = "Number of Bases";
+					numberOfBasesDDView.genericPopup.height = 200;
+					NoOfBasesDDGroup.addElement(numberOfBasesDDView);
+					
+					subBaseDDView.domainTableIDColName =  "SUBBASE";
+					subBaseDDView.fetchDomainValues();
+					subBaseDDView.btnText = "Sub Base";
+					subBaseDDView.genericPopup.height = 200;
+					SubBaseDDGroup.addElement(subBaseDDView);
+					
+					startDateView.btnText = "MS Start Date";
+					startDateView.width_TI = 120;
+					MsStartDateGroup.addElement(startDateView);
+					endDateView.btnText = "MS End Date";
+					endDateView.width_TI = 120;
+					MsEndDateGroup.addElement(endDateView);
+
+					attchView.init("SupportInventory",true,true,true);
+					addAttchmentsHolder.addElement(attchView);
+				}
+				catch (err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
+				}
+				
+			}
+			
+			
+			private function onSave():void
+			{
+			
+			}
+			
+			public  override function handleCloseEvent(event:Event = null):void 
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			protected function retireChk_changeHandler(event:Event):void
+			{
+				
+			}
+			
+			protected function moveBtn_changeHandler(event:Event):void
+			{
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+	</fx:Declarations>
+	
+	<s:HGroup>
+		<s:Button label="Support" enabled="{viewStack.selectedChild !=Support}" click="{viewStack.selectedChild=Support}"/>
+		<s:Button label="Sign" enabled="{viewStack.selectedChild !=Sign}" click="{viewStack.selectedChild=Sign}"/>
+		<s:Button label="Inspections" enabled="{viewStack.selectedChild !=Inspections}" click="{viewStack.selectedChild=Inspections}"/>
+		<s:Button label="Attachments" enabled="{viewStack.selectedChild !=Attachments}" click="{viewStack.selectedChild=Attachments}"/>
+	</s:HGroup>
+	<views:CBViewStack id="viewStack" width="100%" height="100%" skinClass="skins.CBScrollableSkin">
+		<s:VGroup  id="Support" paddingLeft="20" paddingTop="20" paddingRight="20">
+			<s:HGroup>
+				<s:VGroup width="60%" gap="20">
+					<s:HGroup>
+						<s:VGroup width="50%">
+							<s:HGroup verticalAlign="middle">
+								<s:Label text="Route ID:  " fontWeight="bold"/>
+								<s:TextInput id="supportRouteIdInput" width="225" editable="false"/>
+							</s:HGroup>
+							<s:Spacer height="5"/>
+							<s:HGroup verticalAlign="middle">
+								<s:Label text="Milepoint:  " fontWeight="bold"/>
+								<s:TextInput id="milepostTextInut" width="225" editable="false"/>
+							</s:HGroup>
+						</s:VGroup>
+						<s:Spacer width="10"/>
+						<s:VGroup width="50%">
+							<s:Group id="LocDDGroup"></s:Group>
+						</s:VGroup>
+					</s:HGroup>
+					<s:HGroup>
+						<s:VGroup width="50%">
+							<s:Group id="SignSupportDDGroup"></s:Group>
+						</s:VGroup>
+						<s:Spacer width="10"/>
+						<s:VGroup width="50%">
+							<s:Group id="SignStatusDDGroup"></s:Group>
+						</s:VGroup>
+					</s:HGroup>
+					<s:HGroup>
+						<s:VGroup width="50%">
+							<s:Group id="BaseTypeDDGroup"></s:Group>
+						</s:VGroup>
+						<s:Spacer width="10"/>
+						<s:VGroup width="50%">
+							<s:Group id="NoOfBasesDDGroup"></s:Group>
+						</s:VGroup>
+					</s:HGroup>
+					<s:HGroup>
+						<s:VGroup width="50%">
+							<s:Group id="SubBaseDDGroup"></s:Group>
+						</s:VGroup>
+						<s:Spacer width="10"/>
+						<s:VGroup width="50%">
+							<s:Spacer height="25"/>
+							<s:Label text="Pole Height:  " fontWeight="bold"/>
+							<s:TextInput id="PoleHeightTextInut" width="{textInputWidth}"/>
+						</s:VGroup>
+					</s:HGroup>
+				</s:VGroup>
+				<s:Spacer width="10"/>
+				<s:VGroup width="30%">
+					<s:Label text="Comments:  " fontWeight="bold"/>
+					<s:TextArea height="170" width="100%" id= "Comments"/>
+					<s:Spacer height="10"/>
+					<s:Label text="MS Utility ID:  " fontWeight="bold"/>
+					<s:TextInput id="MsUtilityTextInut" width="{textInputWidth}"/>
+					<s:Spacer height="10"/>
+					<s:Group id="MsStartDateGroup"></s:Group>
+					<s:Spacer height="10"/>
+					<s:Group id="MsEndDateGroup"></s:Group>
+				</s:VGroup>
+			</s:HGroup>
+			
+			<s:Spacer height="20"/>
+			
+			<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="100%" />
+		</s:VGroup>
+		
+		
+		<s:VGroup id="Sign">
+			<ddot:SignInventory>
+				
+			</ddot:SignInventory>
+		</s:VGroup>
+		
+		<s:VGroup id="Inspections">
+			<ddot:Inspections>
+				
+			</ddot:Inspections>
+		</s:VGroup>
+		
+		<s:VGroup id ="Attachments"  paddingLeft="20" paddingTop="10">
+			<s:Label text="Inventory Attachments" fontWeight="bold"/>
+			<s:Group id ="InvAttachments"  height="99%">
+				<s:layout>
+					<s:TileLayout/>
+					
+				</s:layout>
+			</s:Group>
+			<s:Label text="Inspection Attachments" fontWeight="bold"/>
+			<s:Group id ="InspAttachments"  height="99%">
+				<s:layout>
+					<s:TileLayout/>
+					
+				</s:layout>
+			</s:Group>
+		</s:VGroup>
+		
+	</views:CBViewStack>
+	
+	<s:HGroup width="100%">
+		<s:HGroup horizontalAlign="center" width="100%">
+			<s:Button label="Save" click="onSave();"/>
+			<s:Button label="Close" id="clbtn" click="handleCloseEvent();"/>
+		</s:HGroup>
+		<s:CheckBox label="Retire" id="retireChk" change="retireChk_changeHandler(event);"/>
+		<s:Button label="Move to Current Location" id="moveBtn"  click="moveBtn_changeHandler(event)" />
+	</s:HGroup>
+</baseViews:BaseAssetTitleWindow>

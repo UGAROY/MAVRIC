@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" title="Sign Selection"
+			   width="500" height="620"
+			   backgroundColor="0xFFFFCC"
+			   close="handleCloseEvent()"
+			   creationComplete="init()"
+			   skinClass="skins.MavricTitleWindowSkin">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.utils.StringUtil;
+			import com.asfusion.mate.events.Dispatcher;
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			import com.transcendss.mavric.events.DropDownViewEvent;
+			import com.transcendss.mavric.managers.ImageManager;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.util.FileUtility;
+			import com.transcendss.mavric.util.PopUpUtils;
+			import com.transcendss.transcore.events.MenuBarEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.TextInput;
+			import spark.events.IndexChangeEvent;
+			import spark.skins.mobile.TextInputSkin;
+			
+			[Bindable]
+			[Embed(source="images/gray_icons/icon_Mav-Search_40x40.png")]
+			private var searchIcon:Class;
+			
+			private var initialKeyword:String = "Keywork Search:";
+			
+			[Bindable]
+			private var gpsUnits:ArrayCollection;
+			[Bindable]
+			private var mutcdListDP:ArrayCollection;
+			private var menuEvent:MenuBarEvent;
+			private var dbManager:MAVRICDBManager;
+			private var dispatcher:Dispatcher = new Dispatcher();
+			private var fileUtil:FileUtility = new FileUtility();
+			
+			private var CatID:Number;
+			private var SubCatID:Number;
+			
+			
+			private var signselCatDDView:DropDownViewVert = new DropDownViewVert();
+			private var signselsubCatDDView:DropDownViewVert = new DropDownViewVert();
+			
+			public var signSelectedCallback:Function;
+			
+			private var btmp:Bitmap;
+			private function init():void{
+				try
+				{
+					PopUpUtils.closeAll(this);
+					this.closeButton.visible=true;
+					dbManager = MAVRICDBManager.newInstance();
+					
+					signselCatDDView.domainTableIDColName =  "SIGN_MAJOR_CAT_ID";
+					signselCatDDView.fetchDomainValues();
+					signselCatDDView.width_TI = 180;
+					signselCatDDView.customCPCallback = getSubCats;
+					signselCatDDView.customCPEvent = new DropDownViewEvent(DropDownViewEvent.CATEGORYSELCTED);
+					signselCatDDView.bgColor = uint("0xFFFFCC");
+					var Catbutton:Button = signselCatDDView.button;
+					signselCatDDView.btnText = "Category";
+					signselCatDDView.genericPopup.height = 200;
+					signselCatDDView.genericPopup.width = 180;
+					SSCatGroup.addElement(signselCatDDView);
+					
+					signselsubCatDDView.domainTableIDColName =  "SIGN_SUB_CATEGORY_ID";
+					signselsubCatDDView.width_TI = 180;
+					signselsubCatDDView.isEnabled = false;
+					signselsubCatDDView.customCPCallback = getMutcdDP;
+					signselsubCatDDView.customCPEvent = new DropDownViewEvent(DropDownViewEvent.SUBCATEGORYSELCTED);
+					signselsubCatDDView.bgColor = uint("0xFFFFCC");
+					var subCatbutton:Button = signselsubCatDDView.button;
+					signselsubCatDDView.btnText = "Sub-Cat";
+					signselsubCatDDView.genericPopup.height = 200;
+					signselsubCatDDView.genericPopup.width = 200;
+					SSSubCatGroup.addElement(signselsubCatDDView);
+					
+					keywordText.text = initialKeyword;
+				
+				}catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
+					
+				}
+				
+				
+			}
+			public function getSubCats(evt:Event):void
+			{
+				CatID = new Number(signselCatDDView.domainID);
+				
+				var ac:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGN_SUB_CATEGORY_ID");
+				ac.filterFunction = SubCat_Domain_FilterFunc;
+
+				ac.refresh();
+				signselsubCatDDView.domain = ac;
+				
+				signselsubCatDDView.isEnabled = true;
+			}
+			
+			public function getMutcdDP(evnt:Event=null):void
+			{			
+				SubCatID = new Number(signselsubCatDDView.domainID);
+				var ac:ArrayCollection =  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("BARCODEID");
+				ac.filterFunction = Mutcd_Domain_FilterFunc;
+				ac.refresh();
+				mutcdList.dataProvider =ac
+			}
+
+			
+			private function SubCat_Domain_FilterFunc(item:Object):Boolean
+			{
+				return (item.SIGN_MAJOR_CAT_ID == CatID || item.FILTER_COLUMN_DATA == CatID);
+			}
+			
+			private function Mutcd_Domain_FilterFunc(item:Object):Boolean
+			{
+				var flag:Boolean = true;
+				if (SubCatID != 0)
+				{
+					flag = flag && (item.SIGN_SUB_CATEGORY_ID == SubCatID);
+				}
+				if (keywordText.text != initialKeyword && keywordText.text != "")
+				{
+					flag = flag && item.ID.indexOf(keywordText.text) >= 0
+				}
+				return flag;
+			}
+			
+			protected function handleCloseEvent():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			protected function resetHandler(event:MouseEvent):void
+			{
+				// Reset all the fields
+				signselCatDDView.description = "";
+				signselsubCatDDView.description = "";
+				CatID = 0;
+				SubCatID = 0;
+				keywordText.text = "";
+				signdesc.text = "";
+				mutcdList.dataProvider.removeAll();
+				mutcdImagegrp.removeAllElements();
+			}
+			
+			protected function OKHandler(event:MouseEvent):void
+			{
+				try
+				{
+					var signselectedEvent:DropDownViewEvent = new DropDownViewEvent(DropDownViewEvent.SIGN_SELECTED);
+					signselectedEvent.category = signselCatDDView.description;
+					signselectedEvent.subcat = signselsubCatDDView.description;
+					signselectedEvent.description = signdesc.text;
+					//signselectedEvent.mutcdID = mutcdList.selectedItem? new Number(mutcdList.selectedItem.ID):0;
+					signselectedEvent.mutcdText = mutcdList.selectedItem.ID;
+					//dispatchEvent(signselectedEvent);
+					signSelectedCallback.call(null,signselectedEvent);
+					PopUpManager.removePopUp(this);
+				}catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Please fill out all fields."); //err.getStackTrace()
+				}
+			}
+			
+			protected function mutcdList_changeHandler(event:IndexChangeEvent):void
+			{
+				// Retrieve the sign image from teh image manager
+				signdesc.text = StringUtil.trim(mutcdList.selectedItem.DESCRIPTION);
+				mutcdImagegrp.removeAllElements();
+				
+				var imageMngr:ImageManager = new ImageManager();
+				btmp = imageMngr.getById(signdesc.text);
+				
+				btmp = imageMngr.scaleImage(btmp,mutcdImagegrp);
+				// If the sign is valid
+				if(btmp!=null)
+				{
+					var uicomp:UIComponent = new UIComponent();
+					uicomp.addChild(btmp);
+					mutcdImagegrp.addElement(uicomp);
+				}	
+			}
+			
+			protected function keywordText_focusInHandler(event:FocusEvent):void
+			{
+				if (keywordText.text == initialKeyword)
+				{
+					keywordText.text = "";
+					keywordText.alpha = 1;
+				}
+		
+			}
+			
+			protected function keywordSearch_clickHandler(event:MouseEvent):void
+			{
+				if (keywordText.text == initialKeyword)
+					return;
+				getMutcdDP();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout verticalAlign="top"/>
+	</s:layout>
+	<s:VGroup gap="15" width="100%"  height="485" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20" paddingBottom="10">
+		<s:HGroup>
+			<s:HGroup verticalAlign="middle" id="SSCatGroup"></s:HGroup>
+			<s:Spacer width="40"/>
+			<s:HGroup verticalAlign="middle" id="SSSubCatGroup"></s:HGroup>
+		</s:HGroup>
+		<s:HGroup verticalAlign="middle" >
+			<s:TextInput id="keywordText" alpha="0.5" editable="true" skinClass="spark.skins.mobile.TextInputSkin" focusIn="keywordText_focusInHandler(event)"/>
+			<s:Spacer width="5"/>
+			<s:Image id="keywordSearch" source="{searchIcon}" height="40" width="40" buttonMode="true" click="keywordSearch_clickHandler(event)"/>
+		</s:HGroup>
+		<s:HGroup height="40%" width="100%">
+			<s:List left="0" id="mutcdList" width="50%" height="100%" labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false" change="mutcdList_changeHandler(event)"/>
+			<s:Group id="mutcdImagegrp" width="50%" height="100%"/>
+		</s:HGroup>
+	
+		<s:Spacer height="15"/>
+		<s:HGroup verticalAlign="middle">
+			<s:Label text="Description" fontWeight="bold" fontSize="14"/>
+			<s:Spacer width="10"/>
+			<s:TextInput id="signdesc" editable="true" skinClass="spark.skins.mobile.TextInputSkin"/>
+		</s:HGroup>
+
+	</s:VGroup>	
+	<s:VGroup width="100%"   horizontalAlign="center" >
+		<s:HGroup>
+			<s:Button label="Ok"  width="100" height="35" click="OKHandler(event)"/>
+			<s:Spacer width="20"/>
+			<s:Button label="Reset"  width="100" height="35" click="resetHandler(event)"/>
+			<s:Spacer width="20"/>
+			<s:Button label="Cancel" width="100" height="35" click="handleCloseEvent()"/>
+		</s:HGroup>
+	</s:VGroup>	
+		
+		
+	
+</s:TitleWindow>

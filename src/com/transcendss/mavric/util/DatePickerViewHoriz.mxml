@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="DatePickerView" backgroundColor="{_bgColor}" >
+		
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="DatePopUp" height="270"  name="Date"  skinClass="skins.TSSSkinnablePopUpContainerSkin"  >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup id="DateVGroup" width="100%" height="100%" horizontalAlign="center" gap="0">
+					<s:DateSpinner id="datePicker" width="100%" height="100%" maxDate="{new Date()}" change="changeDate()"/>
+					<s:Button id="confirmDateButton" label="OK" width="100%" height="40" click="confirmDateHandler()"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		
+		<s:DateTimeFormatter id="dateTimeFormatter" dateTimePattern="MM/dd/yyyy" errorText="" useUTC="false"/>
+		<s:DateTimeFormatter
+			id="saveformatter"
+			dateTimePattern="MM/dd/yyyy HH:mm:ss"
+			errorText=""
+			useUTC="false"
+			/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.db.MAVRICDBManager;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			
+			[Bindable]
+			private var _btnText:String;
+
+			
+			[Bindable]
+			private var _width_TI:Number = 300;
+			
+			[Bindable]
+			private var _bgColor:uint= uint("0xFFFFFF");
+			
+			[Bindable]
+			private var _isEnabled:Boolean = true;
+			
+			[Bindable]
+			private var _isRequired:Boolean = false;
+		
+			[Bindable]
+			private var _value:Date = new Date();
+		
+			
+			private var dbManager:MAVRICDBManager = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.mdbm;
+
+			
+			public function clickMethod(event:MouseEvent):void
+			{
+				openPopup();
+			}
+			
+			public function openPopup():void
+			{
+				DatePopUp.open(this,false);
+				PopUpManager.centerPopUp(DatePopUp);
+			}
+
+			
+			public function changeDate():void
+			{
+				//input.text = dateTimeFormatter.format(datePicker.selectedDate);
+				_value = datePicker.selectedDate;
+			}
+			
+			public function confirmDateHandler():void
+			{
+				//input.text = dateTimeFormatter.format(datePicker.selectedDate);
+				_value = datePicker.selectedDate;
+				DatePopUp.close(false);
+			}
+
+			public function get btnText():String
+			{
+				return _btnText;
+			}
+
+			public function set btnText(value:String):void
+			{
+				_btnText = value;
+			}
+			
+			public function get width_TI():Number
+			{
+				return _width_TI;
+			}
+			
+			public function set width_TI(value:Number):void
+			{
+				_width_TI = value;
+			}
+			
+			
+			public function get isEnabled():Boolean
+			{
+				return _isEnabled;
+			}
+			
+			public function set isEnabled(value:Boolean):void
+			{
+				_isEnabled = value;
+			}
+			
+
+			public function get value():Date
+			{
+				return _value;
+			}
+
+			public function set value(value:Date):void
+			{
+				_value = value;
+			}
+			
+			[Bindable]
+			public function get isRequired():Boolean
+			{
+				return _isRequired;
+			}
+			
+			public function set isRequired(value:Boolean):void
+			{
+				_isRequired = value;
+			}
+			
+			public function get text():String
+			{
+				return saveformatter.format(_value);	
+			}
+
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%" height="100%" verticalAlign="middle">
+		<s:Button id="button" label="{_btnText}" click="clickMethod(event)" enabled="{_isEnabled}"/>
+		<s:Label text="(Required)"  fontSize="8" color="0xFF0000" visible="{isRequired}"/>	
+		<s:TextInput id="input" width="{_width_TI}"  editable="false" text="{dateTimeFormatter.format(_value)}"/>
+	</s:HGroup>
+</s:View>

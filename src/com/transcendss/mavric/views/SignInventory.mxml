@@ -1076,7 +1076,6 @@
 					<s:Label text="Location Comment:  " fontWeight="bold"/>
 					<s:TextArea height="140" width="320" id= "locComment"/>
 				</s:VGroup>
-				
 			</s:HGroup>
 			<s:Spacer height="10"/>
 			<s:HGroup>

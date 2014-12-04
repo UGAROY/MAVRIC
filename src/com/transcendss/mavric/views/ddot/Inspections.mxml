@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" creationComplete="init()">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.mavric.views.ddot.InspectionDetails;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.Button;
+			import spark.events.GridSelectionEvent;
+			import spark.skins.mobile.TextInputSkin;
+			
+			import skins.HeaderlessPanelSkin;
+			import skins.TSSSkinnablePopUpContainerSkin;
+			
+			
+			[Bindable]
+			private var textInputWidth:Number = 300;
+			
+			[Bindable]
+			private var signDp:ArrayCollection = new ArrayCollection();
+			
+			private var dgArray:Array = [ 
+				{Asset:'u-post', Type:'Safety', Inspector: 'D Woaldijk'}, 
+				{Asset:'sign 1', Type:'Proactive', Inspector: 'C Stewart'}];
+			[Bindable] 
+			public var dummyDG:ArrayCollection; 
+			
+			private var inspectionDetailsForm:InspectionDetails = new InspectionDetails();
+			
+			
+			private function init():void
+			{
+				try
+				{
+					dummyDG = new ArrayCollection(dgArray); 
+					
+				}
+				catch (err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
+				}
+				
+			}
+			
+			private function signLabelFunc(item:Object):String
+			{
+				return "" + item.SIGNNAME + "-" + item.SIGNID;
+			}
+			
+			protected function newSignBtn_clickHandler(event:MouseEvent):void
+			{
+				
+			}
+			
+			protected function closeSignPop(event:Event):void
+			{
+				
+			}
+			
+			protected function retireChk_changeHandler(event:Event):void
+			{
+				
+			}
+			
+			protected function moveBtn_changeHandler(event:Event):void
+			{
+				
+			}
+			
+			private function onSave():void
+			{
+				
+			}
+			
+			
+			protected function newInspectionBtn_clickHandler(event:MouseEvent):void
+			{
+				
+			}
+			
+			protected function inspectionEditedCompleteHandler():void
+			{
+				
+			}
+
+			
+			protected function inspHistoryGrid_selectionChangeHandler(event:GridSelectionEvent):void
+			{
+				inspectionDetailsForm = PopUpManager.createPopUp(this, InspectionDetails) as InspectionDetails;
+				(inspectionDetailsForm as InspectionDetails).inspectionEditedCallback = inspectionEditedCompleteHandler;
+				PopUpManager.centerPopUp(inspectionDetailsForm);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="signPopUp" width="300" height="400"  name="Select Sign"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:Button id="newSignBtn" label="OK" width="100%" height="40" click="newSignBtn_clickHandler(event)"/>
+					<s:List id="SignList"   change="closeSignPop(event)" dataProvider="{signDp}" width="100%" height="100%" labelFunction="signLabelFunc" fontSize="18" allowMultipleSelection="false"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+	</fx:Declarations>
+	
+	<s:VGroup paddingLeft="20" paddingTop="10" paddingRight="10" paddingBottom="10">
+		<s:HGroup verticalAlign="middle">
+			<s:Button id="newInspectionBtn" label="New Inspection For" click="newInspectionBtn_clickHandler(event)" />
+			<s:Spacer width="20"/>
+			<s:TextInput id="signText" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+		</s:HGroup>
+		<s:Line width="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="#000000" weight="1"/>
+			</s:stroke>
+		</s:Line>
+		<s:Spacer height="10"/>
+		<s:VGroup width="100%">
+			<s:Label text="Asset Inspection History" fontWeight="bold" width="540"/>
+			
+			<s:DataGrid id="inspHistoryGrid" 
+						width="100%" height="300" 
+					    selectionMode="singleRow"
+						selectionChange="inspHistoryGrid_selectionChangeHandler(event)"
+						dataProvider="{dummyDG}"/>
+		</s:VGroup>
+
+	</s:VGroup>
+	
+</s:Group>

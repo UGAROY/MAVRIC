@@ -1,19 +1,18 @@
 [
-    
     {
         "ASSET_DEF": {
             "ASSET_TYPE": "1",
             "CAPTURE_AVAILABLE": "true",
             "VISIBLE_ON_STICK": "true",
-            "DESCRIPTION": "SIGN",
-            "UI_NAME": "Sign",
+            "DESCRIPTION": "SUPPORT",
+            "UI_NAME": "Support",
             "LRM": "1",
-            "EVENT_LAYER_ID":3,
+            "EVENT_LAYER_ID":1,
             "TYPE_KEY": "BARCODEID",
             "LENGTH_UNIT":"",
             "SYNC": "true",
       		"SYNC_COL_LIST":"",
-            "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+            "FORM_CLASS": "com.transcendss.mavric.views.ddot.SupportInventory",
             "DEFINITION": {
                 "SUBTYPES": [
                     {
@@ -43,7 +42,7 @@
             "DESCRIPTION": "MILEMARKER",
             "UI_NAME": "Mile Marker",
             "LRM": "1",
-            "EVENT_LAYER_ID":3,
+            "EVENT_LAYER_ID":1,
             "LENGTH_UNIT":"",
             "TYPE_KEY": "MUTCD",
             "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",

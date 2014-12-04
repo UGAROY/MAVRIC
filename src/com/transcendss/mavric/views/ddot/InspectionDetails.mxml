@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" title="Inspection Details"
+			   width="750" height="660"
+			   close="handleCloseEvent()"
+			   creationComplete="init()"
+			   skinClass="skins.MavricTitleWindowSkin">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.util.DatePickerViewHoriz;
+			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.skins.mobile.TextInputSkin;
+			
+			private var typeDDView:DropDownViewVert = new DropDownViewVert();
+			private var conditionDDView:DropDownViewVert = new DropDownViewVert();
+			private var actionTakenDDView:DropDownViewVert = new DropDownViewVert();
+			private var additionActionDDView:DropDownViewVert = new DropDownViewVert();
+			
+			private var inspectDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
+			private var attchView:AddAttachments = new AddAttachments();
+			
+			public var inspectionEditedCallback:Function;
+			
+			private function init():void
+			{
+				try
+				{
+					
+					typeDDView.domainTableIDColName =  "INSPECTION_TYPE";
+					typeDDView.fetchDomainValues();
+					typeDDView.btnText = "Type";
+					typeDDView.width_TI = 200;
+					typeDDView.genericPopup.height = 200;
+					typeDDGroup.addElement(typeDDView);
+					
+					conditionDDView.domainTableIDColName =  "INSPECTION_CONDITION";
+					conditionDDView.fetchDomainValues();
+					conditionDDView.btnText = "Overall Condition";
+					conditionDDView.width_TI = 200;
+					conditionDDView.genericPopup.height = 200;
+					conditionDDGroup.addElement(conditionDDView);
+					
+					actionTakenDDView.domainTableIDColName =  "INSPECTION_ACTION_TAKEN";
+					actionTakenDDView.fetchDomainValues();
+					actionTakenDDView.btnText = "Action Taken";
+					actionTakenDDView.width_TI = 200;
+					actionTakenDDView.genericPopup.height = 200;
+					actionTakenDDGroup.addElement(actionTakenDDView);
+					
+					additionActionDDView.domainTableIDColName =  "INSPECTION_ADDITION_ACTION";
+					additionActionDDView.fetchDomainValues();
+					additionActionDDView.btnText = "Additional Action Needed";
+					additionActionDDView.width_TI = 200;
+					additionActionDDView.genericPopup.height = 200;
+					addtionActionDDGroup.addElement(additionActionDDView);
+					
+					inspectDateView.btnText = "Date Inspected";
+					inspectDateView.width_TI = 120;
+					DateInspectedGroup.addElement(inspectDateView);
+					
+					attchView.init("InspectionDetails",true,true,true);
+					addAttchmentsHolder.addElement(attchView);
+				}
+				catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());		
+				}
+			}
+			
+			protected function handleCloseEvent():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			
+			protected function SaveHandler(event:MouseEvent):void
+			{
+				try
+				{
+					PopUpManager.removePopUp(this);
+				}
+				catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Please fill out all fields."); //err.getStackTrace()
+				}
+			}
+			
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout verticalAlign="top"/>
+	</s:layout>
+	<s:VGroup gap="15" width="100%"  height="485" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20">
+		
+		<s:HGroup width="100%">
+			<s:VGroup width="30%">
+				<s:Spacer height="10"/>
+				<s:Group id="typeDDGroup">
+				</s:Group>
+				<s:Spacer height="10"/>
+				<s:Group id="conditionDDGroup">
+				</s:Group>
+				<s:Spacer height="10"/>
+				<s:Group id="actionTakenDDGroup">
+				</s:Group>
+				<s:Spacer height="10"/>
+				<s:Group id="addtionActionDDGroup">
+				</s:Group>
+			</s:VGroup>
+			<s:VGroup width="30%">
+				<s:Label text="Damage" fontWeight="bold"/>
+				<s:Spacer height="10"/>
+				<s:CheckBox width="100" label="Bent"/>
+				<s:CheckBox width="100" label="Twisted"/>
+				<s:CheckBox width="100" label="Loose"/>
+				<s:CheckBox width="100" label="Rusted"/>
+				<s:CheckBox width="100" label="Faded"/>
+				<s:CheckBox width="100" label="Peeling"/>
+				<s:CheckBox width="100" label="Other"/>
+			</s:VGroup>
+			<s:Spacer width="10"/>
+			<s:VGroup width="30%">
+				<s:Label text="Comments:  " fontWeight="bold"/>
+				<s:TextArea height="170" width="300" id= "Comments"/>
+				<s:Spacer height="10"/>
+				<s:HGroup verticalAlign="middle">
+					<s:Label text="Inspector" fontWeight="bold"></s:Label>
+					<s:Spacer width="20"/>
+					<s:TextInput id="inspectIdText" editable="true" width="200" skinClass="spark.skins.mobile.TextInputSkin" />
+				</s:HGroup>
+				<s:Spacer height="10"/>
+				<s:Group id="DateInspectedGroup"></s:Group>
+			</s:VGroup>
+		</s:HGroup>
+		
+		<s:Spacer height="5"/>
+		<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="100%" />
+		<s:VGroup width="100%"   horizontalAlign="center" >
+			<s:HGroup>
+				<s:Button label="Save"  width="100" height="35" click="SaveHandler(event)"/>
+				<s:Spacer width="20"/>
+				<s:Button label="Cancel" width="100" height="35" click="handleCloseEvent()"/>
+			</s:HGroup>
+		</s:VGroup>	
+	</s:VGroup>	
+	
+		
+</s:TitleWindow>

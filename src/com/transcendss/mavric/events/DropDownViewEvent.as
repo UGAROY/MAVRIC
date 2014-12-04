@@ -21,6 +21,7 @@ package com.transcendss.mavric.events
 		private var _color:String;
 		private var _description:String;
 		private var _mutcdID:Number;
+		private var _mutcdText:String;
 		private var _dimensionID:String;
 		private var _colorID:String;
 		
@@ -100,6 +101,17 @@ package com.transcendss.mavric.events
 		{
 			_mutcdID = value;
 		}
+		
+		public function get mutcdText():String
+		{
+			return _mutcdText;
+		}
+		
+		public function set mutcdText(value:String):void
+		{
+			_mutcdText = value;
+		}
+		
 		
 		
 		public function get dimensionID():String

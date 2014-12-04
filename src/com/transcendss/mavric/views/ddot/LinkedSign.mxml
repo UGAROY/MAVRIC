@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" title="Manage Linked Signs"
+			   width="750" height="640"
+			   close="handleCloseEvent()"
+			   creationComplete="init()"
+			   skinClass="skins.MavricTitleWindowSkin">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.skins.mobile.TextInputSkin;
+			
+			public var inspectionEditedCallback:Function;
+			
+			[Bindable] 
+			private var dummyDG:ArrayCollection = new ArrayCollection([
+				{linked:"", signType:"Stop", arrowDirection:'', measure:'', supportID:''}, 
+				{linked:"", signType:"Loading Zone", arrowDirection:'left', measure:'1', supportID:'1'},
+				{linked:"", signType:"Loading Zone", arrowDirection:'right', measure:'2', supportID:'2'},
+			]);    
+			
+			[Bindable] 
+			public var arrowDirectionDP:ArrayList = new ArrayList([
+				{label:"", data:""}, 
+				{label:"->", data:"->"}, 
+				{label:"<->", data:"<->"}, 
+				{label:"<-", data:"<-"}, 
+			]);  
+			
+			private function init():void
+			{
+				try
+				{
+					
+				}
+				catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());		
+				}
+			}
+			
+			protected function handleCloseEvent():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			
+			protected function SaveHandler(event:MouseEvent):void
+			{
+				try
+				{
+					PopUpManager.removePopUp(this);
+				}
+				catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Please fill out all fields."); //err.getStackTrace()
+				}
+			}
+			
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout verticalAlign="top"/>
+	</s:layout>
+	<s:VGroup gap="15" width="100%" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20">
+		
+		<s:DataGrid id="inspHistoryGrid" 
+					width="100%" height="500" 
+					editable="true"
+					dataProvider="{dummyDG}">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="linked" headerText="Linked"/>
+					<s:GridColumn dataField="signType" headerText="Sign Type"/>
+					<s:GridColumn dataField="arrowDirection" headerText="Arrow Direction">
+						<s:itemEditor> 
+							<fx:Component> 
+								<s:ComboBoxGridItemEditor>
+									<s:dataProvider>
+										<s:ArrayList>
+											<fx:Object label="left" data="left"/>
+											<fx:Object label="bi-directional" data="bi-directional"/>
+											<fx:Object label="right" data="right"/>
+										</s:ArrayList>
+									</s:dataProvider>
+								</s:ComboBoxGridItemEditor> 
+							</fx:Component> 
+						</s:itemEditor>    
+					</s:GridColumn> 
+					<s:GridColumn dataField="measure" headerText="Measure"/>
+					<s:GridColumn dataField="supportID" headerText="Support ID"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+		<s:Spacer height="20"/>
+		<s:VGroup width="100%"   horizontalAlign="center" bottom="20">
+			<s:HGroup verticalAlign="middle">
+				<s:Label text="Zone ID" fontWeight="bold"/>
+				<s:TextInput editable="true" skinClass="spark.skins.mobile.TextInputSkin" width="120"/>
+				<s:Spacer width="40"/>
+				<s:Button label="Save"  width="100" height="35" click="SaveHandler(event)"/>
+				<s:Spacer width="20"/>
+				<s:Button label="Cancel" width="100" height="35" click="handleCloseEvent()"/>
+			</s:HGroup>
+		</s:VGroup>	
+	</s:VGroup>	
+	
+		
+</s:TitleWindow>

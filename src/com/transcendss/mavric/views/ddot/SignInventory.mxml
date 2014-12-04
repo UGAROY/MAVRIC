@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" creationComplete="init()">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.events.DropDownViewEvent;
+			import com.transcendss.mavric.managers.ImageManager;
+			import com.transcendss.mavric.util.DropDownViewHoriz;
+			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.mavric.views.ddot.SignSelector;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.Button;
+			import spark.skins.mobile.TextInputSkin;
+			
+			import skins.HeaderlessPanelSkin;
+			import skins.TSSSkinnablePopUpContainerSkin;
+			
+			
+			[Bindable]
+			private var textInputWidth:Number = 300;
+			
+			[Bindable]
+			private var signDp:ArrayCollection = new ArrayCollection();
+			
+			private var signSelectorForm:SignSelector;
+			private var linkedSignForm:LinkedSign;
+			
+			private var signFacingDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			private var signSizeDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			private var signStatusDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			
+			private var attchView:AddAttachments = new AddAttachments();
+			
+			
+			private function init():void
+			{
+				try
+				{
+					signFacingDDView.domainTableIDColName =  "DIRECTION";
+					signFacingDDView.fetchDomainValues();
+					signFacingDDView.btnText = "Sign Facing";
+					signFacingDDView.width_TI = 120;
+					signFacingDDView.genericPopup.height = 200;
+					signFacingDDView.genericPopup.width = 200;
+					SignFacingDDGroup.addElement(signFacingDDView);
+					
+					signSizeDDView.domainTableIDColName =  "SIGNSIZE";
+					signSizeDDView.fetchDomainValues();
+					signSizeDDView.btnText = "Sign    Size";
+					signSizeDDView.width_TI = 120;
+					signSizeDDView.genericPopup.height = 200;
+					signSizeDDView.genericPopup.width = 200;
+					SignSizeDDGroup.addElement(signSizeDDView);
+					
+					signStatusDDView.domainTableIDColName =  "SIGNSTATUS";
+					signStatusDDView.fetchDomainValues();
+					signStatusDDView.btnText = "Sign Status";
+					signStatusDDView.width_TI = 120;
+					signStatusDDView.genericPopup.height = 200;
+					signStatusDDView.genericPopup.width = 200;
+					SignStatusDDGroup.addElement(signStatusDDView);
+					
+					attchView.init("SignInventory",true,true,true);
+					addAttchmentsHolder.addElement(attchView);
+				}
+				catch (err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
+				}
+				
+			}
+			
+			private function signLabelFunc(item:Object):String
+			{
+				return "" + item.SIGNNAME + "-" + item.SIGNID;
+			}
+			
+			protected function newSignBtn_clickHandler(event:MouseEvent):void
+			{
+				
+			}
+			
+			protected function closeSignPop(event:Event):void
+			{
+				
+			}
+			
+			protected function retireChk_changeHandler(event:Event):void
+			{
+				
+			}
+			
+			protected function moveBtn_changeHandler(event:Event):void
+			{
+				
+			}
+			
+			private function onSave():void
+			{
+				
+			}
+			
+			
+			protected function targetSignBtn_clickHandler(event:MouseEvent):void
+			{
+				
+			}
+			
+			protected function selectSignBtn_clickHandler(event:MouseEvent):void
+			{
+				signSelectorForm = PopUpManager.createPopUp(this, SignSelector) as SignSelector;
+				(signSelectorForm as SignSelector).signSelectedCallback = signSelectCompleteHandler;
+				PopUpManager.centerPopUp(signSelectorForm);
+			}
+			
+			protected function openLinkedSignEditor(event:MouseEvent):void
+			{
+				linkedSignForm = PopUpManager.createPopUp(this, LinkedSign) as LinkedSign;
+				//(linkedSignForm as LinkedSign).signSelectedCallback = signSelectCompleteHandler;
+				PopUpManager.centerPopUp(linkedSignForm);
+			}
+			
+			protected function signSelectCompleteHandler(evt:DropDownViewEvent):void
+			{
+				descriptionTextInut.text = evt.description;
+				signCodeTextInut.text = evt.mutcdText;
+		
+				setSignImage();
+			}
+			
+			protected function setSignImage():void
+			{
+				var uiCom:UIComponent = new UIComponent();
+				var imgManager:ImageManager = new ImageManager();
+				
+				selSignImgHolder.removeAllElements();
+				
+				var bmp:Bitmap = imgManager.getById(signCodeTextInut.text);
+				if(bmp!=null)
+				{
+					bmp = imgManager.scaleImage(bmp, selSignImgHolder);
+					uiCom.addChild(bmp);
+					selSignImgHolder.addElement(uiCom);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:SkinnablePopUpContainer id="signPopUp" width="300" height="400"  name="Select Sign"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:Button id="newSignBtn" label="OK" width="100%" height="40" click="newSignBtn_clickHandler(event)"/>
+					<s:List id="SignList"   change="closeSignPop(event)" dataProvider="{signDp}" width="100%" height="100%" labelFunction="signLabelFunc" fontSize="18" allowMultipleSelection="false"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+	</fx:Declarations>
+	
+	<s:VGroup paddingLeft="20" paddingTop="10" paddingRight="10" paddingBottom="10">
+		<s:HGroup verticalAlign="middle">
+			<s:Button id="targetSignBtn" label="Target Sign" click="targetSignBtn_clickHandler(event)" />
+			<s:Spacer width="20"/>
+			<s:TextInput id="signText" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+		</s:HGroup>
+		<s:Line width="100%">
+			<s:stroke>
+				<s:SolidColorStroke color="#000000" weight="1"/>
+			</s:stroke>
+		</s:Line>
+		<s:Spacer height="10"/>
+		<s:VGroup>
+			<s:HGroup>
+				<s:VGroup width="60%">
+					<s:Button id="selectSignBtn" label="Select Sign By Code" click="selectSignBtn_clickHandler(event)"/>
+					<s:Spacer height="5"/>
+					<s:HGroup verticalAlign="middle">
+						<s:VGroup width="40%">
+							<s:Label text="Sign  Code" fontWeight="bold"/>
+							<s:TextInput id="signCodeTextInut" editable="false" width="100%" skinClass="spark.skins.mobile.TextInputSkin"/>
+						</s:VGroup>
+						<s:Spacer width="5%"/>
+						<s:VGroup width="40%">
+							<s:Label text="Description" fontWeight="bold"/>
+							<s:TextInput id="descriptionTextInut" editable="false" width="100%" skinClass="spark.skins.mobile.TextInputSkin"/>
+						</s:VGroup>
+					</s:HGroup>
+					<s:Spacer height="10"/>
+					<s:HGroup width="100%">
+						<s:VGroup width="50%">
+							<s:Spacer height="10"/>
+							<s:Group id="SignFacingDDGroup"></s:Group>
+							<s:Spacer height="10"/>
+							<s:Group id="SignSizeDDGroup"></s:Group>
+							<s:Spacer height="10"/>
+							<s:Group id="SignStatusDDGroup"></s:Group>
+						</s:VGroup>
+						<s:VGroup width="50%">
+							<s:Label text="Sign Image" fontWeight="bold"/>
+							<s:Spacer height="10"/>
+							<s:VGroup width="200" height="200" id="selSignImgHolder">
+							</s:VGroup>
+						</s:VGroup>
+					</s:HGroup>
+					
+				</s:VGroup>
+				<s:Spacer width="5%"/>
+				<s:VGroup width="20%">
+					<s:Label text="Comments:  " fontWeight="bold"/>
+					<s:TextArea height="170" id= "Comments"/>
+					<s:Spacer height="10"/>
+					<s:HGroup verticalAlign="middle">
+						<s:Label text="Zone ID" fontWeight="bold"/>
+						<s:Spacer width="10"/>
+						<s:TextInput id="zoneIdTextInut" skinClass="spark.skins.mobile.TextInputSkin" width="210"/>
+					</s:HGroup>
+					<s:Spacer height="10"/>
+					<s:HGroup verticalAlign="middle" width="100%">
+						<s:Button id="linkedSignBtn" label="Linked Sign" width="45%" click="openLinkedSignEditor(event)"/>
+						<s:Spacer width="10%"/>
+						<s:Button id="timeDayBtn" label="Time and Day" width="45%"/>
+					</s:HGroup>
+					
+				</s:VGroup>
+			</s:HGroup>
+		</s:VGroup>
+		
+		<s:Spacer height="20"/>
+		<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="100%" />
+	</s:VGroup>
+	
+</s:Group>

@@ -12,23 +12,252 @@
   },
   {
     "DOMAIN_DEF": {
-      "TYPE": "LANE",
+      "TYPE": "POLEMATERIAL",
       "LIST": [
         {
-          "ID": "EB",
-          "DESCRIPTION": "East Bound"
+          "ID": "1",
+          "DESCRIPTION": "Metal"
         },
         {
-          "ID": "WB",
-          "DESCRIPTION": "West Bound"
+          "ID": "3",
+          "DESCRIPTION": "Cast Iron"
         },
         {
-          "ID": "SB",
-          "DESCRIPTION": "South Bound"
+          "ID": "4",
+          "DESCRIPTION": "Polytech"
         },
         {
-          "ID": "NB",
-          "DESCRIPTION": "North Bound"
+          "ID": "5",
+          "DESCRIPTION": "Wood"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Fiberglass"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Aluminum"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Plastic"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "BASETYPE",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "T-Base"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Temporary"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "N/A(Sign Support or Utility)"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "POLESTATUS",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Active"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Prospective"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Temporarily Out of Service"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Temporary"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Retired"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Requested"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "NOOFHEADS",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "1"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "2"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "3"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "4"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "5"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "6"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "7"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "LOCATION",
+      "LIST": [
+        {
+          "ID": "NWC",
+          "DESCRIPTION": "NWC"
+        },
+        {
+          "ID": "SEC",
+          "DESCRIPTION": "SEC"
+        },
+        {
+          "ID": "SS",
+          "DESCRIPTION": "SS"
+        },
+        {
+          "ID": "NS",
+          "DESCRIPTION": "NS"
+        },
+        {
+          "ID": "ALLEY",
+          "DESCRIPTION": "ALLEY"
+        },
+        {
+          "ID": "OTHER",
+          "DESCRIPTION": "OTHER"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "SUBBASE",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Concrete"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Asphalt"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Clay Brick"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Dirt"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "SIGNSIZE",
+      "LIST": [
+        {
+          "ID": "10 x 10",
+          "DESCRIPTION": "10 x 10"
+        },
+        {
+          "ID": "10 x 12",
+          "DESCRIPTION": "10 x 12"
+        },
+        {
+          "ID": "10 x 5",
+          "DESCRIPTION": "10 x 5"
+        },
+        {
+          "ID": "10 x 8",
+          "DESCRIPTION": "10 x 8"
+        },
+		{
+          "ID": "11 x 30",
+          "DESCRIPTION": "11 x 30"
+        },
+		{
+          "ID": "114 x 34",
+          "DESCRIPTION": "114 x 34"
+        },
+		{
+          "ID": "114 x 42",
+          "DESCRIPTION": "114 x 42"
+        },
+		{
+          "ID": "12 x 12",
+          "DESCRIPTION": "12 x 12"
+        },
+		{
+          "ID": "12 x 18",
+          "DESCRIPTION": "12 x 18"
+        },
+		{
+          "ID": "12 x 24",
+          "DESCRIPTION": "12 x 24"
+        },
+		{
+          "ID": "12 x 26",
+          "DESCRIPTION": "12 x 26"
+        },
+		{
+          "ID": "12 x 28",
+          "DESCRIPTION": "12 x 28"
+        },
+		{
+          "ID": "12 x 30",
+          "DESCRIPTION": "12 x 30"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "SIGNSTATUS",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Active"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Prospective"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Inactive"
         }
       ]
     }
@@ -86,6 +315,86 @@
 		  {
 		    "ID": "3",
 		    "DESCRIPTION": "Wood"
+		  }
+		] 
+      }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "INSPECTION_TYPE",
+      "LIST":[
+		  {
+		    "ID": "1",
+		    "DESCRIPTION": "Proactive Maintenance"
+		  },
+		  {
+		    "ID": "2",
+		    "DESCRIPTION": "Safety"
+		  }
+		] 
+      }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "INSPECTION_CONDITION",
+      "LIST":[
+		  {
+		    "ID": "1",
+		    "DESCRIPTION": "Excellent"
+		  },
+		  {
+		    "ID": "2",
+		    "DESCRIPTION": "Good"
+		  },
+		  {
+		    "ID": "3",
+		    "DESCRIPTION": "Fair"
+		  },
+		  {
+		    "ID": "4",
+		    "DESCRIPTION": "Poor"
+		  }
+		] 
+      }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "INSPECTION_ACTION_TAKEN",
+      "LIST":[
+		  {
+		    "ID": "1",
+		    "DESCRIPTION": "Repaired"
+		  },
+		  {
+		    "ID": "2",
+		    "DESCRIPTION": "Replaced"
+		  },
+		  {
+		    "ID": "3",
+		    "DESCRIPTION": "None"
+		  }
+		] 
+      }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "INSPECTION_ADDITION_ACTION",
+      "LIST":[
+		  {
+		    "ID": "1",
+		    "DESCRIPTION": "Repair Asset"
+		  },
+		  {
+		    "ID": "2",
+		    "DESCRIPTION": "Replace Asset"
+		  },
+		  {
+		    "ID": "3",
+		    "DESCRIPTION": "Remove Asset"
+		  },
+		  {
+		    "ID": "4",
+		    "DESCRIPTION": "None"
 		  }
 		] 
       }
