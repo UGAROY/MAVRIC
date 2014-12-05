@@ -4,7 +4,7 @@
 			   width="750" height="640"
 			   close="handleCloseEvent()"
 			   creationComplete="init()"
-			   skinClass="skins.MavricTitleWindowSkin">
+			   skinClass="skins.MavricTitleWindowSkin" xmlns:ddot="com.transcendss.mavric.views.ddot.*">
 	
 	<fx:Script>
 		<![CDATA[
@@ -17,20 +17,21 @@
 			
 			public var inspectionEditedCallback:Function;
 			
-			[Bindable] 
-			private var dummyDG:ArrayCollection = new ArrayCollection([
-				{linked:"", signType:"Stop", arrowDirection:'', measure:'', supportID:''}, 
-				{linked:"", signType:"Loading Zone", arrowDirection:'left', measure:'1', supportID:'1'},
-				{linked:"", signType:"Loading Zone", arrowDirection:'right', measure:'2', supportID:'2'},
-			]);    
+			[Bindable]
+			private var currentSignDG:ArrayCollection = new ArrayCollection([
+				{signType:"Stop", arrowDirection:'left', measure:5, supportID:'3'}
+			]);
 			
 			[Bindable] 
-			public var arrowDirectionDP:ArrayList = new ArrayList([
-				{label:"", data:""}, 
-				{label:"->", data:"->"}, 
-				{label:"<->", data:"<->"}, 
-				{label:"<-", data:"<-"}, 
-			]);  
+			private var dummyDG:ArrayCollection = new ArrayCollection([
+				{linked:true, signType:"Stop", arrowDirection:'', measure:'', supportID:''}, 
+				{linked:false, signType:"Loading Zone", arrowDirection:'left', measure:1, supportID:'1'},
+				{linked:true, signType:"Loading Zone", arrowDirection:'right', measure:2, supportID:'2'},
+				{linked:true, signType:"Stop", arrowDirection:'', measure:'', supportID:''}, 
+				{linked:false, signType:"Loading Zone", arrowDirection:'left', measure:1, supportID:'1'},
+				{linked:true, signType:"Loading Zone", arrowDirection:'right', measure:2, supportID:'2'}
+			]);    
+			
 			
 			private function init():void
 			{
@@ -77,36 +78,41 @@
 	</s:layout>
 	<s:VGroup gap="15" width="100%" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20">
 		
-		<s:DataGrid id="inspHistoryGrid" 
-					width="100%" height="500" 
-					editable="true"
+		<s:Spacer height="10"/>
+		<s:Label text="Current Sign:" fontWeight="bold"/>
+		<s:DataGrid id="currentSignGrid" 
+					width="100%" height="60"
+					verticalScrollPolicy="off"
+					dataProvider="{currentSignDG}"/>
+		
+		<s:Spacer height="20"/>
+		<s:Label text="Potential Matched Sign:" fontWeight="bold"/>
+		<s:DataGrid id="otherSignsGrid" 
+					width="100%" height="300"
+				    verticalScrollPolicy="auto"
 					dataProvider="{dummyDG}">
 			<s:columns>
 				<s:ArrayList>
-					<s:GridColumn dataField="linked" headerText="Linked"/>
+					<s:GridColumn editable="false" headerText="Linked">
+						<s:itemRenderer>
+							<fx:Component>
+								<s:GridItemRenderer>
+									<s:CheckBox selected="@{data.linked}"/>
+								</s:GridItemRenderer>
+								
+							</fx:Component>
+						</s:itemRenderer>
+					</s:GridColumn>
 					<s:GridColumn dataField="signType" headerText="Sign Type"/>
-					<s:GridColumn dataField="arrowDirection" headerText="Arrow Direction">
-						<s:itemEditor> 
-							<fx:Component> 
-								<s:ComboBoxGridItemEditor>
-									<s:dataProvider>
-										<s:ArrayList>
-											<fx:Object label="left" data="left"/>
-											<fx:Object label="bi-directional" data="bi-directional"/>
-											<fx:Object label="right" data="right"/>
-										</s:ArrayList>
-									</s:dataProvider>
-								</s:ComboBoxGridItemEditor> 
-							</fx:Component> 
-						</s:itemEditor>    
-					</s:GridColumn> 
-					<s:GridColumn dataField="measure" headerText="Measure"/>
+					<s:GridColumn dataField="arrowDirection" headerText="Arrow Direction"/>
+					<s:GridColumn dataField="measure" headerText="Measure">
+					</s:GridColumn>
 					<s:GridColumn dataField="supportID" headerText="Support ID"/>
 				</s:ArrayList>
 			</s:columns>
 		</s:DataGrid>
 		<s:Spacer height="20"/>
-		<s:VGroup width="100%"   horizontalAlign="center" bottom="20">
+		<s:VGroup width="100%" horizontalAlign="center" >
 			<s:HGroup verticalAlign="middle">
 				<s:Label text="Zone ID" fontWeight="bold"/>
 				<s:TextInput editable="true" skinClass="spark.skins.mobile.TextInputSkin" width="120"/>

@@ -9,12 +9,13 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import com.transcendss.mavric.events.AssetEvent;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
-			
-			import com.transcendss.mavric.views.ddot.SignInventory;
 			import com.transcendss.mavric.views.ddot.Inspections;
+			import com.transcendss.mavric.views.ddot.SignInventory;
+			import com.transcendss.transcore.sld.models.components.BaseAsset;
 			
 			import mx.core.FlexGlobals;
 			import mx.managers.PopUpManager;
@@ -85,6 +86,9 @@
 
 					attchView.init("SupportInventory",true,true,true);
 					addAttchmentsHolder.addElement(attchView);
+					
+					var eve:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
+					dispatchEvent(eve);
 				}
 				catch (err:Error)
 				{
@@ -97,6 +101,11 @@
 			private function onSave():void
 			{
 			
+			}
+			
+			public override function setBaseAsset(legacyValues:BaseAsset):void
+			{
+				trace("Ahh");
 			}
 			
 			public  override function handleCloseEvent(event:Event = null):void 
