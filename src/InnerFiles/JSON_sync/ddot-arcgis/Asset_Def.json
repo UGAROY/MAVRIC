@@ -20,7 +20,7 @@
                         "LOCATION": "STICK",
                         "DRAWOBJ": null,
                         "DRAWING": {
-                            "DRAWSTRING": "",
+                            "DRAWSTRING": "InnerFiles/JSON_sync/ddot-arcgis/marker.png",
                             "SCALE": "True",
                             "WIDTH": "80",
                             "HEIGHT": "60",

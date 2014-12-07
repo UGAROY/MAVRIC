@@ -536,10 +536,6 @@
 				mainForm=PopUpManager.createPopUp(this,MainEntryForm,true) as TitleWindow
 				PopUpManager.centerPopUp(mainForm);
 				
-				
-				//TEMP:
-				var tempForm:TitleWindow=PopUpManager.createPopUp(this, SupportInventory,true) as TitleWindow
-				PopUpManager.centerPopUp(tempForm);
 			}	
 			
 			public function showPrintDialog(event:Event):void

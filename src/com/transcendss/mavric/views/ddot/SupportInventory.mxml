@@ -9,6 +9,7 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import com.transcendss.mavric.db.MAVRICDBManager;
 			import com.transcendss.mavric.events.AssetEvent;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewVert;
@@ -36,11 +37,20 @@
 			
 			private var startDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
 			private var endDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
+			
+			private var dbManager:MAVRICDBManager;
+			
+			private var currSupport:BaseAsset = null;
+			private var currSupportID:Number = -1;
+			private var currSigns:Array = new Array();
+			private var currInspections:Array = new Array();
 
 			private function init():void
 			{
 				try
 				{
+					dbManager = MAVRICDBManager.newInstance();
+					
 					locDDView.domainTableIDColName =  "LOCATION";
 					locDDView.fetchDomainValues();
 					locDDView.btnText = "Location";
@@ -103,9 +113,23 @@
 			
 			}
 			
-			public override function setBaseAsset(legacyValues:BaseAsset):void
+			public override function setBaseAsset(baseAsst:BaseAsset):void
 			{
-				trace("Ahh");
+				currSupport = baseAsst;
+				currSupportID = currSupport.id;
+				
+				supportRouteIdInput.text = currSupport['routeName'] || "";
+				milepostTextInut.text = parseFloat(currSupport['milePost'] || "").toFixed(3);
+				locDDView.domainID = currSupport['invProperties'].LOCATION.value || "";
+				signSupportDDView.domainID = currSupport['invProperties'].POLEMATERIAL.value || "";
+				supportStatusDDView.domainID = currSupport['invProperties'].POLESTATUS.value || "";
+				baseTypeDDView.domainID = currSupport['invProperties'].BASETYPE.value || "";
+				numberOfBasesDDView.domainID = currSupport['invProperties'].NOOFHEADS.value || "";
+				subBaseDDView.domainID = currSupport['invProperties'].SUBBASE.value || "";
+				PoleHeightTextInut.text = currSupport['invProperties'].POLEHEIGHT.value || "";
+				PoleComments.text = currSupport['invProperties'].COMMENTS.value || "";
+
+				
 			}
 			
 			public  override function handleCloseEvent(event:Event = null):void 
@@ -191,7 +215,7 @@
 				<s:Spacer width="10"/>
 				<s:VGroup width="30%">
 					<s:Label text="Comments:  " fontWeight="bold"/>
-					<s:TextArea height="170" width="100%" id= "Comments"/>
+					<s:TextArea height="170" width="100%" id= "PoleComments"/>
 					<s:Spacer height="10"/>
 					<s:Label text="MS Utility ID:  " fontWeight="bold"/>
 					<s:TextInput id="MsUtilityTextInut" width="{textInputWidth}"/>
