@@ -1,5 +1,6 @@
 package com.transcendss.mavric.managers
 {
+	import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 	import com.transcendss.mavric.views.componentviews.LocalRoutesForm;
 	import com.transcendss.transcore.sld.models.InventoryDiagram;
 	import com.transcendss.transcore.sld.models.StickDiagram;
@@ -20,6 +21,7 @@ package com.transcendss.mavric.managers
 		private var _captureEventSource:String ="";
 		private var _errorFileList:Array = new Array();
 		private var _assetManager:AssetManager;
+		private var _recordManager:DdotRecordManager;
 		private var _agsManager:ArcGISServiceManager = new ArcGISServiceManager();
 		private var _localRoutesForm:LocalRoutesForm;
 		public var dispatcher:IEventDispatcher;
@@ -31,6 +33,17 @@ package com.transcendss.mavric.managers
 		public function ComponentManager()
 		{
 		}
+
+		public function get recordManager():DdotRecordManager
+		{
+			return _recordManager;
+		}
+
+		public function set recordManager(value:DdotRecordManager):void
+		{
+			_recordManager = value;
+		}
+
 		public function set uploadedFileList(ar:Array):void
 		{
 			_errorFileList = ar;

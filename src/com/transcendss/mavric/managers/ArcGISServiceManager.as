@@ -30,10 +30,8 @@ package com.transcendss.mavric.managers
 					return useAgsService && eventLayerID!=-1 ? FlexGlobals.topLevelApplication.agsMapService.getEventUrl(eventLayerID,routeName,begMile,endMile) : eventURL;
 				case "milemarker":
 					return useAgsService && eventLayerID!=-1 ? FlexGlobals.topLevelApplication.agsMapService.getEventUrl(eventLayerID,routeName,begMile,endMile) : eventURL;
-					
 				case "edits":
 					return  FlexGlobals.topLevelApplication.agsMapService.getEditsUrl();
-				
 					
 				default:
 					return "";

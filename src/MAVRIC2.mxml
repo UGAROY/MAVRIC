@@ -61,6 +61,7 @@
 			import com.transcendss.mavric.db.AgsMapService;
 			import com.transcendss.mavric.managers.AssetManager;
 			import com.transcendss.mavric.managers.ConfigurationManager;
+			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.FileUtility;
 			import com.transcendss.mavric.views.AssetEditForm;
 			import com.transcendss.mavric.views.EditElementDialog;
@@ -236,6 +237,8 @@
 				GlobalComponents.assetManager = new AssetManager();
 				
 				GlobalComponents.ConfigManager.loadSettings();
+				
+				GlobalComponents.recordManager = new DdotRecordManager();
 				
 				//GlobalComponents.assetManager.getAssetDomains();
 				// menuBar.menuCreationComplete();

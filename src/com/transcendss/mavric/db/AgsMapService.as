@@ -8,13 +8,11 @@ package com.transcendss.mavric.db
 	import mx.core.FlexGlobals;
 	import mx.utils.ObjectUtil;
 	import mx.utils.URLUtil;
-
+	
 	public class AgsMapService
 	{
 		private var _server:Object = new Object();
 		private var _query:Object = new Object();
-		
-		//private var routeListUrl:String = 'http://tsstools.com/dev/mavric/services/vdot/Service/Routes';
 		
 		private var _serverDefinition:Object = new Object();
 		private var _networkLayerContext:Object = new Object();
@@ -51,40 +49,41 @@ package com.transcendss.mavric.db
 					measureToGeometry: '/measureToGeometry?locations=[{routeId:\'@routeId\', measure:@measure}]'
 				}
 			};
-
-		
+			
+			
 			_query = {
 				params: {
 					where: '@whereClause',
 					
 					text:'',
 					objectIds:'',
-			//		time:'',
+					//		time:'',
 					geometry: '',
 					geometryType: '',
 					inSR: '',
 					spatialRel: 'esriSpatialRelIntersects',
-			//		relationParam:'',
+					//		relationParam:'',
 					outFields:"*",
 					returnGeometry: false,
-			//		maxAllowableOffset:'',
-			//		geometryPrecision:'',
+					//		maxAllowableOffset:'',
+					//		geometryPrecision:'',
 					outSR: '',
 					returnIdsOnly:false,
 					returnCountOnly:false,
 					orderByFields:'',
-		   //	    groupByFieldsForStatistics:'',
-		   //		outStatistics:'',
+					//	    groupByFieldsForStatistics:'',
+					//		outStatistics:'',
 					returnZ:false,
 					returnM: false,
 					gdbVersion:ConfigUtility.get("gdb_version"),
-					returnDistinctValues:false,
-					f: 'pjson'
+						returnDistinctValues:false,
+						f: 'pjson'
 				},
 				allRoutesEventWhereClause:'@routeIdFieldName is not null',
 				routeEventWhereClause: '@routeIdFieldName = \'@routeId\'',
 				pointEventWhereClause: '@routeIdFieldName = \'@routeId\' and (@fromMeasureFieldName between @fromMeasure and @toMeasure)',
 				linearEventWhereClause: '@routeIdFieldName = \'@routeId\' and ((@fromMeasureFieldName between @fromMeasure and @toMeasure) or (@toMeasureFieldName between @fromMeasure and @toMeasure) or (@fromMeasureFieldName < @fromMeasure and @toMeasureFieldName > @toMeasure))',
+				dateWhereClause: '((@fromDateFieldName is null or @fromDateFieldName <=  CURRENT_DATE) and (@toDateFieldName is null or @toDateFieldName >  CURRENT_DATE))',
 				retrieveSymbology: true
 			};
 			
@@ -106,7 +105,8 @@ package com.transcendss.mavric.db
 					return;
 				}
 				// Currently just set it to the first networkLayer
-				_networkLayerId = _serverDefinition.networkLayers[0].id;
+				var nlayerIndex:int= ConfigUtility.getInt("network_layer")?ConfigUtility.getInt("network_layer"):0;
+				_networkLayerId = _serverDefinition.networkLayers[nlayerIndex].id;
 				_calibPointLayerId = _serverDefinition.calibrationPointLayers[0].id;
 				getNetworkLayerContext();
 				getCalibPointLayerContext();
@@ -126,7 +126,7 @@ package com.transcendss.mavric.db
 				{
 					_allLayerInfo[layer.id] = layer;	
 				}
-				 layerArr = JSON.parse(evt.target.data).calibrationPointLayers as Array;
+				layerArr = JSON.parse(evt.target.data).calibrationPointLayers as Array;
 				for each (var layer2:Object in layerArr)
 				{
 					_allLayerInfo[layer2.id] = layer2;	
@@ -138,8 +138,6 @@ package com.transcendss.mavric.db
 		
 		private function getCalibPointLayerContext():void
 		{
-			
-			
 			var url:String = _server.url +_server.mapServer+ _server.endpoints.calibrationPointLayer.replace(/@layerId/gi, _calibPointLayerId) + '?' + URLUtil.objectToString(_server.params,"&");
 			var urlRequest:URLRequest = new URLRequest(url);
 			var urlLoader:URLLoader = new URLLoader();
@@ -171,6 +169,7 @@ package com.transcendss.mavric.db
 		{
 			var whereClause:String = _query.routeEventWhereClause.replace(/@routeIdFieldName\b/gi, _networkLayerContext.compositeRouteIdFieldName)
 				.replace(/@routeId\b/gi,routeName);
+			whereClause = whereClause + ' and ' + _query.dateWhereClause.replace(/@fromDateFieldName\b/gi, _networkLayerContext.fromDateFieldName).replace(/@toDateFieldName\b/gi, _networkLayerContext.toDateFieldName);
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) + '?f=json&outSR=4236&returnM=true&returnGeometry=true&outFields=*&where=' + escape(whereClause);
 		}
 		
@@ -183,6 +182,7 @@ package com.transcendss.mavric.db
 		public function getMinMaxUrl(routeName:String):String
 		{
 			var whereClause:String = _query.routeEventWhereClause.replace(/@routeIdFieldName\b/gi, _calibPointLayerContext.routeIdFieldName).replace(/@routeId\b/gi, routeName);
+			whereClause = whereClause + ' and ' + _query.dateWhereClause.replace(/@fromDateFieldName\b/gi, _calibPointLayerContext.fromDateFieldName).replace(/@toDateFieldName\b/gi, _calibPointLayerContext.toDateFieldName);
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _calibPointLayerId) + '?f=json&outSR=&returnM=false&returnGeometry=false&orderByFields='+_calibPointLayerContext.measureFieldName+'&outFields='+_calibPointLayerContext.measureFieldName+'&where=' + escape(whereClause);
 		}
 		
@@ -210,7 +210,6 @@ package com.transcendss.mavric.db
 		{
 			var queryParams:Object =  ObjectUtil.clone( _query.params);
 			
-		
 			var whereClause:String 
 			if(layerID==-1 || !this._allLayerInfo[layerID] )
 				return _server.url;//temp
@@ -234,8 +233,8 @@ package com.transcendss.mavric.db
 			}
 			else
 			{
-			
-				 whereClause = _query.linearEventWhereClause
+				
+				whereClause = _query.linearEventWhereClause
 					.replace(/@routeIdFieldName\b/gi, this._allLayerInfo[layerID].routeIdFieldName)
 					.replace(/@fromMeasureFieldName\b/gi, this._allLayerInfo[layerID].fromMeasureFieldName)
 					.replace(/@toMeasureFieldName\b/gi, this._allLayerInfo[layerID].toMeasureFieldName)
@@ -244,12 +243,24 @@ package com.transcendss.mavric.db
 					.replace(/@routeId\b/gi, routeName);
 			}
 			
+			if (this._allLayerInfo[layerID].fromDateFieldName && this._allLayerInfo[layerID].toDateFieldName)
+			{
+				whereClause = whereClause + ' and ' + _query.dateWhereClause.replace(/@fromDateFieldName\b/gi, this._allLayerInfo[layerID].fromDateFieldName).replace(/@toDateFieldName\b/gi, this._allLayerInfo[layerID].toDateFieldName);
+			}
+			
 			var tempQueryStr:String = URLUtil.objectToString(queryParams,"&");
 			tempQueryStr = tempQueryStr.replace(/%40whereClause\b/gi, escape(whereClause));
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) + '?' + tempQueryStr;
 		}
 		
-		
+		public function getCustomEventUrl(layerID:Number, whereClause:String):String
+		{
+			var queryParams:Object =  ObjectUtil.clone( _query.params);
+			
+			var tempQueryStr:String = URLUtil.objectToString(queryParams,"&");
+			tempQueryStr = tempQueryStr.replace(/%40whereClause\b/gi, escape(whereClause));
+			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) + '?' + tempQueryStr;
+		}
 		
 		
 		public function get networkLayerContext():Object

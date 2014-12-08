@@ -11,6 +11,7 @@
 		<![CDATA[
 			import com.transcendss.mavric.db.MAVRICDBManager;
 			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
@@ -20,6 +21,7 @@
 			
 			import mx.core.FlexGlobals;
 			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
 			
 			import spark.components.Button;
 			
@@ -39,17 +41,23 @@
 			private var endDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
 			
 			private var dbManager:MAVRICDBManager;
+			private var recordManager:DdotRecordManager;
 			
 			private var currSupport:BaseAsset = null;
 			private var currSupportID:Number = -1;
 			private var currSigns:Array = new Array();
+			private var currSignIDs:Array = new Array();
 			private var currInspections:Array = new Array();
+			
+			[Bindable]
+			private var dataRetrieved:Boolean = false;
 
 			private function init():void
 			{
 				try
 				{
 					dbManager = MAVRICDBManager.newInstance();
+					recordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;
 					
 					locDDView.domainTableIDColName =  "LOCATION";
 					locDDView.fetchDomainValues();
@@ -128,8 +136,35 @@
 				subBaseDDView.domainID = currSupport['invProperties'].SUBBASE.value || "";
 				PoleHeightTextInut.text = currSupport['invProperties'].POLEHEIGHT.value || "";
 				PoleComments.text = currSupport['invProperties'].COMMENTS.value || "";
-
 				
+				var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
+				recordManager.getSigns(currSupportID, 2, signResp);
+			}
+			
+			private function signReqReponse(result:Object):void
+			{
+				currSigns = result as Array;
+				
+				currSignIDs = currSigns.map(function (element:*, index:int, arr:Array):Number {
+					return element['SIGNID'];
+				});
+				
+				var inspectionResp:mx.rpc.Responder = new mx.rpc.Responder(inspectionReqResponse, failReqHandler);
+				recordManager.getInspections(currSupportID, currSignIDs, 4, inspectionResp);
+			}
+			
+			private function inspectionReqResponse(result:Object):void
+			{
+				currInspections = result as Array;
+				
+				// Finished loading all the data
+				dataRetrieved = true;
+			}
+			
+			private function failReqHandler():void
+			{
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
+				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining milemarker data");
 			}
 			
 			public  override function handleCloseEvent(event:Event = null):void 
@@ -161,7 +196,7 @@
 		<s:Button label="Inspections" enabled="{viewStack.selectedChild !=Inspections}" click="{viewStack.selectedChild=Inspections}"/>
 		<s:Button label="Attachments" enabled="{viewStack.selectedChild !=Attachments}" click="{viewStack.selectedChild=Attachments}"/>
 	</s:HGroup>
-	<views:CBViewStack id="viewStack" width="100%" height="100%" skinClass="skins.CBScrollableSkin">
+	<views:CBViewStack id="viewStack" width="100%" height="100%" skinClass="skins.CBScrollableSkin" visible="{}">
 		<s:VGroup  id="Support" paddingLeft="20" paddingTop="20" paddingRight="20">
 			<s:HGroup>
 				<s:VGroup width="60%" gap="20">

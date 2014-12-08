@@ -16,12 +16,14 @@
 			import com.transcendss.mavric.events.GuardrailMenuEvent;
 			import com.transcendss.mavric.events.LocalRouteEvent;
 			import com.transcendss.mavric.events.SignInvEvent;
+			import com.transcendss.mavric.events.ddot.DdotRecordEvent;
 			import com.transcendss.mavric.extended.models.MAVRICDiagram;
 			import com.transcendss.mavric.managers.ArcGISServiceManager;
 			import com.transcendss.mavric.managers.ExternalFileManager;
 			import com.transcendss.mavric.managers.MavricConfiguredSyncManager;
 			import com.transcendss.mavric.managers.MenuManager;
 			import com.transcendss.mavric.managers.RandHSyncManager;
+			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.AssetEditForm;
 			import com.transcendss.mavric.views.ControlBar;
@@ -424,6 +426,20 @@
 					</mate:MethodInvoker>
 					
 					<mate:InlineInvoker method="updateAssetManager" arguments="{[lastReturn, event]} "/>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{DdotRecordEvent.SIGN_REQUEST}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getURL" arguments="{['assetevent',useAgsService, event.serviceURL, event.routeName, event.begMile, event.endMile, event.eventLayerID]}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onSignServiceResult'}" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
 				</mate:resultHandlers>
 				<mate:faultHandlers>
 					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
