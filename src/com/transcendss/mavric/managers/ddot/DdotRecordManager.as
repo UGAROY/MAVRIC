@@ -70,6 +70,35 @@ package com.transcendss.mavric.managers.ddot
 			resp.result(new ArrayCollection(dataArr));
 		}
 		
+		public function onInspectionServiceResult(obj:Object,event:DdotRecordEvent):void
+		{
+			event.stopPropagation();
+			
+			var resp:IResponder = event.responder;
+			
+			var arrayColl:ArrayCollection = new ArrayCollection();
+			var arr:Array = parseJsonObj(obj);
+			var dataArr:Array = new Array();
+			for each(var arrItem:Object in arr)
+			{
+				dataArr.push( arrItem.attributes);
+			}
+			
+			resp.result(new ArrayCollection(dataArr));
+		}
+		
+		public function getOtherSignsOnRoute(routeID:String, signID:Number, eventLayerID:Number, responder:IResponder)
+		{
+			_requestEvent = new DdotRecordEvent(DdotRecordEvent.SIGN_REQUEST);
+			var whereClause:String =  "ROUTEID = '@routeId' and SIGNID <> @signId".replace("@routeId", routeID)
+				.replace("@signId", signID.toString());
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(eventLayerID, whereClause);
+			_requestEvent.responder = responder;
+			_dispatcher.dispatchEvent(_requestEvent);
+			_requestEvent = null;
+		}
+		
+		
 		public function parseJsonObj(obj:Object):Array
 		{
 			if(!obj)

@@ -161,7 +161,6 @@
 				this.signComment.text= baseAsst.invProperties["SIGN_CMT"].value?decodeURI(baseAsst.invProperties["SIGN_CMT"].value):"";
 				DateInServInput.text =baseAsst.invProperties["DATE_IN_SERVICE"].value?formatter.format(baseAsst.invProperties["DATE_IN_SERVICE"].value):"";
 				}
-				
 			}
 			
 			//The second parameter is used as a sign ID

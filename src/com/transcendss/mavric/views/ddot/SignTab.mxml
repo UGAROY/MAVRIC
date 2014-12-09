@@ -6,6 +6,7 @@
 		<![CDATA[
 			import com.transcendss.mavric.events.DropDownViewEvent;
 			import com.transcendss.mavric.managers.ImageManager;
+			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DropDownViewHoriz;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
 			import com.transcendss.mavric.views.ddot.SignSelector;
@@ -14,6 +15,7 @@
 			import mx.core.FlexGlobals;
 			import mx.core.UIComponent;
 			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
 			
 			import spark.components.Button;
 			import spark.skins.mobile.TextInputSkin;
@@ -21,26 +23,32 @@
 			import skins.HeaderlessPanelSkin;
 			import skins.TSSSkinnablePopUpContainerSkin;
 			
+			private var recordManager:DdotRecordManager;
 			
 			[Bindable]
 			private var textInputWidth:Number = 300;
 			
-			[Bindable]
-			private var signDp:ArrayCollection = new ArrayCollection();
-			
 			private var signSelectorForm:SignSelector;
 			private var linkedSignForm:LinkedSign;
 			
-			private var signFacingDDView:DropDownViewHoriz = new DropDownViewHoriz();
-			private var signSizeDDView:DropDownViewHoriz = new DropDownViewHoriz();
-			private var signStatusDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			public var signFacingDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			public var signSizeDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			public var signStatusDDView:DropDownViewHoriz = new DropDownViewHoriz();
 			
 			private var attchView:AddAttachments = new AddAttachments();
+			
+			[Bindable]
+			public var sign:Object;
+			
+			[Bindable]
+			public var isLoadingZoneSign:Boolean = false;
 			
 			private function init():void
 			{
 				try
-				{
+				{	
+					recordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;	
+					
 					signFacingDDView.domainTableIDColName =  "DIRECTION";
 					signFacingDDView.fetchDomainValues();
 					signFacingDDView.btnText = "Sign Facing";
@@ -75,42 +83,6 @@
 				
 			}
 			
-			private function signLabelFunc(item:Object):String
-			{
-				return "" + item.SIGNNAME + "-" + item.SIGNID;
-			}
-			
-			protected function newSignBtn_clickHandler(event:MouseEvent):void
-			{
-				
-			}
-			
-			protected function closeSignPop(event:Event):void
-			{
-				
-			}
-			
-			protected function retireChk_changeHandler(event:Event):void
-			{
-				
-			}
-			
-			protected function moveBtn_changeHandler(event:Event):void
-			{
-				
-			}
-			
-			private function onSave():void
-			{
-				
-			}
-			
-			
-			protected function targetSignBtn_clickHandler(event:MouseEvent):void
-			{
-				
-			}
-			
 			protected function selectSignBtn_clickHandler(event:MouseEvent):void
 			{
 				signSelectorForm = PopUpManager.createPopUp(this, SignSelector) as SignSelector;
@@ -118,11 +90,25 @@
 				PopUpManager.centerPopUp(signSelectorForm);
 			}
 			
-			protected function openLinkedSignEditor(event:MouseEvent):void
+			protected function linkedSignBtn_clickHandler(event:MouseEvent):void
+			{
+				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
+				recordManager.getOtherSignsOnRoute(sign['ROUTEID'], sign['SIGNID'], 9, routeSignsResp);
+			}
+			
+			private function openLinkedSignEditor(data:ArrayCollection):void
 			{
 				linkedSignForm = PopUpManager.createPopUp(this, LinkedSign) as LinkedSign;
-				//(linkedSignForm as LinkedSign).signSelectedCallback = signSelectCompleteHandler;
 				PopUpManager.centerPopUp(linkedSignForm);
+				linkedSignForm.currentSign = this.sign;
+				linkedSignForm.otherSigns = data;
+				linkedSignForm.loadLinkedSignsInfo();
+			}
+			
+			private function failReqHandler(data:Object):void
+			{
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
+				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining data");
 			}
 			
 			protected function signSelectCompleteHandler(evt:DropDownViewEvent):void
@@ -149,32 +135,43 @@
 				}
 			}
 			
+			public function loadSignInfo():void
+			{
+				signCodeTextInut.text = sign['SIGNNAME'];
+				descriptionTextInut.text = sign['DESCRIPTION'];
+				signFacingDDView.domainID = sign['SIGNFACING'];
+				signSizeDDView.domainID = sign['SIGNSIZE'];
+				signStatusDDView.domainID = sign['SIGNSTATUS'];
+				isLoadingZoneSign = sign['SIGN_LZ'] != null
+				setSignImage();
+			}
+			
+			public function signValuesbeenChanged():Boolean
+			{
+				return signFacingDDView.domainID != sign['SIGNFACING'] ||
+					signSizeDDView.domainID != sign['SIGNSIZE'] ||
+					signStatusDDView.domainID != sign['SIGNSTATUS'] ||
+					signCodeTextInut.text != sign['SIGNNAME'] ||
+					descriptionTextInut.text != sign['DESCRIPTION'];
+			}
+			
+			public function updateSignValues():void
+			{
+				sign['SIGNNAME'] = signCodeTextInut.text;
+				sign['DESCRIPTION'] = descriptionTextInut.text;
+				sign['SIGNFACING']= signFacingDDView.domainID;
+				sign['SIGNSIZE'] = signSizeDDView.domainID;
+				sign['SIGNSTATUS'] = signStatusDDView.domainID;
+			}
+			
 		]]>
 	</fx:Script>
 	
 	<fx:Declarations>
-		<s:SkinnablePopUpContainer id="signPopUp" width="300" height="400"  name="Select Sign"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
-			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
-				<s:VGroup width="100%" height="100%" horizontalAlign="center">
-					<s:Button id="newSignBtn" label="OK" width="100%" height="40" click="newSignBtn_clickHandler(event)"/>
-					<s:List id="SignList"   change="closeSignPop(event)" dataProvider="{signDp}" width="100%" height="100%" labelFunction="signLabelFunc" fontSize="18" allowMultipleSelection="false"/>
-				</s:VGroup>
-			</s:Panel>
-		</s:SkinnablePopUpContainer>
+		
 	</fx:Declarations>
 	
 	<s:VGroup paddingLeft="20" paddingTop="10" paddingRight="10" paddingBottom="10">
-		<s:HGroup verticalAlign="middle">
-			<s:Button id="targetSignBtn" label="Target Sign" click="targetSignBtn_clickHandler(event)" />
-			<s:Spacer width="20"/>
-			<s:TextInput id="signText" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
-		</s:HGroup>
-		<s:Line width="100%">
-			<s:stroke>
-				<s:SolidColorStroke color="#000000" weight="1"/>
-			</s:stroke>
-		</s:Line>
-		<s:Spacer height="10"/>
 		<s:VGroup>
 			<s:HGroup>
 				<s:VGroup width="60%">
@@ -201,10 +198,11 @@
 							<s:Spacer height="10"/>
 							<s:Group id="SignStatusDDGroup"></s:Group>
 						</s:VGroup>
+						<s:Spacer width="20"/>
 						<s:VGroup width="50%">
 							<s:Label text="Sign Image" fontWeight="bold"/>
 							<s:Spacer height="10"/>
-							<s:VGroup width="200" height="200" id="selSignImgHolder">
+							<s:VGroup width="180" height="180" id="selSignImgHolder">
 							</s:VGroup>
 						</s:VGroup>
 					</s:HGroup>
@@ -215,14 +213,14 @@
 					<s:Label text="Comments:  " fontWeight="bold"/>
 					<s:TextArea height="170" id= "Comments"/>
 					<s:Spacer height="10"/>
-					<s:HGroup verticalAlign="middle">
+					<s:HGroup verticalAlign="middle" visible="{isLoadingZoneSign}">
 						<s:Label text="Zone ID" fontWeight="bold"/>
 						<s:Spacer width="10"/>
 						<s:TextInput id="zoneIdTextInut" skinClass="spark.skins.mobile.TextInputSkin" width="210"/>
 					</s:HGroup>
 					<s:Spacer height="10"/>
-					<s:HGroup verticalAlign="middle" width="100%">
-						<s:Button id="linkedSignBtn" label="Linked Sign" width="45%" click="openLinkedSignEditor(event)"/>
+					<s:HGroup verticalAlign="middle" width="100%" visible="{isLoadingZoneSign}">
+						<s:Button id="linkedSignBtn" label="Linked Sign" width="45%" click="linkedSignBtn_clickHandler(event)"/>
 						<s:Spacer width="10%"/>
 						<s:Button id="timeDayBtn" label="Time and Day" width="45%"/>
 					</s:HGroup>

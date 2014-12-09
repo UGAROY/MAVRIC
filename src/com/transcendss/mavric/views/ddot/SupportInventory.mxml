@@ -13,17 +13,22 @@
 			import com.transcendss.mavric.events.AssetEvent;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
+			import com.transcendss.mavric.util.DropDownViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
 			import com.transcendss.mavric.views.ddot.Inspections;
 			import com.transcendss.mavric.views.ddot.SignInventory;
 			import com.transcendss.transcore.sld.models.components.BaseAsset;
 			
+			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.managers.PopUpManager;
 			import mx.rpc.Responder;
 			
 			import spark.components.Button;
+			
+			import skins.HeaderlessPanelSkin;
+			import skins.TSSSkinnablePopUpContainerSkin;
 			
 			
 			[Bindable]
@@ -43,11 +48,16 @@
 			private var dbManager:MAVRICDBManager;
 			private var recordManager:DdotRecordManager;
 			
+			private var allAssets:Object;
+			
 			private var currSupport:BaseAsset = null;
 			private var currSupportID:Number = -1;
-			private var currSigns:Array = new Array();
+			[Bindable]
+			private var currSigns:ArrayCollection = new ArrayCollection();
 			private var currSignIDs:Array = new Array();
-			private var currInspections:Array = new Array();
+			private var selectedSign:Object = new Object();
+			private var currSignTab:SignTab = null;
+			private var currInspections:ArrayCollection = new ArrayCollection();
 			
 			[Bindable]
 			private var dataRetrieved:Boolean = false;
@@ -138,24 +148,30 @@
 				PoleComments.text = currSupport['invProperties'].COMMENTS.value || "";
 				
 				var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
-				recordManager.getSigns(currSupportID, 2, signResp);
+				recordManager.getSigns(currSupportID, 9, signResp);
 			}
 			
 			private function signReqReponse(result:Object):void
 			{
-				currSigns = result as Array;
+				currSigns = result as ArrayCollection;
 				
-				currSignIDs = currSigns.map(function (element:*, index:int, arr:Array):Number {
-					return element['SIGNID'];
-				});
+				// Build the allAssets variable
+				allAssets['SUPPORT'] = currSupport;
+				allAssets['SIGN'] = currSigns;
+				
+				currSignIDs = new Array();
+				for each(var item:Object in currSigns)
+				{
+					currSignIDs.push(item['SIGNID']);
+				}
 				
 				var inspectionResp:mx.rpc.Responder = new mx.rpc.Responder(inspectionReqResponse, failReqHandler);
-				recordManager.getInspections(currSupportID, currSignIDs, 4, inspectionResp);
+				recordManager.getInspections(currSupportID, currSignIDs, 14, inspectionResp);
 			}
 			
 			private function inspectionReqResponse(result:Object):void
 			{
-				currInspections = result as Array;
+				currInspections = result as ArrayCollection;
 				
 				// Finished loading all the data
 				dataRetrieved = true;
@@ -164,7 +180,7 @@
 			private function failReqHandler():void
 			{
 				FlexGlobals.topLevelApplication.setBusyStatus(false);
-				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining milemarker data");
+				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining data");
 			}
 			
 			public  override function handleCloseEvent(event:Event = null):void 
@@ -182,12 +198,75 @@
 				
 			}
 			
+			
+			//--------------------------------Sign Tab-------------------------------------------------
+			protected function targetSignBtn_clickHandler(event:MouseEvent):void
+			{
+				if (currSignTab != null && currSignTab.signValuesbeenChanged())
+				{
+					var msg:String = "The current sign has been edited, do you want to keep the changes?";
+					var resp:mx.rpc.Responder = new mx.rpc.Responder(updateSelectedSignValues, openSignPop);
+					FlexGlobals.topLevelApplication.YesNoPrompt(msg, "Warning", resp);
+				} 
+				else 
+				{
+					openSignPop();
+				}
+			}
+			
+			protected function newSignBtn_clickHandler(event:MouseEvent):void
+			{
+				currSignTab = new SignTab();
+				SignTabGroup.addElement(currSignTab);
+			}
+			
+			protected function openSignPop(data:Object=null):void
+			{
+				signPopUp.open(this,false);
+				PopUpManager.centerPopUp(signPopUp);
+			}
+			
+			protected function closeSignPop(event:Event):void
+			{
+				signPopUp.close(true, SignList.selectedItem);
+				selectedSign = SignList.selectedItem;				
+				
+				signText.text = selectedSign['SIGNID'];
+				loadSelectedSignInfo();
+			}
+			
+			private function loadSelectedSignInfo():void
+			{
+				// Clear all the previous sign info
+				SignTabGroup.removeAllElements();
+				
+				currSignTab = new SignTab();
+				currSignTab.sign = selectedSign;
+				currSignTab.loadSignInfo();
+				
+				SignTabGroup.addElement(currSignTab);
+			}
+			
+			private function updateSelectedSignValues(data:Object=null):void
+			{
+				currSignTab.updateSignValues();
+				openSignPop();
+			}
+			//-----------------------------------------------------------------------------------------
+			
 		]]>
 	</fx:Script>
 	
 	
 	<fx:Declarations>
-		
+		<s:SkinnablePopUpContainer id="signPopUp" width="300" height="400"  name="Select Sign"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:Button id="newSignBtn" label="Add A New Sign" width="100%" height="50" click="newSignBtn_clickHandler(event)"/>
+					<s:List id="SignList" dataProvider="{currSigns}"   change="closeSignPop(event)" width="100%" height="100%" labelField="SIGNID" fontSize="18" allowMultipleSelection="false"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
 	</fx:Declarations>
 	
 	<s:HGroup>
@@ -196,7 +275,7 @@
 		<s:Button label="Inspections" enabled="{viewStack.selectedChild !=Inspections}" click="{viewStack.selectedChild=Inspections}"/>
 		<s:Button label="Attachments" enabled="{viewStack.selectedChild !=Attachments}" click="{viewStack.selectedChild=Attachments}"/>
 	</s:HGroup>
-	<views:CBViewStack id="viewStack" width="100%" height="100%" skinClass="skins.CBScrollableSkin" visible="{}">
+	<views:CBViewStack id="viewStack" width="100%" height="100%" skinClass="skins.CBScrollableSkin" visible="{dataRetrieved}">
 		<s:VGroup  id="Support" paddingLeft="20" paddingTop="20" paddingRight="20">
 			<s:HGroup>
 				<s:VGroup width="60%" gap="20">
@@ -267,10 +346,20 @@
 		</s:VGroup>
 		
 		
-		<s:VGroup id="Sign">
-			<ddot:SignInventory>
+		<s:VGroup id="Sign" paddingLeft="20" paddingTop="20" paddingRight="20">
+			<s:HGroup verticalAlign="middle">
+				<s:Button id="targetSignBtn" label="Target Sign" click="targetSignBtn_clickHandler(event)" />
+				<s:Spacer width="20"/>
+				<s:TextInput id="signText" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+			</s:HGroup>
+			<s:Line width="100%">
+				<s:stroke>
+					<s:SolidColorStroke color="#000000" weight="1"/>
+				</s:stroke>
+			</s:Line>
+			<s:Group id="SignTabGroup">
 				
-			</ddot:SignInventory>
+			</s:Group>
 		</s:VGroup>
 		
 		<s:VGroup id="Inspections">

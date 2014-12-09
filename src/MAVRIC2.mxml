@@ -87,6 +87,7 @@
 			import com.transcendss.mavric.views.ddot.LinkedSign;
 			import com.transcendss.mavric.views.ddot.SignInventory;
 			import com.transcendss.mavric.views.ddot.SignSelector;
+			import com.transcendss.mavric.views.ddot.SignTab;
 			import com.transcendss.mavric.views.ddot.SupportInventory;
 			import com.transcendss.mavric.views.okdot.SignInv;
 			import com.transcendss.mavric.views.vdot.SignInv;
@@ -207,7 +208,7 @@
 			//com.transcendss.mavric.views.vdot.SignInv;
 			//com.transcendss.mavric.views.GuardrailMenu;
 			com.transcendss.mavric.views.ddot.SupportInventory;
-			com.transcendss.mavric.views.ddot.SignInventory;
+			com.transcendss.mavric.views.ddot.SignTab;
 			com.transcendss.mavric.views.ddot.SignSelector;
 			com.transcendss.mavric.views.ddot.Inspections;
 			com.transcendss.mavric.views.ddot.InspectionDetails;

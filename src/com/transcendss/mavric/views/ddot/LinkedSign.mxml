@@ -12,37 +12,57 @@
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
+			import mx.rpc.Responder;
 			
 			import spark.skins.mobile.TextInputSkin;
 			
 			public var inspectionEditedCallback:Function;
 			
+			public var currentSign:Object;
+			public var otherSigns:ArrayCollection;
 			[Bindable]
-			private var currentSignDG:ArrayCollection = new ArrayCollection([
-				{signType:"Stop", arrowDirection:'left', measure:5, supportID:'3'}
-			]);
+			private var currentSignDp:ArrayCollection;
+			[Bindable]
+			private var otherSignsDp:ArrayCollection;
 			
-			[Bindable] 
-			private var dummyDG:ArrayCollection = new ArrayCollection([
-				{linked:true, signType:"Stop", arrowDirection:'', measure:'', supportID:''}, 
-				{linked:false, signType:"Loading Zone", arrowDirection:'left', measure:1, supportID:'1'},
-				{linked:true, signType:"Loading Zone", arrowDirection:'right', measure:2, supportID:'2'},
-				{linked:true, signType:"Stop", arrowDirection:'', measure:'', supportID:''}, 
-				{linked:false, signType:"Loading Zone", arrowDirection:'left', measure:1, supportID:'1'},
-				{linked:true, signType:"Loading Zone", arrowDirection:'right', measure:2, supportID:'2'}
-			]);    
-			
-			
+			private var signTypes:ArrayCollection;
+
 			private function init():void
 			{
 				try
 				{
-					
+					signTypes = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGNTYPE");
 				}
 				catch(err:Error)
 				{
 					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());		
 				}
+			}
+			
+			public function loadLinkedSignsInfo():void
+			{
+				currentSignDp = new ArrayCollection([currentSign]);
+				for each(var otherSign:Object in otherSigns)
+				{
+					otherSign['Linked'] = false;
+				}
+				otherSignsDp = otherSigns;
+				
+			}
+			
+			private function formatSignTypeColumn(item:Object, column:GridColumn):String
+			{
+				for each(var type:Object in signTypes)
+				{
+					if(type['ID'] == item[column.dataField])
+						return type['DESCRIPTION'];
+				}
+				return "";
+			}
+			
+			private function formatMeasureColumn(item:Object, column:GridColumn):String
+			{
+				return parseFloat(item[column.dataField]).toFixed(3);
 			}
 			
 			protected function handleCloseEvent():void
@@ -83,31 +103,40 @@
 		<s:DataGrid id="currentSignGrid" 
 					width="100%" height="60"
 					verticalScrollPolicy="off"
-					dataProvider="{currentSignDG}"/>
+					dataProvider="{currentSignDp}">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="SIGNTYPE" headerText="Sign Type" labelFunction="formatSignTypeColumn"/>
+					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
+					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn"/>
+					<s:GridColumn dataField="POLEID" headerText="Support ID"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
 		
-		<s:Spacer height="20"/>
+		<s:Spacer height="10"/>
 		<s:Label text="Potential Matched Sign:" fontWeight="bold"/>
 		<s:DataGrid id="otherSignsGrid" 
 					width="100%" height="300"
 				    verticalScrollPolicy="auto"
-					dataProvider="{dummyDG}">
+					dataProvider="{otherSignsDp}">
 			<s:columns>
 				<s:ArrayList>
 					<s:GridColumn editable="false" headerText="Linked">
 						<s:itemRenderer>
 							<fx:Component>
 								<s:GridItemRenderer>
-									<s:CheckBox selected="@{data.linked}"/>
+									<s:CheckBox selected="@{data.Linked}"/>
 								</s:GridItemRenderer>
 								
 							</fx:Component>
 						</s:itemRenderer>
 					</s:GridColumn>
-					<s:GridColumn dataField="signType" headerText="Sign Type"/>
-					<s:GridColumn dataField="arrowDirection" headerText="Arrow Direction"/>
-					<s:GridColumn dataField="measure" headerText="Measure">
+					<s:GridColumn dataField="SIGNTYPE" headerText="Sign Type" labelFunction="formatSignTypeColumn"/>
+					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
+					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn">
 					</s:GridColumn>
-					<s:GridColumn dataField="supportID" headerText="Support ID"/>
+					<s:GridColumn dataField="POLEID" headerText="Support ID"/>
 				</s:ArrayList>
 			</s:columns>
 		</s:DataGrid>

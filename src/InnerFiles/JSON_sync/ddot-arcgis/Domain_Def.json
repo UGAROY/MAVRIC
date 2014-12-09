@@ -262,6 +262,61 @@
       ]
     }
   },
+   {
+    "DOMAIN_DEF": {
+      "TYPE": "SIGNTYPE",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Regulatory"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Guidance/Directional"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Stop/Prohibition"
+        },
+		{
+          "ID": "4",
+          "DESCRIPTION": "Yield"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Pedestian"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Bike"
+        },
+		{
+          "ID": "7",
+          "DESCRIPTION": "Playground"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "School Bus"
+        },
+        {
+          "ID": "9",
+          "DESCRIPTION": "School"
+        },
+		{
+          "ID": "10",
+          "DESCRIPTION": "Recreational"
+        },
+        {
+          "ID": "11",
+          "DESCRIPTION": "Warning"
+        },
+        {
+          "ID": "12",
+          "DESCRIPTION": "PayToLoad"
+        }
+      ]
+    }
+  },
   {
     "DOMAIN_DEF": {
       "TYPE": "GDB_VERSION",
