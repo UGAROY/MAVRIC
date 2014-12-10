@@ -9,6 +9,9 @@ package com.transcendss.mavric.managers.ddot
 	import com.transcendss.transcore.sld.models.managers.CoreAssetManager;
 	
 	import flash.events.Event;
+	import flash.filesystem.File;
+	import flash.filesystem.FileMode;
+	import flash.filesystem.FileStream;
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
@@ -21,6 +24,8 @@ package com.transcendss.mavric.managers.ddot
 		private var _agsMapService:AgsMapService;
 		private var fileUtil:FileUtility = new FileUtility();
 		
+		private var _newSignID:Number = -1;
+		
 		/**
 		 * Creates tables for an list of different types of assets.
 		 */
@@ -29,6 +34,22 @@ package com.transcendss.mavric.managers.ddot
 			_mdbm = MAVRICDBManager.newInstance();
 			_agsMapService = FlexGlobals.topLevelApplication.agsMapService;
 			_dispatcher = new Dispatcher(); 
+		}
+		
+		public function createNewSign(poleID:Number):Object
+		{
+			var sign:Object = new Object();
+			sign['SIGNID'] = _newSignID--;
+			sign['POLEID'] = poleID;
+			sign['SIGNNAME'] = null;
+			sign['DESCRIPTION'] = null;
+			sign['SIGNFACING'] = null;
+			sign['SIGNSIZE'] = null;
+			sign['SIGNHEIGHT'] = null;
+			sign['SIGNSTATUS'] = null;
+			sign['ARROWDIRECTION'] = null;
+			
+			return sign;
 		}
 		
 		public function getSigns(supportID:Number, eventLayerID:Number, responder:IResponder):void

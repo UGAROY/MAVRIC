@@ -26,6 +26,9 @@
 			import mx.rpc.Responder;
 			
 			import spark.components.Button;
+			import spark.events.GridEvent;
+			import spark.events.GridSelectionEvent;
+			import spark.skins.mobile.TextInputSkin;
 			
 			import skins.HeaderlessPanelSkin;
 			import skins.TSSSkinnablePopUpContainerSkin;
@@ -48,20 +51,26 @@
 			private var dbManager:MAVRICDBManager;
 			private var recordManager:DdotRecordManager;
 			
-			private var allAssets:Object;
+			[Bindable]
+			private var allAssets:ArrayCollection = new ArrayCollection();
 			
 			private var currSupport:BaseAsset = null;
 			private var currSupportID:Number = -1;
 			[Bindable]
 			private var currSigns:ArrayCollection = new ArrayCollection();
-			private var currSignIDs:Array = new Array();
-			private var selectedSign:Object = new Object();
 			private var currSignTab:SignTab = null;
+			[Bindable]
+			private var selectedSign:Object = new Object();
+			[Bindable]
 			private var currInspections:ArrayCollection = new ArrayCollection();
+			private var inspectionDetailsForm:InspectionDetails = null;
 			
 			[Bindable]
 			private var dataRetrieved:Boolean = false;
-
+			
+			// A variable to store the new Sign ID
+			private var newSignID:Number = 0;
+			
 			private function init():void
 			{
 				try
@@ -111,7 +120,7 @@
 					endDateView.btnText = "MS End Date";
 					endDateView.width_TI = 120;
 					MsEndDateGroup.addElement(endDateView);
-
+					
 					attchView.init("SupportInventory",true,true,true);
 					addAttchmentsHolder.addElement(attchView);
 					
@@ -128,7 +137,30 @@
 			
 			private function onSave():void
 			{
+				saveSupport();
+			}
 			
+			private function saveSupport():void
+			{
+				if(this.retireChk.selected)
+				{
+					currSupport['invProperties'].RETIRED.value=1;
+				}
+				else
+				{
+					currSupport['invProperties'].LOCATION.value = locDDView.domainID;
+					currSupport['invProperties'].POLEMATERIAL.value = signSupportDDView.domainID;
+					currSupport['invProperties'].POLESTATUS.value = supportStatusDDView.domainID;
+					currSupport['invProperties'].BASETYPE.value = baseTypeDDView.domainID;
+					currSupport['invProperties'].NOOFHEADS.value = numberOfBasesDDView.domainID;
+					currSupport['invProperties'].SUBBASE.value = subBaseDDView.domainID;
+					currSupport['invProperties'].POLEHEIGHT.value = PoleHeightTextInut.text;
+					currSupport['invProperties'].COMMENTS.value = PoleComments.text;
+				}
+				
+				var supportEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT , true, true);
+				supportEvent.culvert = currSupport;
+				dispatchEvent(supportEvent);
 			}
 			
 			public override function setBaseAsset(baseAsst:BaseAsset):void
@@ -155,11 +187,7 @@
 			{
 				currSigns = result as ArrayCollection;
 				
-				// Build the allAssets variable
-				allAssets['SUPPORT'] = currSupport;
-				allAssets['SIGN'] = currSigns;
-				
-				currSignIDs = new Array();
+				var currSignIDs:Array = new Array();
 				for each(var item:Object in currSigns)
 				{
 					currSignIDs.push(item['SIGNID']);
@@ -202,22 +230,35 @@
 			//--------------------------------Sign Tab-------------------------------------------------
 			protected function targetSignBtn_clickHandler(event:MouseEvent):void
 			{
-				if (currSignTab != null && currSignTab.signValuesbeenChanged())
+//				if (currSignTab != null && currSignTab.signValuesbeenChanged())
+//				{
+//					var msg:String = "The current sign has been edited, do you want to keep the changes?";
+//					var resp:mx.rpc.Responder = new mx.rpc.Responder(updateSelectedSignValues, openSignPop);
+//					FlexGlobals.topLevelApplication.YesNoPrompt(msg, "Warning", resp);
+//				} 
+				if (currSignTab != null)
 				{
-					var msg:String = "The current sign has been edited, do you want to keep the changes?";
-					var resp:mx.rpc.Responder = new mx.rpc.Responder(updateSelectedSignValues, openSignPop);
-					FlexGlobals.topLevelApplication.YesNoPrompt(msg, "Warning", resp);
-				} 
-				else 
-				{
-					openSignPop();
+					// Update the values before switching to another sign
+					currSignTab.updateSignValues();
+					// If it is a new sign, push it to the currSign list
+					if (currSignTab.isNewSign)
+					{
+						currSigns.addItem(selectedSign);
+					}
 				}
+				openSignPop();
+				
+				// Click the current selected item to make sure the item can be clicked more than once
+				SignList.selectedItem = null;
+				SignList.validateDisplayList();
 			}
 			
 			protected function newSignBtn_clickHandler(event:MouseEvent):void
 			{
-				currSignTab = new SignTab();
-				SignTabGroup.addElement(currSignTab);
+				signPopUp.close(true);
+				
+				selectedSign = recordManager.createNewSign(currSupportID);
+				loadSelectedSign(true);
 			}
 			
 			protected function openSignPop(data:Object=null):void
@@ -229,30 +270,107 @@
 			protected function closeSignPop(event:Event):void
 			{
 				signPopUp.close(true, SignList.selectedItem);
-				selectedSign = SignList.selectedItem;				
 				
-				signText.text = selectedSign['SIGNID'];
-				loadSelectedSignInfo();
+				selectedSign = SignList.selectedItem;				
+				loadSelectedSign(false);
 			}
 			
-			private function loadSelectedSignInfo():void
+			private function loadSelectedSign(isNewSign:Boolean):void
 			{
 				// Clear all the previous sign info
 				SignTabGroup.removeAllElements();
 				
 				currSignTab = new SignTab();
-				currSignTab.sign = selectedSign;
-				currSignTab.loadSignInfo();
-				
 				SignTabGroup.addElement(currSignTab);
+				
+				// Load the sign info
+				currSignTab.sign = selectedSign;
+				currSignTab.isNewSign = isNewSign;
+				currSignTab.loadSignInfo();
 			}
 			
-			private function updateSelectedSignValues(data:Object=null):void
-			{
-				currSignTab.updateSignValues();
-				openSignPop();
-			}
+//			private function updateSelectedSignValues(data:Object=null):void
+//			{
+//				currSignTab.updateSignValues();
+//				openSignPop();
+//			}
 			//-----------------------------------------------------------------------------------------
+			
+			//------------------------Inspection Tab--------------------------------------------------
+			private function getAllAssets():void
+			{
+				// Clear old data
+				allAssets.removeAll();
+				
+				// Build the allAssets variable
+				allAssets.addItem({POLEID: currSupportID, SIGNID: null});
+				for each(var item:Object in currSigns)
+				{
+					allAssets.addItem({SIGNID: item['SIGNID'], POLEID: null});
+				}
+			}
+			
+			protected function newInspectionBtn_clickHandler(event:MouseEvent):void
+			{
+				getAllAssets();
+				
+				assetPopUp.open(this,false);
+				PopUpManager.centerPopUp(assetPopUp);
+			}
+			
+			protected function closeAssetPop(event:Event):void
+			{
+				assetPopUp.close(true, AssetList.selectedItem);
+				openInspectionEditor();
+				
+				// Create a new inspection object
+				inspectionDetailsForm.isNewInspection = true;
+				inspectionDetailsForm.inspection = new Object();
+				inspectionDetailsForm.inspection['POLEID'] = AssetList.selectedItem['POLEID'];
+				inspectionDetailsForm.inspection['SIGNID'] = AssetList.selectedItem['SIGNID'];
+			}
+			
+			private function inspHistoryGrid_gridClickHandler(event:GridEvent):void
+			{
+				openInspectionEditor();
+				
+				// Load the current inspection
+				inspectionDetailsForm.isNewInspection = false;
+				inspectionDetailsForm.inspection = event.item;
+				inspectionDetailsForm.loadInspectionInfo();
+			}
+			
+			private function openInspectionEditor():void
+			{
+				inspectionDetailsForm = new InspectionDetails();
+				inspectionDetailsForm = PopUpManager.createPopUp(this, InspectionDetails) as InspectionDetails;
+				inspectionDetailsForm.inspectionEditedCallback = inspectionEditedCompleteHandler;
+				PopUpManager.centerPopUp(inspectionDetailsForm);
+			}
+			
+			private function inspectionEditedCompleteHandler(inspection:Object, isNewInspection:Boolean):void
+			{
+				if (isNewInspection)
+					currInspections.addItem(inspection);
+				else
+					currInspections.refresh();
+			}
+			
+			private function assetLabelFunction(item:Object):String
+			{
+				return item['POLEID'] != null ? "Support -- " + item['POLEID'] : "Sign -- " + item['SIGNID'] 
+			}
+			
+			private function formatAssetLabelColumn(item:Object, column:GridColumn):String
+			{
+				return item['POLEID'] != null ? "Support -- " + item['POLEID'] : "Sign -- " + item['SIGNID'];
+			}
+			
+			private function formatInspectionDateColumn(item:Object, column:GridColumn):String
+			{
+				return InspectionDateDisplay.format(item[column.dataField]);
+			}
+			//----------------------------------------------------------------------------------------
 			
 		]]>
 	</fx:Script>
@@ -267,6 +385,14 @@
 				</s:VGroup>
 			</s:Panel>
 		</s:SkinnablePopUpContainer>
+		<s:SkinnablePopUpContainer id="assetPopUp" width="300" height="400"  name="Select Asset"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
+				<s:VGroup width="100%" height="100%" horizontalAlign="center">
+					<s:List id="AssetList" dataProvider="{allAssets}" change="closeAssetPop(event)" labelFunction="{assetLabelFunction}" width="100%" height="100%" fontSize="18" allowMultipleSelection="false"/>
+				</s:VGroup>
+			</s:Panel>
+		</s:SkinnablePopUpContainer>
+		<s:DateTimeFormatter id="InspectionDateDisplay" dateTimePattern="MMMM d, yyyy"/>
 	</fx:Declarations>
 	
 	<s:HGroup>
@@ -350,22 +476,42 @@
 			<s:HGroup verticalAlign="middle">
 				<s:Button id="targetSignBtn" label="Target Sign" click="targetSignBtn_clickHandler(event)" />
 				<s:Spacer width="20"/>
-				<s:TextInput id="signText" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:TextInput id="signText" text="{selectedSign['SIGNID']}" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
 			</s:HGroup>
-			<s:Line width="100%">
-				<s:stroke>
-					<s:SolidColorStroke color="#000000" weight="1"/>
-				</s:stroke>
-			</s:Line>
+			<!--			<s:Line width="100%">
+			<s:stroke>
+			<s:SolidColorStroke color="#000000" weight="1"/>
+			</s:stroke>
+			</s:Line>-->
 			<s:Group id="SignTabGroup">
 				
 			</s:Group>
 		</s:VGroup>
 		
-		<s:VGroup id="Inspections">
-			<ddot:Inspections>
+		<s:VGroup id="Inspections" paddingLeft="20" paddingTop="20" paddingRight="20">
+			<s:HGroup verticalAlign="middle">
+				<s:Button id="newInspectionBtn" label="New Inspection For" click="newInspectionBtn_clickHandler(event)" />
+				<s:Spacer width="20"/>
+				<s:TextInput id="assetText" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+			</s:HGroup>
+			<s:Spacer height="10"/>
+			<s:VGroup width="100%">
+				<s:Label text="Asset Inspection History" fontWeight="bold" width="540"/>
 				
-			</ddot:Inspections>
+				<s:DataGrid id="inspHistoryGrid" 
+							width="100%" height="300" 
+							selectionMode="singleRow"
+							gridClick="inspHistoryGrid_gridClickHandler(event)"
+							dataProvider="{currInspections}">
+					<s:columns>
+						<s:ArrayList>
+							<s:GridColumn dataField="AssetLabel" headerText="Asset" labelFunction="formatAssetLabelColumn"/>
+							<s:GridColumn dataField="INSPECTOR" headerText="Inspector"/>
+							<s:GridColumn dataField="DATEINSPECTED" headerText="Date" labelFunction="formatInspectionDateColumn"/>
+						</s:ArrayList>
+					</s:columns>
+				</s:DataGrid>
+			</s:VGroup>
 		</s:VGroup>
 		
 		<s:VGroup id ="Attachments"  paddingLeft="20" paddingTop="10">

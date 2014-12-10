@@ -26,12 +26,16 @@
 			private var inspectDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
 			private var attchView:AddAttachments = new AddAttachments();
 			
+			[Bindable]
+			public var inspection:Object;
+			public var isNewInspection:Boolean;
 			public var inspectionEditedCallback:Function;
 			
 			private function init():void
 			{
 				try
 				{
+					inspectorText.text = FlexGlobals.topLevelApplication.menuBar.getCurrentUser();
 					
 					typeDDView.domainTableIDColName =  "INSPECTION_TYPE";
 					typeDDView.fetchDomainValues();
@@ -74,6 +78,23 @@
 				}
 			}
 			
+			public function loadInspectionInfo():void
+			{
+				typeDDView.domainID = inspection['TYPE'];
+				conditionDDView.domainID = inspection['OVERALLCONDITION'];
+				actionTakenDDView.domainID = inspection['ACTIONTAKEN'];
+				additionActionDDView.domainID = inspection['ADDITIONALACTIONNEEDED']
+				inspectDateView.value = inspection['DATEINSPECTED'];
+				isBent.selected = inspection['BENT'];
+				isTwisted.selected = inspection['TWISTED'];
+				isLoose.selected = inspection['LOOSE'];
+				isRusted.selected = inspection['RUSTED'];
+				isFaded.selected = inspection['FADED'];
+				isPeeling.selected = inspection['PEELED'];
+				otherDamage.selected = inspection['OTHER'];
+				inspectorText.text = inspection['INSPECTOR'];
+			}
+			
 			protected function handleCloseEvent():void
 			{
 				PopUpManager.removePopUp(this);
@@ -84,11 +105,28 @@
 			{
 				try
 				{
+					// update the values
+					inspection['TYPE'] = typeDDView.domainID;
+					inspection['OVERALLCONDITION'] = conditionDDView.domainID;
+					inspection['ACTIONTAKEN'] = actionTakenDDView.domainID;
+					inspection['ADDITIONALACTIONNEEDED'] = additionActionDDView.domainID;
+					inspection['DATEINSPECTED'] = inspectDateView.value;
+					inspection['BENT'] = isBent.selected;
+					inspection['TWISTED'] = isTwisted.selected;
+					inspection['LOOSE'] = isLoose.selected;
+					inspection['RUSTED'] = isRusted.selected;
+					inspection['FADED'] = isFaded.selected;
+					inspection['PEELED'] = isPeeling.selected;
+					inspection['OTHER'] = otherDamage.selected;
+					inspection['INSPECTOR'] = inspectorText.text;
+					
 					PopUpManager.removePopUp(this);
+					
+					inspectionEditedCallback(inspection, isNewInspection);
 				}
 				catch(err:Error)
 				{
-					FlexGlobals.topLevelApplication.TSSAlert("Please fill out all fields."); //err.getStackTrace()
+					FlexGlobals.topLevelApplication.TSSAlert("Error."); 
 				}
 			}
 			
@@ -125,13 +163,13 @@
 			<s:VGroup width="30%">
 				<s:Label text="Damage" fontWeight="bold"/>
 				<s:Spacer height="10"/>
-				<s:CheckBox width="100" label="Bent"/>
-				<s:CheckBox width="100" label="Twisted"/>
-				<s:CheckBox width="100" label="Loose"/>
-				<s:CheckBox width="100" label="Rusted"/>
-				<s:CheckBox width="100" label="Faded"/>
-				<s:CheckBox width="100" label="Peeling"/>
-				<s:CheckBox width="100" label="Other"/>
+				<s:CheckBox id="isBent" width="100" label="Bent"/>
+				<s:CheckBox id="isTwisted" width="100" label="Twisted"/>
+				<s:CheckBox id="isLoose" width="100" label="Loose"/>
+				<s:CheckBox id="isRusted" width="100" label="Rusted"/>
+				<s:CheckBox id="isFaded" width="100" label="Faded"/>
+				<s:CheckBox id="isPeeling" width="100" label="Peeling"/>
+				<s:CheckBox id="otherDamage" width="100" label="Other"/>
 			</s:VGroup>
 			<s:Spacer width="10"/>
 			<s:VGroup width="30%">
@@ -141,7 +179,7 @@
 				<s:HGroup verticalAlign="middle">
 					<s:Label text="Inspector" fontWeight="bold"></s:Label>
 					<s:Spacer width="20"/>
-					<s:TextInput id="inspectIdText" editable="true" width="200" skinClass="spark.skins.mobile.TextInputSkin" />
+					<s:TextInput id="inspectorText" editable="true" width="200" skinClass="spark.skins.mobile.TextInputSkin" />
 				</s:HGroup>
 				<s:Spacer height="10"/>
 				<s:Group id="DateInspectedGroup"></s:Group>

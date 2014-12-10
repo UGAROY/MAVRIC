@@ -43,6 +43,8 @@
 			[Bindable]
 			public var isLoadingZoneSign:Boolean = false;
 			
+			public var isNewSign:Boolean;
+			
 			private function init():void
 			{
 				try
@@ -146,14 +148,14 @@
 				setSignImage();
 			}
 			
-			public function signValuesbeenChanged():Boolean
-			{
-				return signFacingDDView.domainID != sign['SIGNFACING'] ||
-					signSizeDDView.domainID != sign['SIGNSIZE'] ||
-					signStatusDDView.domainID != sign['SIGNSTATUS'] ||
-					signCodeTextInut.text != sign['SIGNNAME'] ||
-					descriptionTextInut.text != sign['DESCRIPTION'];
-			}
+//			public function signValuesbeenChanged():Boolean
+//			{
+//				return signFacingDDView.domainID != sign['SIGNFACING'] ||
+//					signSizeDDView.domainID != sign['SIGNSIZE'] ||
+//					signStatusDDView.domainID != sign['SIGNSTATUS'] ||
+//					signCodeTextInut.text != sign['SIGNNAME'] ||
+//					descriptionTextInut.text != sign['DESCRIPTION'];
+//			}
 			
 			public function updateSignValues():void
 			{

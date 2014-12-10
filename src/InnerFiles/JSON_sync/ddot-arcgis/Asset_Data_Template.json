@@ -67,7 +67,7 @@
           "Nullable": "TRUE"
         },
         {
-          "NAME": "INSPECTIONID",
+          "NAME": "RETIRED",
           "TYPE": "INTEGER",
           "Nullable": "TRUE"
         }

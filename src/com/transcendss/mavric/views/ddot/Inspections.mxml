@@ -80,7 +80,6 @@
 			private function openInsepectionEditor():void
 			{
 				inspectionDetailsForm = PopUpManager.createPopUp(this, InspectionDetails) as InspectionDetails;
-				(inspectionDetailsForm as InspectionDetails).inspectionEditedCallback = inspectionEditedCompleteHandler;
 				PopUpManager.centerPopUp(inspectionDetailsForm);
 			}
 			

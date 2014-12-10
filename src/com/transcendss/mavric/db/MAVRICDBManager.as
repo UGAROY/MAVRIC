@@ -37,6 +37,7 @@ package com.transcendss.mavric.db
 			sConn = new SQLConnection();
 			sConn.open(File.applicationStorageDirectory.resolvePath("mavric99.db"));
 			setupTables();
+			createDdotTables();
 			//clearInspectorTable();
 			//inspectorDummies(); // PLaceholder for now. To be Removed.
 		}
@@ -67,6 +68,7 @@ package com.transcendss.mavric.db
 				}
 				
 				instanceList[0].setupTables();
+				instanceList[0].createDdotTables();
 //				instanceList[0].inspectorDummies();
 				var assetMan:AssetManager = new AssetManager(); 
 			} catch (err:Error)
@@ -1991,6 +1993,64 @@ package com.transcendss.mavric.db
 		public function deleteMapImageRecordByName(name:String):void
 		{
 			sStat.text = "DELETE FROM MAP_IMAGES WHERE ROUTE_FULL_NAME = '" + name +"';";
+			sStat.execute();
+		}
+		
+		// ----DDOT code----------------------------------------------------
+		public function createDdotTables():void
+		{
+			// Signs Table
+			sStat.text = "CREATE TABLE IF NOT EXISTS SIGNS ( id INTEGER PRIMARY KEY, " + 
+				"POLEID INTEGER, " + 
+				"SIGNNAME TEXT, " +
+				"DESCRIPTION TEXT, " + 
+				"SIGNFACING INTEGER, " +
+				"SIGNHEIGHT REAL, " +
+				"SIGNSTATUS INTEGER,"+
+				"ARROWDIRECTION TEXT);";
+			sStat.execute();
+			
+			// Linked Sign Table
+			sStat.text = "CREATE TABLE IF NOT EXISTS LinkedSign ( id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"SIGN INTEGER, " + 
+				"LINKID TEXT, " +
+				"ZONEID INTEGER);";
+			sStat.execute();
+			
+			// Inspections Table
+			sStat.text = "CREATE TABLE IF NOT EXISTS INSPECTIONS ( INSPECTIONID INTEGER PRIMARY KEY, " + 
+				"POLEID INTEGER, " + 
+				"SIGNID INTEGER, " + 
+				"INSPECTOR TEXT, " +
+				"DATEINSPECTED REAL, " + 
+				"TYPE INTEGER, " +
+				"OVERALLCONDITION INTEGER, " +
+				"ACTIONTAKEN INTEGER,"+
+				"ADDITIONALACTIONNEEDED INTEGER," +
+				"BENT INTEGER," +
+				"TWISTED INTEGER," +
+				"LOOSE INTEGER," +
+				"RUSTED INTEGER," +
+				"FADED INTEGER," +
+				"PEELING INTEGER," +
+				"OTHER INTEGER);";
+			sStat.execute();
+			
+			// Time Restriction Table
+			sStat.text = "CREATE TABLE IF NOT EXISTS TIMERESTRICTIONS ( RESTRICTIONID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"LINKID TEXT, " + 
+				"STARTDAY INTEGER, " + 
+				"ENDDAY INTEGER, " +
+				"STARTTIME INTEGER, " + 
+				"ENDTIME INTEGER, " +
+				"HOURLIMIT REAL, " +
+				"RESTRICTIONORDER INTEGER);";
+			sStat.execute();
+			
+			// MS Utility Table
+			sStat.text = "CREATE TABLE IF NOT EXISTS MSUTILITY ( MSUTILITY INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"MSSTARTDATE REAL, " + 
+				"MSENDDATE REAL);";
 			sStat.execute();
 		}
 		
