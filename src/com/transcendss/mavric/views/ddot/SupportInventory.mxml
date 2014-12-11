@@ -377,6 +377,20 @@
 				return item['POLEID'] != null ? "Support -- " + item['POLEID'] : "Sign -- " + item['SIGNID'];
 			}
 			
+			private function formatAssetTypeColumn(item:Object, column:GridColumn):String
+			{
+				if (item['POLEID'] != null && item['POLEID'] != 0)
+					return "Support";
+				else
+				{
+					for each(var sign:Object in currSigns)
+						if (sign['SIGNID'] == item['SIGNID'])
+							return FlexGlobals.topLevelApplication.GlobalComponents.recordManager.signTypeDictionary[sign['SIGNTYPE']];
+				}
+					
+				return item['POLEID'] != null ? "Support -- " + item['POLEID'] : "Sign -- " + item['SIGNID'];
+			}
+			
 			private function formatInspectionDateColumn(item:Object, column:GridColumn):String
 			{
 				return InspectionDateDisplay.format(item[column.dataField]);
@@ -517,6 +531,7 @@
 					<s:columns>
 						<s:ArrayList>
 							<s:GridColumn dataField="AssetLabel" headerText="Asset" labelFunction="formatAssetLabelColumn"/>
+							<s:GridColumn dataField="AsseType" headerText="Asset Type" labelFunction="formatAssetTypeColumn"/>
 							<s:GridColumn dataField="INSPECTOR" headerText="Inspector"/>
 							<s:GridColumn dataField="DATEINSPECTED" headerText="Date" labelFunction="formatInspectionDateColumn"/>
 						</s:ArrayList>

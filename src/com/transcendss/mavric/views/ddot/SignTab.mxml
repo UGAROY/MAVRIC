@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
-		 xmlns:s="library://ns.adobe.com/flex/spark" creationComplete="init()">
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 creationComplete="init()">
 	
 	<fx:Script>
 		<![CDATA[
@@ -145,7 +146,7 @@
 				signSizeDDView.domainID = sign['SIGNSIZE'];
 				signStatusDDView.domainID = sign['SIGNSTATUS'];
 				signComments.text = sign['COMMENT'];
-				isLoadingZoneSign = sign['SIGN_LZ'] != null
+				isLoadingZoneSign = sign['SIGN_LZ'] != null;
 				setSignImage();
 			}
 			
@@ -175,21 +176,24 @@
 		
 	</fx:Declarations>
 	
-	<s:VGroup paddingLeft="20" paddingTop="10" paddingRight="10" paddingBottom="10">
+	<s:VGroup paddingBottom="10" paddingLeft="20" paddingRight="10" paddingTop="10">
 		<s:VGroup>
 			<s:HGroup>
 				<s:VGroup width="60%">
-					<s:Button id="selectSignBtn" label="Select Sign By Code" click="selectSignBtn_clickHandler(event)"/>
+					<s:Button id="selectSignBtn" label="Select Sign By Code"
+							  click="selectSignBtn_clickHandler(event)"/>
 					<s:Spacer height="5"/>
 					<s:HGroup verticalAlign="middle">
 						<s:VGroup width="40%">
-							<s:Label text="Sign  Code" fontWeight="bold"/>
-							<s:TextInput id="signCodeTextInut" editable="false" width="100%" skinClass="spark.skins.mobile.TextInputSkin"/>
+							<s:Label fontWeight="bold" text="Sign  Code"/>
+							<s:TextInput id="signCodeTextInut" width="100%" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"/>
 						</s:VGroup>
 						<s:Spacer width="5%"/>
 						<s:VGroup width="40%">
-							<s:Label text="Description" fontWeight="bold"/>
-							<s:TextInput id="descriptionTextInut" editable="false" width="100%" skinClass="spark.skins.mobile.TextInputSkin"/>
+							<s:Label fontWeight="bold" text="Description"/>
+							<s:TextInput id="descriptionTextInut" width="100%" editable="false"
+										 skinClass="spark.skins.mobile.TextInputSkin"/>
 						</s:VGroup>
 					</s:HGroup>
 					<s:Spacer height="10"/>
@@ -204,9 +208,9 @@
 						</s:VGroup>
 						<s:Spacer width="20"/>
 						<s:VGroup width="50%">
-							<s:Label text="Sign Image" fontWeight="bold"/>
+							<s:Label fontWeight="bold" text="Sign Image"/>
 							<s:Spacer height="10"/>
-							<s:VGroup width="180" height="180" id="selSignImgHolder">
+							<s:VGroup id="selSignImgHolder" width="180" height="180">
 							</s:VGroup>
 						</s:VGroup>
 					</s:HGroup>
@@ -214,19 +218,21 @@
 				</s:VGroup>
 				<s:Spacer width="5%"/>
 				<s:VGroup width="20%">
-					<s:Label text="Comments:  " fontWeight="bold"/>
-					<s:TextArea height="170" id= "signComments"/>
+					<s:Label fontWeight="bold" text="Comments:  "/>
+					<s:TextArea id="signComments" height="170"/>
 					<s:Spacer height="10"/>
-					<s:HGroup verticalAlign="middle" visible="{isLoadingZoneSign}">
-						<s:Label text="Zone ID" fontWeight="bold"/>
+					<s:HGroup visible="{isLoadingZoneSign}" verticalAlign="middle">
+						<s:Label fontWeight="bold" text="Zone ID"/>
 						<s:Spacer width="10"/>
-						<s:TextInput id="zoneIdTextInut" skinClass="spark.skins.mobile.TextInputSkin" width="210"/>
+						<s:TextInput id="zoneIdTextInut" width="210"
+									 skinClass="spark.skins.mobile.TextInputSkin"/>
 					</s:HGroup>
 					<s:Spacer height="10"/>
-					<s:HGroup verticalAlign="middle" width="100%" visible="{isLoadingZoneSign}">
-						<s:Button id="linkedSignBtn" label="Linked Sign" width="45%" click="linkedSignBtn_clickHandler(event)"/>
+					<s:HGroup visible="{isLoadingZoneSign}" width="100%" verticalAlign="middle">
+						<s:Button id="linkedSignBtn" width="45%" label="Linked Sign"
+								  click="linkedSignBtn_clickHandler(event)"/>
 						<s:Spacer width="10%"/>
-						<s:Button id="timeDayBtn" label="Time and Day" width="45%"/>
+						<s:Button id="timeDayBtn" width="45%" label="Time and Day"/>
 					</s:HGroup>
 					
 				</s:VGroup>
@@ -234,7 +240,7 @@
 		</s:VGroup>
 		
 		<s:Spacer height="20"/>
-		<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="100%" />
+		<s:VGroup id="addAttchmentsHolder" right="0" width="100%" gap="10"/>
 	</s:VGroup>
 	
 </s:Group>

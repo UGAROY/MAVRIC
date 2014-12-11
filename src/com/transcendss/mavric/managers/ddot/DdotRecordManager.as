@@ -24,6 +24,8 @@ package com.transcendss.mavric.managers.ddot
 		private var _agsMapService:AgsMapService;
 		private var fileUtil:FileUtility = new FileUtility();
 		
+		public var signTypeDictionary:Object = new Object();
+		
 		/**
 		 * Creates tables for an list of different types of assets.
 		 */
@@ -32,6 +34,13 @@ package com.transcendss.mavric.managers.ddot
 			_mdbm = MAVRICDBManager.newInstance();
 			_agsMapService = FlexGlobals.topLevelApplication.agsMapService;
 			_dispatcher = new Dispatcher(); 
+			
+			// Get the signTypes domain here since it can be used cross several tabs
+			var signTypes:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGNTYPE");
+			for each(var signType:Object in signTypes)
+			{
+				signTypeDictionary[signType['ID']] = signType['DESCRIPTION'];
+			}
 		}
 		
 		public function createNewSign(poleID:Number):Object

@@ -52,10 +52,10 @@
       "ELEMENT_TYPE": "4",
       "CAPTURE_AVAILABLE": "false",
       "VISIBLE_ON_STICK": "false",
-      "DESCRIPTION": "MEDIAN_TYPE",
-      "UI_NAME": "Median Type",
+      "DESCRIPTION": "NHS",
+      "UI_NAME": "NHS",
       "LRM": "1",
-      "TYPE_KEY": "ID",
+      "TYPE_KEY": "NHSTYPE",
       "SYNC": "true",
       "SYNC_COL_LIST":"ID|ROUTE|ROUTE_NAME|REFPT|ENDREFPT|ELEM_VALUE|RETIRED",
       "FORM_CLASS": "",
@@ -66,86 +66,6 @@
   {
     "BAR_ELEMENT_DEF": {
       "ELEMENT_TYPE": "5",
-      "CAPTURE_AVAILABLE": "false",
-      "VISIBLE_ON_STICK": "false",
-      "DESCRIPTION": "MEDIAN_WIDTH",
-      "UI_NAME": "Median Width",
-      "LRM": "1",
-      "TYPE_KEY": "ID",
-      "SYNC": "true",
-      "SYNC_COL_LIST":"ID|ROUTE|ROUTE_NAME|REFPT|ENDREFPT|ELEM_VALUE|RETIRED",
-      "FORM_CLASS": "",
-      "DEFINITION": {
-      }
-    }
-  },
-  {
-    "BAR_ELEMENT_DEF": {
-      "ELEMENT_TYPE": "6",
-      "CAPTURE_AVAILABLE": "false",
-      "VISIBLE_ON_STICK": "false",
-      "DESCRIPTION": "SHOULDER_MATERIAL",
-      "UI_NAME": "Shoulder Material",
-      "LRM": "1",
-      "TYPE_KEY": "ID",
-      "SYNC": "true",
-      "SYNC_COL_LIST":"ID|ROUTE|ROUTE_NAME|REFPT|ENDREFPT|ELEM_VALUE|RETIRED",
-      "FORM_CLASS": "",
-      "DEFINITION": {
-      }
-    }
-  },
-  {
-    "BAR_ELEMENT_DEF": {
-      "ELEMENT_TYPE": "7",
-      "CAPTURE_AVAILABLE": "false",
-      "VISIBLE_ON_STICK": "false",
-      "DESCRIPTION": "SHOULDER_THICKNESS",
-      "UI_NAME": "Shoulder Thickness",
-      "LRM": "1",
-      "TYPE_KEY": "ID",
-      "SYNC": "true",
-      "SYNC_COL_LIST":"ID|ROUTE|ROUTE_NAME|REFPT|ENDREFPT|ELEM_VALUE|RETIRED",
-      "FORM_CLASS": "",
-      "DEFINITION": {
-      }
-    }
-  },
-  {
-    "BAR_ELEMENT_DEF": {
-      "ELEMENT_TYPE": "8",
-      "CAPTURE_AVAILABLE": "false",
-      "VISIBLE_ON_STICK": "false",
-      "DESCRIPTION": "SUFF_RATING",
-      "UI_NAME": "Suff Rating",
-      "LRM": "1",
-      "TYPE_KEY": "ID",
-      "SYNC": "true",
-      "SYNC_COL_LIST":"ID|ROUTE|ROUTE_NAME|REFPT|ENDREFPT|ELEM_VALUE|RETIRED",
-      "FORM_CLASS": "",
-      "DEFINITION": {
-      }
-    }
-  },
-  {
-    "BAR_ELEMENT_DEF": {
-      "ELEMENT_TYPE": "9",
-      "CAPTURE_AVAILABLE": "false",
-      "VISIBLE_ON_STICK": "false",
-      "DESCRIPTION": "SURFACE_MATERIAL",
-      "UI_NAME": "Surface Material",
-      "LRM": "1",
-      "TYPE_KEY": "ID",
-      "SYNC": "true",
-      "SYNC_COL_LIST":"ID|ROUTE|ROUTE_NAME|REFPT|ENDREFPT|ELEM_VALUE|RETIRED",
-      "FORM_CLASS": "",
-      "DEFINITION": {
-      }
-    }
-  },
-  {
-    "BAR_ELEMENT_DEF": {
-      "ELEMENT_TYPE": "10",
       "CAPTURE_AVAILABLE": "false",
       "VISIBLE_ON_STICK": "true",
       "DESCRIPTION": "NUMBER_OF_LANES",
