@@ -161,6 +161,14 @@
 				var supportEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT , true, true);
 				supportEvent.culvert = currSupport;
 				dispatchEvent(supportEvent);
+				
+				
+				// Save the signs
+				keepValuesInCurrSignTab(); // Keep the values of current sign tab. The workflow here is not very straightforward, but anyway...
+				recordManager.saveSigns(currSigns);
+				
+				// Save the inspections
+				recordManager.saveInspections(currInspections);
 			}
 			
 			public override function setBaseAsset(baseAsst:BaseAsset):void
@@ -236,6 +244,16 @@
 //					var resp:mx.rpc.Responder = new mx.rpc.Responder(updateSelectedSignValues, openSignPop);
 //					FlexGlobals.topLevelApplication.YesNoPrompt(msg, "Warning", resp);
 //				} 
+				keepValuesInCurrSignTab();
+				openSignPop();
+				
+				// Click the current selected item to make sure the item can be clicked more than once
+				SignList.selectedItem = null;
+				SignList.validateDisplayList();
+			}
+			
+			protected function keepValuesInCurrSignTab():void
+			{
 				if (currSignTab != null)
 				{
 					// Update the values before switching to another sign
@@ -246,11 +264,6 @@
 						currSigns.addItem(selectedSign);
 					}
 				}
-				openSignPop();
-				
-				// Click the current selected item to make sure the item can be clicked more than once
-				SignList.selectedItem = null;
-				SignList.validateDisplayList();
 			}
 			
 			protected function newSignBtn_clickHandler(event:MouseEvent):void
@@ -325,9 +338,7 @@
 				
 				// Create a new inspection object
 				inspectionDetailsForm.isNewInspection = true;
-				inspectionDetailsForm.inspection = new Object();
-				inspectionDetailsForm.inspection['POLEID'] = AssetList.selectedItem['POLEID'];
-				inspectionDetailsForm.inspection['SIGNID'] = AssetList.selectedItem['SIGNID'];
+				inspectionDetailsForm.inspection = recordManager.createNewInspection(AssetList.selectedItem['POLEID'], AssetList.selectedItem['SIGNID']);
 			}
 			
 			private function inspHistoryGrid_gridClickHandler(event:GridEvent):void

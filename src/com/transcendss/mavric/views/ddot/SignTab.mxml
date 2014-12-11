@@ -144,6 +144,7 @@
 				signFacingDDView.domainID = sign['SIGNFACING'];
 				signSizeDDView.domainID = sign['SIGNSIZE'];
 				signStatusDDView.domainID = sign['SIGNSTATUS'];
+				signComments.text = sign['COMMENT'];
 				isLoadingZoneSign = sign['SIGN_LZ'] != null
 				setSignImage();
 			}
@@ -164,6 +165,7 @@
 				sign['SIGNFACING']= signFacingDDView.domainID;
 				sign['SIGNSIZE'] = signSizeDDView.domainID;
 				sign['SIGNSTATUS'] = signStatusDDView.domainID;
+				sign['COMMENT'] = signComments.text;
 			}
 			
 		]]>
@@ -213,7 +215,7 @@
 				<s:Spacer width="5%"/>
 				<s:VGroup width="20%">
 					<s:Label text="Comments:  " fontWeight="bold"/>
-					<s:TextArea height="170" id= "Comments"/>
+					<s:TextArea height="170" id= "signComments"/>
 					<s:Spacer height="10"/>
 					<s:HGroup verticalAlign="middle" visible="{isLoadingZoneSign}">
 						<s:Label text="Zone ID" fontWeight="bold"/>

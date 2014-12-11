@@ -22,6 +22,8 @@
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.managers.PopUpManager;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
 			
 			[Bindable]
 			private var _btnText:String;
@@ -41,10 +43,10 @@
 			
 			[Bindable]
 			private var _leftWidth:Number = 0;
-		
+			
 			[Bindable]
 			private var _description:String;
-			private var _domainId:String="";
+			private var _domainId:String = "";
 			private var _propertyId:String;
 			private var _domainTableIDColName:String;
 			private var _customCPEvent:DropDownViewEvent;
@@ -53,9 +55,9 @@
 			private var dispatcher:Dispatcher = new Dispatcher();
 			private var _customBCCallbakServiceMethod:String;
 			private var _customCPCallbakServiceMethod:String;
-
 			
-
+			
+			
 			private var _customBCCallbak:Function;
 			private var _customCPCallbak:Function;
 			
@@ -63,15 +65,15 @@
 			{
 				if(_customBCEvent != null) // custom click method
 				{
-						if(_customBCCallbak ==null)
-						{
-							var customEvent:DropDownViewEvent = new DropDownViewEvent(_customBCEvent.type);
-							dispatcher.dispatchEvent(customEvent);
-						}
-						else
-						{
-							_customBCCallbak.call(null, null);	
-						}
+					if(_customBCCallbak ==null)
+					{
+						var customEvent:DropDownViewEvent = new DropDownViewEvent(_customBCEvent.type);
+						dispatcher.dispatchEvent(customEvent);
+					}
+					else
+					{
+						_customBCCallbak.call(null, null);	
+					}
 				}
 				else
 				{
@@ -86,7 +88,7 @@
 				
 				popupList.dataProvider = _domain;
 			}
-
+			
 			
 			public function closePopup():void
 			{
@@ -94,23 +96,11 @@
 				
 				
 				
-			 	this.domainID = popupList.selectedItem.ID;
+				this.domainID = popupList.selectedItem.ID;
 				
-				//custom close popup
-				if(_customCPEvent !=null)
-				{
-					if(_customCPCallbak ==null)
-					{
-						var customEvent:DropDownViewEvent = new DropDownViewEvent(_customCPEvent.type);
-						dispatcher.dispatchEvent(customEvent);
-					}
-					else
-					{
-						_customCPCallbak.call(null,null);
-					}
-				}
+				
 			}
-
+			
 			public function closeDropDown():void
 			{
 				genericPopup.close(false);
@@ -119,7 +109,7 @@
 			{
 				return _btnText;
 			}
-
+			
 			public function set btnText(value:String):void
 			{
 				_btnText = value;
@@ -144,22 +134,22 @@
 			{
 				_bgColor = value;
 			}
-
+			
 			public function get domain():ArrayCollection
 			{
 				return _domain;
 			}
-
+			
 			public function set domain(value:ArrayCollection):void
 			{
 				_domain = value;
 			}
-
+			
 			public function get propertyId():String
 			{
 				return _propertyId;
 			}
-
+			
 			public function set propertyId(value:String):void
 			{
 				_propertyId = value;
@@ -213,7 +203,7 @@
 			{
 				_customCPCallbak = value;
 			}
-
+			
 			public function get description():String
 			{
 				return _description;
@@ -222,7 +212,12 @@
 			{
 				return this.domainIDStr;
 			}
-
+			
+			public function set text(val:String):void
+			{
+				
+			}
+			
 			public function set description(value:String):void
 			{
 				_description = value;
@@ -240,7 +235,7 @@
 			public function get domainIDStr():String//mainly for assetEditForm 
 			{
 				if(_domainId!="")
-					return String(_domainId);
+					return _domainId;
 				else
 					return "";
 			}
@@ -249,7 +244,7 @@
 			{
 				return _domainId;
 			}
-						
+			
 			public function set domainID(d:String):void
 			{
 				_domainId = d;
@@ -257,10 +252,23 @@
 				{
 					for each(var obj:Object in domain)
 					{
-						if(obj.ID == _domainId)
+						if(String(obj.ID) == String(_domainId))
 						{
 							_description = obj.DESCRIPTION;
 							break;
+						}
+					}
+					//custom close popup
+					if(_customCPEvent !=null)
+					{
+						if(_customCPCallbak ==null)
+						{
+							var customEvent:DropDownViewEvent = new DropDownViewEvent(_customCPEvent.type);
+							dispatcher.dispatchEvent(customEvent);
+						}
+						else
+						{
+							_customCPCallbak.call(null,null);
 						}
 					}
 				}
@@ -270,7 +278,7 @@
 			{
 				return _domainTableIDColName;
 			}
-
+			
 			public function set domainTableIDColName(value:String):void
 			{
 				_domainTableIDColName = value;
@@ -301,61 +309,59 @@
 				
 				if(!_domainTableIDColName || _domainTableIDColName ==="")
 					return;
-				
-//				if (!dbManager.isAssetDomainAvailable(_domainTableIDColName))
-//				{
-//					var httpServ:HTTPService = new HTTPService();
-//					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL +"Domains/"+ _domainTableIDColName +"/" + domainTableDescCol;
-//					httpServ.method = "GET";
-//					httpServ.resultFormat = "text";
-//					httpServ.addEventListener(FaultEvent.FAULT, fault);
-//					httpServ.addEventListener(ResultEvent.RESULT, setDomainFromService);
-//					httpServ.send();
-//				}
-//				else // Otherwise get the domains from the local table
-//				{
-//					_domain = dbManager.getAssetDomain(_domainTableIDColName);
-//					if(_domainId !=-1)
-//					{
-//						for each(var obj:Object in domain)
-//						{
-//							if(obj.ID == String(_domainId))
-//							{
-//								_description = obj.DESCRIPTION;
-//								break;
-//							}
-//						}
-//					}
-//				}
 				_domain = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain(this._domainTableIDColName);
-				
+				//				if (!dbManager.isAssetDomainAvailable(_domainTableIDColName))
+				//				{
+				//					var httpServ:HTTPService = new HTTPService();
+				//					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL +"Domains/"+ _domainTableIDColName +"/" + domainTableDescCol;
+				//					httpServ.method = "GET";
+				//					httpServ.resultFormat = "text";
+				//					httpServ.addEventListener(FaultEvent.FAULT, fault);
+				//					httpServ.addEventListener(ResultEvent.RESULT, setDomainFromService);
+				//					httpServ.send();
+				//				}
+				//				else // Otherwise get the domains from the local table
+				//				{
+				//					_domain = dbManager.getAssetDomain(_domainTableIDColName);
+				if(_domainId !="")
+				{
+					for each(var obj:Object in domain)
+					{
+						if(String(obj.ID) == String(_domainId))
+						{
+							_description = obj.DESCRIPTION;
+							break;
+						}
+					}
+				}
+				//				}
 			}
-//			private function fault(e:FaultEvent):void
-//			{
-//				trace("Error in Domain retrieval");
-//			}
-//			
-//			public function setDomainFromService(event:ResultEvent):void
-//			{
-//				var resp:Array = JSON.parse(event.result as String) as Array;
-//				_domain = new ArrayCollection(resp);
-//				dbManager.insertAssetDomain(_domain, _domainTableIDColName);	
-//				if(_domainId !=-1)
-//				{
-//					for each(var obj:Object in domain)
-//					{
-//						if(obj.ID == String(_domainId))
-//						{
-//							_description = obj.DESCRIPTION;
-//							break;
-//						}
-//					}
-//				}
-//			}
-
+			private function fault(e:FaultEvent):void
+			{
+				trace("Error in Domain retrieval");
+			}
 			
-
-
+			public function setDomainFromService(event:ResultEvent):void
+			{
+				var resp:Array = JSON.parse(event.result as String) as Array;
+				_domain = new ArrayCollection(resp);
+				dbManager.insertAssetDomain(_domain, _domainTableIDColName);	
+				if(_domainId !="")
+				{
+					for each(var obj:Object in domain)
+					{
+						if(String(obj.ID) == String(_domainId))
+						{
+							_description = obj.DESCRIPTION;
+							break;
+						}
+					}
+				}
+			}
+			
+			
+			
+			
 		]]>
 	</fx:Script>
 	

@@ -2000,25 +2000,28 @@ package com.transcendss.mavric.db
 		public function createDdotTables():void
 		{
 			// Signs Table
-			sStat.text = "CREATE TABLE IF NOT EXISTS SIGNS ( id INTEGER PRIMARY KEY, " + 
+			sStat.text = "CREATE TABLE IF NOT EXISTS SIGNS ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"SIGNID INTEGER, " +
 				"POLEID INTEGER, " + 
 				"SIGNNAME TEXT, " +
 				"DESCRIPTION TEXT, " + 
 				"SIGNFACING INTEGER, " +
 				"SIGNHEIGHT REAL, " +
 				"SIGNSTATUS INTEGER,"+
-				"ARROWDIRECTION TEXT);";
+				"ARROWDIRECTION TEXT," +
+				"COMMENT TEXT);";
 			sStat.execute();
 			
 			// Linked Sign Table
-			sStat.text = "CREATE TABLE IF NOT EXISTS LinkedSign ( id INTEGER PRIMARY KEY AUTOINCREMENT, " + 
-				"SIGN INTEGER, " + 
+			sStat.text = "CREATE TABLE IF NOT EXISTS LinkedSign ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"SIGNID INTEGER, " +
 				"LINKID TEXT, " +
 				"ZONEID INTEGER);";
 			sStat.execute();
 			
 			// Inspections Table
-			sStat.text = "CREATE TABLE IF NOT EXISTS INSPECTIONS ( INSPECTIONID INTEGER PRIMARY KEY, " + 
+			sStat.text = "CREATE TABLE IF NOT EXISTS INSPECTIONS ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"INSPECTIONID INTEGER, " +
 				"POLEID INTEGER, " + 
 				"SIGNID INTEGER, " + 
 				"INSPECTOR TEXT, " +
@@ -2033,11 +2036,13 @@ package com.transcendss.mavric.db
 				"RUSTED INTEGER," +
 				"FADED INTEGER," +
 				"PEELING INTEGER," +
-				"OTHER INTEGER);";
+				"OTHER INTEGER," +
+				"COMMENT TEXT);";
 			sStat.execute();
 			
 			// Time Restriction Table
-			sStat.text = "CREATE TABLE IF NOT EXISTS TIMERESTRICTIONS ( RESTRICTIONID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+			sStat.text = "CREATE TABLE IF NOT EXISTS TIMERESTRICTIONS ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"RESTRICTIONID INTEGER, " +
 				"LINKID TEXT, " + 
 				"STARTDAY INTEGER, " + 
 				"ENDDAY INTEGER, " +
@@ -2052,7 +2057,122 @@ package com.transcendss.mavric.db
 				"MSSTARTDATE REAL, " + 
 				"MSENDDATE REAL);";
 			sStat.execute();
+
 		}
 		
+		private function formatColumnValue(value:Object):String
+		{
+			// The AIR api for sqlite is extremely strict
+			if (value is Number)
+				return value.toString();
+			else if (value is Date)
+				return Date.parse(value).toString();
+			else if (value is Boolean)
+				return value == true? "1": "0";
+			else
+				return "'" + value + "'"; 
+		}
+		
+		// Build the key string and value string for the insert sql statement
+		private function buildDdotInsertKeyValueStr(record:Object, keys:Array):String
+		{
+			var keyStr:String = "";
+			var valueStr:String = "";
+			for each (var key:String in keys)
+			{
+				if (record[key] == null)
+					continue;
+				keyStr += key + ",";
+				valueStr += formatColumnValue(record[key]) + ",";
+			}	
+			return StringUtil.substitute("({0}) VALUES ({1})", [keyStr.slice( 0, -1 ), valueStr.slice( 0, -1 )]);
+		}
+		
+		// Build key = value string for the update sql statement
+		private function buildDdotUpdateKeyValueStr(record:Object, keys:Array):String
+		{
+			var updateStr:String = "";
+			for each (var key:String in keys)
+			{
+				if (record[key] == null)
+					continue;
+				updateStr += StringUtil.substitute("{0}={1},", [key, formatColumnValue(record[key])]);
+			}
+			return updateStr.slice( 0, -1 )
+		}
+		
+		public function addDdotSign(sign:Object):void
+		{
+			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENT")
+			sStat.text = "INSERT INTO SIGNS " + buildDdotInsertKeyValueStr(sign, signColumns); 
+			sStat.execute();
+		}
+		
+		public function updateDdotSign(sign:Object):void
+		{
+			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENT");
+			sStat.text = StringUtil.substitute("UPDATE SIGNS SET {0} WHERE SIGNID={1}", [buildDdotUpdateKeyValueStr(sign, signColumns), sign['SIGNID'].toString()]);
+			sStat.execute();
+		}
+		
+		// Check to see if culvert domain table is populated
+		public function isDdotSignExist(signID:Number):Boolean
+		{
+			sStat.text = "SELECT * from SIGNS where SIGNID =" + signID.toString();
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data == null)
+				return false;
+			else if (data.length > 0)
+				return true;
+			else
+				return false;
+		}
+		
+		public function getDdotSignByPoleID(poleID:Number):ArrayCollection
+		{
+			var signs:ArrayCollection = new ArrayCollection();
+			try
+			{
+				sStat.text = "SELECT * FROM SIGNS WHERE POLEID = " + poleID;
+				sStat.execute();
+				var data:Array = sStat.getResult().data;
+				signs = new ArrayCollection(data);
+			}
+			catch(err:Error)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert(err.message);
+			}
+			return signs;
+		}
+		
+		public function addDdotInspection(inspection:Object):void
+		{
+			var inspectionColumns:Array = new Array("INSPECTIONID", "POLEID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
+				"ADDITIONALACTIONNEEDED", "BENT", "TWISTED", "LOOSE", "RUSTED", "FADED", "PEELING", "OTHER");
+			sStat.text = "INSERT INTO INSPECTIONS " + buildDdotInsertKeyValueStr(inspection, inspectionColumns); 
+			sStat.execute();
+		}
+		
+		public function updateDdotInspection(inspection:Object):void
+		{
+			var inspectionColumns:Array = new Array("INSPECTIONID", "POLEID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
+				"ADDITIONALACTIONNEEDED", "BENT", "TWISTED", "LOOSE", "RUSTED", "FADED", "PEELING", "OTHER");
+			sStat.text = StringUtil.substitute("UPDATE INSPECTIONS SET {0} WHERE INSPECTIONID={1}", [buildDdotUpdateKeyValueStr(inspection, inspectionColumns), inspection['INSPECTIONID'].toString()]);
+			sStat.execute();
+		}
+		
+		public function isDdotInspectionExist(inspectionID:Number):Boolean
+		{
+			sStat.text = "SELECT * from INSPECTIONS where INSPECTIONID =" + inspectionID.toString();
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data == null)
+				return false;
+			else if (data.length > 0)
+				return true;
+			else
+				return false;
+		}
 	}
 }

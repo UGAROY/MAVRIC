@@ -24,8 +24,6 @@ package com.transcendss.mavric.managers.ddot
 		private var _agsMapService:AgsMapService;
 		private var fileUtil:FileUtility = new FileUtility();
 		
-		private var _newSignID:Number = -1;
-		
 		/**
 		 * Creates tables for an list of different types of assets.
 		 */
@@ -39,7 +37,7 @@ package com.transcendss.mavric.managers.ddot
 		public function createNewSign(poleID:Number):Object
 		{
 			var sign:Object = new Object();
-			sign['SIGNID'] = _newSignID--;
+			sign['SIGNID'] = -1;
 			sign['POLEID'] = poleID;
 			sign['SIGNNAME'] = null;
 			sign['DESCRIPTION'] = null;
@@ -48,6 +46,27 @@ package com.transcendss.mavric.managers.ddot
 			sign['SIGNHEIGHT'] = null;
 			sign['SIGNSTATUS'] = null;
 			sign['ARROWDIRECTION'] = null;
+			sign['COMMENT'] = null;
+			
+			return sign;
+		}
+		
+		public function prepareSignBeforeSave(sign:Object):Object
+		{
+			// Conver to the sign to SQLite type
+			// Domain to integer
+			sign['SIGNFACING'] = sign['SIGNFACING'] || null;
+			sign['SIGNSIZE'] = sign['SIGNSIZE'] || null;
+			sign['SIGNSTATUS'] = sign['SIGNSTATUS'] || null;
+			
+			return sign;
+		}
+		
+		public function prepareSignBeforeLoad(sign:Object):Object
+		{
+			sign['SIGNFACING'] = sign['SIGNFACING'] != null ? sign['SIGNFACING'].toString() : null;
+			sign['SIGNSIZE'] = sign['SIGNSIZE'] != null ? sign['SIGNSIZE'].toString() : null;
+			sign['SIGNSTATUS'] = sign['SIGNSTATUS'] != null ? sign['SIGNSTATUS'].toString() : null;
 			
 			return sign;
 		}
@@ -57,9 +76,43 @@ package com.transcendss.mavric.managers.ddot
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.SIGN_REQUEST);
 			var whereClause:String =  StringUtil.replace("POLEID = '@poleId'", "@poleId", supportID.toString());
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(eventLayerID, whereClause);
+			_requestEvent.supportID = supportID;
 			_requestEvent.responder = responder;
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
+		}
+
+		public function onSignServiceResult(obj:Object,event:DdotRecordEvent):void
+		{
+			event.stopPropagation();
+			
+			var resp:IResponder = event.responder;
+			var supportID:Number = event.supportID;
+			var arrayColl:ArrayCollection = new ArrayCollection();
+			var arr:Array = parseJsonObj(obj);
+			var dataArr:Array = new Array();
+			for each(var arrItem:Object in arr)
+				dataArr.push(arrItem.attributes);
+			var liveSigns:ArrayCollection = new ArrayCollection(dataArr);
+				
+			// Get Local signs 
+			var signs:ArrayCollection = _mdbm.getDdotSignByPoleID(supportID);
+			
+			// Get existing signIds
+			var signIDs:Array = new Array();
+			for each(var item:Object in signs)
+				signIDs.push(item['SIGNID']);
+			
+			// Add live signs to the signs if the sign id is different from the existing ones
+			for each (var liveSign:Object in liveSigns)
+				if (signIDs.indexOf(liveSign['SIGNID']) == -1)
+					signs.addItem(liveSign);
+				
+			// Have to do a bit pre-processing on each sign to make sure they can communicate with flex components
+			for each (var sign:Object in signs)
+				prepareSignBeforeLoad(sign);
+			
+			resp.result(signs);
 		}
 		
 		public function getInspections(supportID:Number, signIDs:Array, eventLayerID:Number, responder:IResponder):void
@@ -74,22 +127,63 @@ package com.transcendss.mavric.managers.ddot
 			_requestEvent = null;
 		}
 		
-		public function onSignServiceResult(obj:Object,event:DdotRecordEvent):void
+		public function createNewInspection(poleID:Number, signID:Number):Object
 		{
-			event.stopPropagation();
+			var inspection:Object = new Object();
+			inspection['INSPECTIONID'] = -1;
+			inspection['POLEID'] = poleID == 0 ? null: poleID;
+			inspection['SIGNID'] = signID == 0 ? null: signID;
+			inspection['INSPECTOR'] = null;
+			inspection['TYPE'] = null;
+			inspection['OVERALLCONDITION'] = null;
+			inspection['ACTIONTAKEN'] = null;
+			inspection['ADDITIONALACTIONNEEDED'] = null;
+			inspection['BENT'] = null;
+			inspection['TWISTED'] = null;
+			inspection['LOOSE'] = null;
+			inspection['RUSTED'] = null;
+			inspection['FADED'] = null;
+			inspection['PEELING'] = null;
+			inspection['OTHER'] = null;
+			inspection['COMMENT'] = null;
 			
-			var resp:IResponder = event.responder;
-			
-			var arrayColl:ArrayCollection = new ArrayCollection();
-			var arr:Array = parseJsonObj(obj);
-			var dataArr:Array = new Array();
-			for each(var arrItem:Object in arr)
-			{
-				dataArr.push( arrItem.attributes);
-			}
-			
-			resp.result(new ArrayCollection(dataArr));
+			return inspection;
 		}
+		
+		public function prepareInspectionBeforeSave(inspection:Object):Object
+		{
+			// Conver to the inspection to SQLite type
+			// Domain to integer
+			inspection['TYPE'] = inspection['TYPE'] || null;
+			inspection['OVERALLCONDITION'] = inspection['OVERALLCONDITION'] || null;
+			inspection['ACTIONTAKEN'] = inspection['ACTIONTAKEN'] || null;
+			inspection['ADDITIONALACTIONNEEDED'] = inspection['ADDITIONALACTIONNEEDED'] || null;
+			inspection['DATEINSPECTED'] = Date.parse(inspection['DATEINSPECTED']);
+			inspection['BENT'] = inspection['BENT'] ? 1 : 0;
+			inspection['TWISTED'] = inspection['TWISTED'] ? 1 : 0;
+			inspection['LOOSE'] = inspection['LOOSE'] ? 1 : 0;
+			inspection['RUSTED'] = inspection['RUSTED'] ? 1 : 0;
+			inspection['FADED'] = inspection['FADED'] ? 1 : 0;
+			inspection['PEELED'] = inspection['PEELED'] ? 1 : 0;
+			inspection['OTHER'] = inspection['OTHER'] ? 1 : 0;
+			
+			return inspection;
+		}
+		
+		public function prepareInspectionBeforeLoad(inspection:Object):Object
+		{
+			inspection['DATEINSPECTED'] = new Date(inspection['DATEINSPECTED']);
+			inspection['BENT'] = inspection['BENT'] == 1 || inspection['BENT'];
+			inspection['TWISTED'] = inspection['TWISTED'] == 1 || inspection['TWISTED'];
+			inspection['LOOSE'] = inspection['LOOSE'] == 1 || inspection['LOOSE'];
+			inspection['RUSTED'] = inspection['RUSTED'] == 1 || inspection['RUSTED'];
+			inspection['FADED'] = inspection['FADED'] == 1 || inspection['FADED'];
+			inspection['PEELED'] = inspection['PEELED'] == 1 || inspection['PEELED'];
+			inspection['OTHER'] = inspection['OTHER'] == 1 || inspection['OTHER'];
+			
+			return inspection;
+		}
+
 		
 		public function onInspectionServiceResult(obj:Object,event:DdotRecordEvent):void
 		{
@@ -145,5 +239,28 @@ package com.transcendss.mavric.managers.ddot
 			return arr;
 		}
 		
+		public function saveSigns(signs:ArrayCollection):void
+		{
+			for each(var sign:Object in signs)
+			{
+				sign = prepareSignBeforeSave(sign);
+				if (sign['SIGNID'] == -1 || !_mdbm.isDdotSignExist(sign['SIGNID']))
+					_mdbm.addDdotSign(sign);
+				else
+					_mdbm.updateDdotSign(sign);
+			}
+		}
+		
+		public function saveInspections(inspections:ArrayCollection):void
+		{
+			for each(var inspection:Object in inspections)
+			{
+				inspection = prepareInspectionBeforeSave(inspection);
+				if (inspection['INSPECTIONID'] == -1 || !_mdbm.isDdotInspectionExist(inspection['INSPECTIONID']))
+					_mdbm.addDdotInspection(inspection);
+				else
+					_mdbm.updateDdotInspection(inspection);
+			}
+		}
 	}
 }

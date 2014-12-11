@@ -83,7 +83,7 @@
 				typeDDView.domainID = inspection['TYPE'];
 				conditionDDView.domainID = inspection['OVERALLCONDITION'];
 				actionTakenDDView.domainID = inspection['ACTIONTAKEN'];
-				additionActionDDView.domainID = inspection['ADDITIONALACTIONNEEDED']
+				additionActionDDView.domainID = inspection['ADDITIONALACTIONNEEDED'];
 				inspectDateView.value = inspection['DATEINSPECTED'];
 				isBent.selected = inspection['BENT'];
 				isTwisted.selected = inspection['TWISTED'];
@@ -93,6 +93,8 @@
 				isPeeling.selected = inspection['PEELED'];
 				otherDamage.selected = inspection['OTHER'];
 				inspectorText.text = inspection['INSPECTOR'];
+				inspectionComment.text = inspection['COMMENT'];
+				
 			}
 			
 			protected function handleCloseEvent():void
@@ -119,6 +121,7 @@
 					inspection['PEELED'] = isPeeling.selected;
 					inspection['OTHER'] = otherDamage.selected;
 					inspection['INSPECTOR'] = inspectorText.text;
+					inspection['COMMENT'] = inspectionComment.text;
 					
 					PopUpManager.removePopUp(this);
 					
@@ -174,7 +177,7 @@
 			<s:Spacer width="10"/>
 			<s:VGroup width="30%">
 				<s:Label text="Comments:  " fontWeight="bold"/>
-				<s:TextArea height="170" width="300" id= "Comments"/>
+				<s:TextArea height="170" width="300" id= "inspectionComment"/>
 				<s:Spacer height="10"/>
 				<s:HGroup verticalAlign="middle">
 					<s:Label text="Inspector" fontWeight="bold"></s:Label>
