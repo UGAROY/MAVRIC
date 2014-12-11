@@ -8,6 +8,7 @@ package com.transcendss.mavric.events.ddot
 	public class DdotRecordEvent extends Event
 	{
 		private var _supportID:Number;
+		private var _signIDs:Array;
 		private var _eventLayerID:Number;
 		private var _serviceURL:String;
 		private var _responder:IResponder;
@@ -20,6 +21,16 @@ package com.transcendss.mavric.events.ddot
 			super(type, bubbles, cancelable);
 		}
 
+
+		public function get signIDs():Array
+		{
+			return _signIDs;
+		}
+
+		public function set signIDs(value:Array):void
+		{
+			_signIDs = value;
+		}
 
 		public function get serviceURL():String
 		{

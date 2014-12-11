@@ -2174,5 +2174,22 @@ package com.transcendss.mavric.db
 			else
 				return false;
 		}
+		
+		public function getDdotInspectionByPoleSignID(poleID:Number, signIDs:Array):ArrayCollection
+		{
+			var inspections:ArrayCollection = new ArrayCollection();
+			try
+			{
+				sStat.text = "SELECT * FROM INSPECTIONS WHERE POLEID = " + poleID + " OR SIGNID in (" + signIDs.join(",") + ")";
+				sStat.execute();
+				var data:Array = sStat.getResult().data;
+				inspections = new ArrayCollection(data);
+			}
+			catch(err:Error)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert(err.message);
+			}
+			return inspections;
+		}
 	}
 }

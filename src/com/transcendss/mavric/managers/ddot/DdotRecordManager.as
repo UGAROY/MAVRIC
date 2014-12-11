@@ -122,6 +122,8 @@ package com.transcendss.mavric.managers.ddot
 				.replace("@poleId", supportID.toString())
 				.replace('@signIds', signIDs.join(","));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(eventLayerID, whereClause);
+			_requestEvent.supportID = supportID;
+			_requestEvent.signIDs = signIDs;
 			_requestEvent.responder = responder;
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
@@ -172,6 +174,10 @@ package com.transcendss.mavric.managers.ddot
 		
 		public function prepareInspectionBeforeLoad(inspection:Object):Object
 		{
+			inspection['TYPE'] = inspection['TYPE'] != null ? inspection['TYPE'].toString() : null;
+			inspection['OVERALLCONDITION'] = inspection['OVERALLCONDITION'] != null ? inspection['OVERALLCONDITION'].toString() : null;
+			inspection['ACTIONTAKEN'] = inspection['ACTIONTAKEN'] != null ? inspection['ACTIONTAKEN'].toString() : null;
+			inspection['ADDITIONALACTIONNEEDED'] = inspection['ADDITIONALACTIONNEEDED'] != null ? inspection['ADDITIONALACTIONNEEDED'].toString() : null;
 			inspection['DATEINSPECTED'] = new Date(inspection['DATEINSPECTED']);
 			inspection['BENT'] = inspection['BENT'] == 1 || inspection['BENT'];
 			inspection['TWISTED'] = inspection['TWISTED'] == 1 || inspection['TWISTED'];
@@ -184,25 +190,41 @@ package com.transcendss.mavric.managers.ddot
 			return inspection;
 		}
 
-		
 		public function onInspectionServiceResult(obj:Object,event:DdotRecordEvent):void
 		{
 			event.stopPropagation();
 			
 			var resp:IResponder = event.responder;
-			
+			var supportID:Number = event.supportID;
+			var signIDs:Array = event.signIDs;
 			var arrayColl:ArrayCollection = new ArrayCollection();
 			var arr:Array = parseJsonObj(obj);
 			var dataArr:Array = new Array();
 			for each(var arrItem:Object in arr)
-			{
 				dataArr.push( arrItem.attributes);
-			}
+			var liveInspections:ArrayCollection = new ArrayCollection(dataArr);
 			
-			resp.result(new ArrayCollection(dataArr));
+			// Get local inspections
+			var inspections:ArrayCollection = _mdbm.getDdotInspectionByPoleSignID(supportID, signIDs);
+			
+			// Get existing inspectionIDs
+			var inspectionIDs:Array = new Array();
+			for each(var item:Object in liveInspections)
+				inspectionIDs.push(item['INSPECTIONID']);
+				
+			// Add live inspections to the inspection if the inspection id is different from the existing ones
+			for each (var liveInspection:Object in liveInspections)
+			if (inspectionIDs.indexOf(liveInspection['INSPECTIONID']) == -1)
+				inspections.addItem(liveInspection);
+			
+			// Have to do a bit pre-processing on each inspection to make sure they can communicate with flex components
+			for each (var inspection:Object in inspections)
+				prepareInspectionBeforeLoad(inspection);
+			
+			resp.result(inspections);
 		}
 		
-		public function getOtherSignsOnRoute(routeID:String, signID:Number, eventLayerID:Number, responder:IResponder)
+		public function getOtherSignsOnRoute(routeID:String, signID:Number, eventLayerID:Number, responder:IResponder):void
 		{
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.SIGN_REQUEST);
 			var whereClause:String =  "ROUTEID = '@routeId' and SIGNID <> @signId".replace("@routeId", routeID)
@@ -212,8 +234,7 @@ package com.transcendss.mavric.managers.ddot
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
 		}
-		
-		
+			
 		public function parseJsonObj(obj:Object):Array
 		{
 			if(!obj)
