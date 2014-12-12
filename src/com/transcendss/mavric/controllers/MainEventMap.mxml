@@ -446,6 +446,19 @@
 			</mate:HTTPServiceInvoker>
 		</mate:EventHandlers>
 		
+		<mate:EventHandlers type="{DdotRecordEvent.OTHER_SIGN_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onOtherSignsServiceResult'}" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
 		<mate:EventHandlers type="{DdotRecordEvent.INSPECTION_REQUEST}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
 				<mate:resultHandlers>

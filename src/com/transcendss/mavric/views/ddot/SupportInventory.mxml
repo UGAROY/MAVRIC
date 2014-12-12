@@ -18,6 +18,7 @@
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
 			import com.transcendss.mavric.views.ddot.Inspections;
 			import com.transcendss.mavric.views.ddot.SignInventory;
+			import com.transcendss.transcore.sld.models.StickDiagram;
 			import com.transcendss.transcore.sld.models.components.BaseAsset;
 			
 			import mx.collections.ArrayCollection;
@@ -28,6 +29,7 @@
 			import spark.components.Button;
 			import spark.events.GridEvent;
 			import spark.events.GridSelectionEvent;
+			import spark.events.IndexChangeEvent;
 			import spark.skins.mobile.TextInputSkin;
 			
 			import skins.HeaderlessPanelSkin;
@@ -75,6 +77,7 @@
 			{
 				try
 				{
+					
 					dbManager = MAVRICDBManager.newInstance();
 					recordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;
 					
@@ -126,6 +129,11 @@
 					
 					var eve:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
 					dispatchEvent(eve);
+					
+					// Listen to viewStack index change event
+//					viewStack.addEventListener(IndexChangeEvent.CHANGE, function (event:Event) {
+//						trace("HaHa");
+//					});
 				}
 				catch (err:Error)
 				{
@@ -299,6 +307,7 @@
 				// Load the sign info
 				currSignTab.sign = selectedSign;
 				currSignTab.isNewSign = isNewSign;
+				currSignTab.currSupportID = currSupportID;
 				currSignTab.loadSignInfo();
 			}
 			
@@ -325,6 +334,11 @@
 			
 			protected function newInspectionBtn_clickHandler(event:MouseEvent):void
 			{
+				// To make sure we get the newly added sign if switch from a newly added sign tab to inspection tab
+				// As I mentioned earlier, the ui for adding the new sign cannot really have a clean workflow for adding signs
+				// Another solution will be listening to the indexChange Event on the cbStackView
+				keepValuesInCurrSignTab();
+				
 				getAllAssets();
 				
 				assetPopUp.open(this,false);

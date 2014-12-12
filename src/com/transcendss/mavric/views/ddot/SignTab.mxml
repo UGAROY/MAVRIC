@@ -40,11 +40,8 @@
 			
 			[Bindable]
 			public var sign:Object;
-			
-			[Bindable]
-			public var isLoadingZoneSign:Boolean = false;
-			
 			public var isNewSign:Boolean;
+			public var currSupportID:Number;
 			
 			private function init():void
 			{
@@ -95,8 +92,19 @@
 			
 			protected function linkedSignBtn_clickHandler(event:MouseEvent):void
 			{
+//				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
+//				recordManager.getOtherSignsOnRoute(sign['ROUTEID'], sign['SIGNID'], 9, routeSignsResp);
+				var supports:ArrayCollection = recordManager.getAllSupports();
+				
+				var otherSupportIDs:Array = new Array();
+				for each (var support:Object in supports)
+				{
+					if (support['invProperties'].POLEID.value != currSupportID)
+						otherSupportIDs.push(support['invProperties'].POLEID.value);
+				}
+				
 				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
-				recordManager.getOtherSignsOnRoute(sign['ROUTEID'], sign['SIGNID'], 9, routeSignsResp);
+				recordManager.getOtherSignsOnRoute(otherSupportIDs, 9, routeSignsResp);
 			}
 			
 			private function openLinkedSignEditor(data:ArrayCollection):void
@@ -146,7 +154,6 @@
 				signSizeDDView.domainID = sign['SIGNSIZE'];
 				signStatusDDView.domainID = sign['SIGNSTATUS'];
 				signComments.text = sign['COMMENT'];
-				isLoadingZoneSign = sign['SIGN_LZ'] != null;
 				setSignImage();
 			}
 			
@@ -221,14 +228,14 @@
 					<s:Label fontWeight="bold" text="Comments:  "/>
 					<s:TextArea id="signComments" height="170"/>
 					<s:Spacer height="10"/>
-					<s:HGroup visible="{isLoadingZoneSign}" verticalAlign="middle">
+					<s:HGroup verticalAlign="middle">
 						<s:Label fontWeight="bold" text="Zone ID"/>
 						<s:Spacer width="10"/>
 						<s:TextInput id="zoneIdTextInut" width="210"
 									 skinClass="spark.skins.mobile.TextInputSkin"/>
 					</s:HGroup>
 					<s:Spacer height="10"/>
-					<s:HGroup visible="{isLoadingZoneSign}" width="100%" verticalAlign="middle">
+					<s:HGroup width="100%" verticalAlign="middle">
 						<s:Button id="linkedSignBtn" width="45%" label="Linked Sign"
 								  click="linkedSignBtn_clickHandler(event)"/>
 						<s:Spacer width="10%"/>

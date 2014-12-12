@@ -2147,6 +2147,35 @@ package com.transcendss.mavric.db
 			return signs;
 		}
 		
+		public function getDdotSignByPoleIDs(poleIDs:Array):ArrayCollection
+		{
+			var signs:ArrayCollection = new ArrayCollection();
+			try
+			{
+				sStat.text = "SELECT * FROM SIGNS WHERE POLEID in (@poleIds) ".replace("@poleIds", poleIDs.join(","));
+				sStat.execute();
+				var data:Array = sStat.getResult().data;
+				signs = new ArrayCollection(data);
+			}
+			catch(err:Error)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert(err.message);
+			}
+			return signs;
+		}
+		
+		public function assignNewSignID():Number
+		{
+			// Get the current existing min (<0) signID, if none exist, return -1
+			sStat.text = "SELECT min(SIGNID) FROM SIGNS WHERE SIGNID < 0";
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data != null && data.length > 0)
+				return data[0]['min(SIGNID)'];
+			else	
+				return -1;
+		}
+		
 		public function addDdotInspection(inspection:Object):void
 		{
 			var inspectionColumns:Array = new Array("INSPECTIONID", "POLEID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
@@ -2191,6 +2220,18 @@ package com.transcendss.mavric.db
 				FlexGlobals.topLevelApplication.TSSAlert(err.message);
 			}
 			return inspections;
+		}
+		
+		public function assignNewInspectionID():Number
+		{
+			// Get the current existing min (<0) inspectionID, if none exist, return -1
+			sStat.text = "SELECT min(INSPECTIONID) FROM INSPECTIONS WHERE INSPECTIONID < 0";
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data != null && data.length > 0)
+				return data[0]['min(INSPECTIONID)'];
+			else	
+				return -1;
 		}
 	}
 }

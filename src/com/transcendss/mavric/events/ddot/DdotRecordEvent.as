@@ -8,6 +8,7 @@ package com.transcendss.mavric.events.ddot
 	public class DdotRecordEvent extends Event
 	{
 		private var _supportID:Number;
+		private var _supportIDs:Array;
 		private var _signIDs:Array;
 		private var _eventLayerID:Number;
 		private var _serviceURL:String;
@@ -15,12 +16,23 @@ package com.transcendss.mavric.events.ddot
 		
 		public static const SIGN_REQUEST:String="relatedSign_event";
 		public static const INSPECTION_REQUEST:String="relatedInspection_event";
+		public static const OTHER_SIGN_REQUEST:String="otherSign_event";
 		
 		public function DdotRecordEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=true)
 		{
 			super(type, bubbles, cancelable);
 		}
 
+
+		public function get supportIDs():Array
+		{
+			return _supportIDs;
+		}
+
+		public function set supportIDs(value:Array):void
+		{
+			_supportIDs = value;
+		}
 
 		public function get signIDs():Array
 		{

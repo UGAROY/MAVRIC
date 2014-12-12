@@ -797,8 +797,6 @@
 				if(currPostDataArr.length==0 && currentPostID!="")
 					currPostDataArr = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.mapAssetColl(this.dbManager.getAllSignsByAssemblyID(currentPostID, baseAsst.primaryKey),"SIGN"); ;
 				
-					
-				
 				signRouteInput.text= FlexGlobals.topLevelApplication.currentRouteName;
 				
 				var milepostTI:String = baseAsst.invProperties[baseAsst.fromMeasureColName].value?baseAsst.invProperties[baseAsst.fromMeasureColName].value:String(initialRefpt);
