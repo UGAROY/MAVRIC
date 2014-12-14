@@ -25,13 +25,17 @@
 			[Bindable]
 			private var otherSignsDp:ArrayCollection;
 			
-			private var signTypes:ArrayCollection;
+			private var linkedSignIDs:Array = new Array();
+			
+			public var linkedSignCallback:Function;
+			
+			//private var signTypes:ArrayCollection;
 
 			private function init():void
 			{
 				try
 				{
-					signTypes = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGNTYPE");
+					// signTypes = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGNTYPE");
 				}
 				catch(err:Error)
 				{
@@ -50,15 +54,15 @@
 				
 			}
 			
-			private function formatSignTypeColumn(item:Object, column:GridColumn):String
-			{
-				for each(var type:Object in signTypes)
-				{
-					if(type['ID'] == item[column.dataField])
-						return type['DESCRIPTION'];
-				}
-				return "";
-			}
+//			private function formatSignTypeColumn(item:Object, column:GridColumn):String
+//			{
+//				for each(var type:Object in signTypes)
+//				{
+//					if(type['ID'] == item[column.dataField])
+//						return type['DESCRIPTION'];
+//				}
+//				return "";
+//			}
 			
 			private function formatMeasureColumn(item:Object, column:GridColumn):String
 			{
@@ -75,6 +79,12 @@
 			{
 				try
 				{
+					for each(var sign:Object in otherSigns)
+					{
+						if (sign['Linked'])
+							linkedSignIDs.push(sign['SIGNID']);
+					}
+					linkedSignCallback(linkedSignIDs);
 					PopUpManager.removePopUp(this);
 				}
 				catch(err:Error)
@@ -106,7 +116,7 @@
 					dataProvider="{currentSignDp}">
 			<s:columns>
 				<s:ArrayList>
-					<s:GridColumn dataField="SIGNTYPE" headerText="Sign Type" labelFunction="formatSignTypeColumn"/>
+					<s:GridColumn dataField="DESCRIPTION" headerText="Sign Type"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn"/>
 					<s:GridColumn dataField="POLEID" headerText="Support ID"/>
@@ -131,7 +141,7 @@
 							</fx:Component>
 						</s:itemRenderer>
 					</s:GridColumn>
-					<s:GridColumn dataField="SIGNTYPE" headerText="Sign Type" labelFunction="formatSignTypeColumn"/>
+					<s:GridColumn dataField="DESCRIPTION" headerText="Sign Type"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn">
 					</s:GridColumn>

@@ -40,6 +40,7 @@
 			
 			[Bindable]
 			public var sign:Object;
+			public var linkSignIDs:Array;
 			public var isNewSign:Boolean;
 			public var currSupportID:Number;
 			
@@ -113,6 +114,7 @@
 				PopUpManager.centerPopUp(linkedSignForm);
 				linkedSignForm.currentSign = this.sign;
 				linkedSignForm.otherSigns = data;
+				linkedSignForm.linkedSignCallback = linkedSignCompleteHandler;
 				linkedSignForm.loadLinkedSignsInfo();
 			}
 			
@@ -120,6 +122,11 @@
 			{
 				FlexGlobals.topLevelApplication.setBusyStatus(false);
 				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining data");
+			}
+			
+			protected function linkedSignCompleteHandler(signIDs:Array):void
+			{
+				this.linkSignIDs = signIDs;
 			}
 			
 			protected function signSelectCompleteHandler(evt:DropDownViewEvent):void

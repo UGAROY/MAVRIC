@@ -17,6 +17,7 @@ package com.transcendss.mavric.events.ddot
 		public static const SIGN_REQUEST:String="relatedSign_event";
 		public static const INSPECTION_REQUEST:String="relatedInspection_event";
 		public static const OTHER_SIGN_REQUEST:String="otherSign_event";
+		public static const LINK_REQUEST:String="link_event";
 		
 		public function DdotRecordEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=true)
 		{

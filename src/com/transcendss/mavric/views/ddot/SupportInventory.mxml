@@ -67,6 +67,8 @@
 			private var currInspections:ArrayCollection = new ArrayCollection();
 			private var inspectionDetailsForm:InspectionDetails = null;
 			
+			private var currLinkDict:Object = new Object();
+			
 			[Bindable]
 			private var dataRetrieved:Boolean = false;
 			
@@ -177,6 +179,9 @@
 				
 				// Save the inspections
 				recordManager.saveInspections(currInspections);
+				
+				// Save the links
+				recordManager.saveLink(currLinkDict);
 			}
 			
 			public override function setBaseAsset(baseAsst:BaseAsset):void
@@ -196,7 +201,7 @@
 				PoleComments.text = currSupport['invProperties'].COMMENTS.value || "";
 				
 				var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
-				recordManager.getSigns(currSupportID, 9, signResp);
+				recordManager.getSigns(currSupportID, signResp);
 			}
 			
 			private function signReqReponse(result:Object):void
@@ -210,7 +215,7 @@
 				}
 				
 				var inspectionResp:mx.rpc.Responder = new mx.rpc.Responder(inspectionReqResponse, failReqHandler);
-				recordManager.getInspections(currSupportID, currSignIDs, 14, inspectionResp);
+				recordManager.getInspections(currSupportID, currSignIDs, inspectionResp);
 			}
 			
 			private function inspectionReqResponse(result:Object):void
@@ -268,9 +273,10 @@
 					currSignTab.updateSignValues();
 					// If it is a new sign, push it to the currSign list
 					if (currSignTab.isNewSign)
-					{
 						currSigns.addItem(selectedSign);
-					}
+					// add link
+					if (currSignTab.linkSignIDs != null)
+						currLinkDict[currSignTab.sign['SIGNID']] = currSignTab.linkSignIDs;	
 				}
 			}
 			
@@ -398,11 +404,13 @@
 				else
 				{
 					for each(var sign:Object in currSigns)
+					{
 						if (sign['SIGNID'] == item['SIGNID'])
-							return FlexGlobals.topLevelApplication.GlobalComponents.recordManager.signTypeDictionary[sign['SIGNTYPE']];
+							return sign['DESCRIPTION'];
+					}					
+					//return FlexGlobals.topLevelApplication.GlobalComponents.recordManager.signTypeDictionary[sign['SIGNTYPE']];
 				}
-					
-				return item['POLEID'] != null ? "Support -- " + item['POLEID'] : "Sign -- " + item['SIGNID'];
+				return "";
 			}
 			
 			private function formatInspectionDateColumn(item:Object, column:GridColumn):String

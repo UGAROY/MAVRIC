@@ -33,6 +33,10 @@ package com.transcendss.mavric.managers.ddot
 		
 		private var _supportDict:Object;
 		
+		private var _signEventLayerID:Number = 9;
+		private var _inspectionEventLayerID:Number = 14;
+		private var _linkEventLayerID:Number = 15;
+		
 		/**
 		 * Creates tables for an list of different types of assets.
 		 */
@@ -43,12 +47,12 @@ package com.transcendss.mavric.managers.ddot
 			_stkDiagram = FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram;
 			_dispatcher = new Dispatcher(); 
 			
-			// Get the signTypes domain here since it can be used cross several tabs
-			var signTypes:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGNTYPE");
-			for each(var signType:Object in signTypes)
-			{
-				signTypeDictionary[signType['ID']] = signType['DESCRIPTION'];
-			}
+//			// Get the signTypes domain here since it can be used cross several tabs
+//			var signTypes:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGNTYPE");
+//			for each(var signType:Object in signTypes)
+//			{
+//				signTypeDictionary[signType['ID']] = signType['DESCRIPTION'];
+//			}
 			
 			// Get the mininum and <0  signID and InspectionID
 			_newSignID = _mdbm.assignNewSignID();
@@ -109,6 +113,9 @@ package com.transcendss.mavric.managers.ddot
 			sign['SIGNSIZE'] = sign['SIGNSIZE'] != null ? sign['SIGNSIZE'].toString() : null;
 			sign['SIGNSTATUS'] = sign['SIGNSTATUS'] != null ? sign['SIGNSTATUS'].toString() : null;
 			
+			// Set the DESCRIPTION. TODO: map it to the real description
+			sign['DESCRIPTION'] = sign['DESCRIPTION'] || sign['SIGNNAME'];
+			
 			// Add the routeId and measure to the sign
 			sign['MEASURE'] = this._supportDict[sign['POLEID']]['MEASURE'];
 			sign['ROUTEID'] = this._supportDict[sign['POLEID']]['ROUTEID'];
@@ -116,11 +123,11 @@ package com.transcendss.mavric.managers.ddot
 			return sign;
 		}
 		
-		public function getSigns(supportID:Number, eventLayerID:Number, responder:IResponder):void
+		public function getSigns(supportID:Number, responder:IResponder):void
 		{
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.SIGN_REQUEST);
 			var whereClause:String =  StringUtil.replace("POLEID = '@poleId'", "@poleId", supportID.toString());
-			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(eventLayerID, whereClause);
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._signEventLayerID, whereClause);
 			_requestEvent.supportID = supportID;
 			_requestEvent.responder = responder;
 			_dispatcher.dispatchEvent(_requestEvent);
@@ -161,13 +168,13 @@ package com.transcendss.mavric.managers.ddot
 			resp.result(signs);
 		}
 		
-		public function getInspections(supportID:Number, signIDs:Array, eventLayerID:Number, responder:IResponder):void
+		public function getInspections(supportID:Number, signIDs:Array, responder:IResponder):void
 		{
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.INSPECTION_REQUEST);
 			var whereClause:String =  "POLEID = @poleId & SIGNID in (@signIds)"
 				.replace("@poleId", supportID.toString())
 				.replace('@signIds', signIDs.join(","));
-			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(eventLayerID, whereClause);
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._inspectionEventLayerID, whereClause);
 			_requestEvent.supportID = supportID;
 			_requestEvent.signIDs = signIDs;
 			_requestEvent.responder = responder;
@@ -367,9 +374,69 @@ package com.transcendss.mavric.managers.ddot
 			}
 		}
 		
-		public function getSupportsOnRoute():void
+		public function getLinkBySignID(signID:Number, responder:IResponder):void
 		{
+			_requestEvent = new DdotRecordEvent(DdotRecordEvent.LINK_REQUEST);
+			var whereClause:String =  "SIGNID = @signId".replace("@signId", signID.toString());
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._linkEventLayerID, whereClause);
+			_requestEvent.responder = responder;
+			_dispatcher.dispatchEvent(_requestEvent);
+			_requestEvent = null;
+		}
+		
+		public function onLinkServiceResult(obj:Object,event:DdotRecordEvent):void
+		{
+			event.stopPropagation();
 			
+//			var resp:IResponder = event.responder;
+//			var supportIDs:Array = event.supportIDs;
+//			var arrayColl:ArrayCollection = new ArrayCollection();
+//			var arr:Array = parseJsonObj(obj);
+//			var dataArr:Array = new Array();
+//			for each(var arrItem:Object in arr)
+//			dataArr.push(arrItem.attributes);
+//			var liveSigns:ArrayCollection = new ArrayCollection(dataArr);
+//			
+//			// Get Local signs 
+//			var signs:ArrayCollection = _mdbm.getDdotSignByPoleIDs(supportIDs);
+//			
+//			// Get existing signIds
+//			var signIDs:Array = new Array();
+//			for each(var item:Object in signs)
+//			signIDs.push(item['SIGNID']);
+//			
+//			// Add live signs to the signs if the sign id is different from the existing ones
+//			for each (var liveSign:Object in liveSigns)
+//			{
+//				if (signIDs.indexOf(liveSign['SIGNID']) == -1)
+//					signs.addItem(liveSign);
+//			}
+//			
+//			// Have to do a bit pre-processing on each sign to make sure they can communicate with flex components
+//			for each (var sign:Object in signs)
+//			{
+//				prepareSignBeforeLoad(sign);
+//			}
+//			
+//			resp.result(signs);
+		}
+		
+		public function saveLink(link:Object):void
+		{
+			for (var key:String in link)
+			{
+				var keySignID:Number = parseInt(key);
+				// 1) signID - > LinkID - > Delete all the LinkID related records
+				_mdbm.deleteOldLinkBySignID(keySignID);
+				// 2) Insert the new signID and new LinkID
+				var signIDs:Array = new Array();
+				signIDs.push(keySignID);
+				var allSignIDs:Array = signIDs.concat(link[key]);
+				var linkID:String = allSignIDs.join("_");
+				// Stupid air api for sqlite, has to do the insert one by one
+				for each (var signID:Number in allSignIDs)
+					_mdbm.addLink(linkID, signID);
+			}
 		}
 	}
 }
