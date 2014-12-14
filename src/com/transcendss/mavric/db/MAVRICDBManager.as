@@ -2016,6 +2016,7 @@ package com.transcendss.mavric.db
 			sStat.text = "CREATE TABLE IF NOT EXISTS LINKEDSIGN ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
 				"SIGNID INTEGER, " +
 				"LINKID TEXT, " +
+				"OLDLINKEDID TEXT, " +
 				"ZONEID INTEGER);";
 			sStat.execute();
 			
@@ -2233,16 +2234,37 @@ package com.transcendss.mavric.db
 				return -1;
 		}
 		
-		public function deleteOldLinkBySignID(signID:Number):void
+		public function deleteOldLinkByLinkID(oldLinkID:String):void
 		{
-			sStat.text = "DELETE FROM LINKEDSIGN WHERE LINKID=(SELECT LINKID FROM LINKEDSIGN WHERE SIGNID=" + signID.toString() + ")";
+			try
+			{
+				sStat.text = "DELETE FROM LINKEDSIGN WHERE LINKID='" + oldLinkID.toString() + "'";
+				sStat.execute();
+			}
+			catch(err:Error)
+			{
+				trace(err.message);
+			}
+		}
+		
+		public function addLink(linkID:String, signID:Number, oldLinkID:String):void
+		{
+			sStat.text = "INSERT INTO LINKEDSIGN (LINKID, SIGNID, OLDLINKEDID) VALUES ('@linkID', @signID, '@oldLinkID')"
+				.replace("@linkID", linkID)
+				.replace("@signID", signID.toString())
+				.replace("@oldLinkID", oldLinkID);
 			sStat.execute();
 		}
 		
-		public function addLink(LinkID:String, signID:Number):void
+		public function getLinkBySignID(signID:Number):String
 		{
-			sStat.text= "INSERT INTO LINKEDSIGN (LINKID, SIGNID) VALUES " + "('" + LinkID.toString() + "'," + signID.toString() + ")";
+			sStat.text = "SELECT LINKID FROM LINKEDSIGN WHERE SIGNID = " + signID.toString();
 			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data != null && data.length > 0)
+				return data[0]['LINKID'];
+			else
+				return null;
 		}
 	}
 }

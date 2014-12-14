@@ -275,8 +275,8 @@
 					if (currSignTab.isNewSign)
 						currSigns.addItem(selectedSign);
 					// add link
-					if (currSignTab.linkSignIDs != null)
-						currLinkDict[currSignTab.sign['SIGNID']] = currSignTab.linkSignIDs;	
+					if (currSignTab.linkSignPair != null)
+						currLinkDict[currSignTab.sign['SIGNID']] = currSignTab.linkSignPair;	
 				}
 			}
 			

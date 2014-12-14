@@ -380,6 +380,7 @@ package com.transcendss.mavric.managers.ddot
 			var whereClause:String =  "SIGNID = @signId".replace("@signId", signID.toString());
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._linkEventLayerID, whereClause);
 			_requestEvent.responder = responder;
+			_requestEvent.signID = signID;
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
 		}
@@ -388,17 +389,27 @@ package com.transcendss.mavric.managers.ddot
 		{
 			event.stopPropagation();
 			
-//			var resp:IResponder = event.responder;
-//			var supportIDs:Array = event.supportIDs;
-//			var arrayColl:ArrayCollection = new ArrayCollection();
-//			var arr:Array = parseJsonObj(obj);
-//			var dataArr:Array = new Array();
-//			for each(var arrItem:Object in arr)
-//			dataArr.push(arrItem.attributes);
-//			var liveSigns:ArrayCollection = new ArrayCollection(dataArr);
+			var link:String = "";
+			
+			var resp:IResponder = event.responder;
+			var signID:Number = event.signID;
+			var arr:Array = parseJsonObj(obj);
+			if (arr.length > 1)
+				FlexGlobals.topLevelApplication.TSSAlert("More than one links found for this sign. Check the database");
+			else if (arr.length == 1)
+				link = arr[0].attributes.LINKID;
+
+			var localLink:String = _mdbm.getLinkBySignID(signID);
+			
+			if (localLink != null)
+				resp.result(localLink);
+			else
+				resp.result(link);
+					
+				
 //			
-//			// Get Local signs 
-//			var signs:ArrayCollection = _mdbm.getDdotSignByPoleIDs(supportIDs);
+//			// Get Local Link
+//			var signs:ArrayCollection = _mdbm.getLinkBySignID(supportIDs);
 //			
 //			// Get existing signIds
 //			var signIDs:Array = new Array();
@@ -425,17 +436,15 @@ package com.transcendss.mavric.managers.ddot
 		{
 			for (var key:String in link)
 			{
-				var keySignID:Number = parseInt(key);
-				// 1) signID - > LinkID - > Delete all the LinkID related records
-				_mdbm.deleteOldLinkBySignID(keySignID);
-				// 2) Insert the new signID and new LinkID
-				var signIDs:Array = new Array();
-				signIDs.push(keySignID);
-				var allSignIDs:Array = signIDs.concat(link[key]);
-				var linkID:String = allSignIDs.join("_");
-				// Stupid air api for sqlite, has to do the insert one by one
-				for each (var signID:Number in allSignIDs)
-					_mdbm.addLink(linkID, signID);
+				var newLinkID:String = link[key]['NEW'];
+				var oldLinkID:String = link[key]['OLD'];
+				if (oldLinkID != null)
+					_mdbm.deleteOldLinkByLinkID(oldLinkID);
+				var allSignIDs:Array = newLinkID.split('_');
+				for each (var signID:String in allSignIDs)
+				{
+					_mdbm.addLink(newLinkID, parseInt(signID), oldLinkID);
+				}
 			}
 		}
 	}

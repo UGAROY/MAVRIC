@@ -40,9 +40,11 @@
 			
 			[Bindable]
 			public var sign:Object;
-			public var linkSignIDs:Array;
+			public var linkSignPair:Object;
 			public var isNewSign:Boolean;
 			public var currSupportID:Number;
+			
+			private var otherSigns:ArrayCollection;
 			
 			private function init():void
 			{
@@ -104,16 +106,25 @@
 						otherSupportIDs.push(support['invProperties'].POLEID.value);
 				}
 				
-				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
+				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(getLink,  failReqHandler);
 				recordManager.getOtherSignsOnRoute(otherSupportIDs, 9, routeSignsResp);
 			}
 			
-			private function openLinkedSignEditor(data:ArrayCollection):void
+			private function getLink(data:ArrayCollection):void
+			{
+				this.otherSigns = data;
+				
+				var linkResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
+				recordManager.getLinkBySignID(sign['SIGNID'], linkResp); //(otherSupportIDs, 9, routeSignsResp);
+			}
+			
+			private function openLinkedSignEditor(linkID:String):void
 			{
 				linkedSignForm = PopUpManager.createPopUp(this, LinkedSign) as LinkedSign;
 				PopUpManager.centerPopUp(linkedSignForm);
 				linkedSignForm.currentSign = this.sign;
-				linkedSignForm.otherSigns = data;
+				linkedSignForm.otherSigns =  this.otherSigns;
+				linkedSignForm.oldLinkID = linkID;
 				linkedSignForm.linkedSignCallback = linkedSignCompleteHandler;
 				linkedSignForm.loadLinkedSignsInfo();
 			}
@@ -124,9 +135,9 @@
 				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining data");
 			}
 			
-			protected function linkedSignCompleteHandler(signIDs:Array):void
+			protected function linkedSignCompleteHandler(linkIDPair:Object):void
 			{
-				this.linkSignIDs = signIDs;
+				this.linkSignPair = linkIDPair;
 			}
 			
 			protected function signSelectCompleteHandler(evt:DropDownViewEvent):void

@@ -25,7 +25,9 @@
 			[Bindable]
 			private var otherSignsDp:ArrayCollection;
 			
-			private var linkedSignIDs:Array = new Array();
+			public var oldLinkID:String = null;
+			// A pair of new linkID and old linkID
+			private var linkIDPair:Object = new Object();
 			
 			public var linkedSignCallback:Function;
 			
@@ -45,13 +47,17 @@
 			
 			public function loadLinkedSignsInfo():void
 			{
+				var oldLinkSigns:Array = this.oldLinkID.split("_");
+				
 				currentSignDp = new ArrayCollection([currentSign]);
 				for each(var otherSign:Object in otherSigns)
 				{
-					otherSign['Linked'] = false;
+					if (oldLinkSigns.indexOf(otherSign['SIGNID'].toString())!= -1) 
+						otherSign['Linked'] = true;
+					else
+						otherSign['Linked'] = false
 				}
 				otherSignsDp = otherSigns;
-				
 			}
 			
 //			private function formatSignTypeColumn(item:Object, column:GridColumn):String
@@ -79,12 +85,16 @@
 			{
 				try
 				{
+					var linkedSignIDs:Array = new Array();
+					linkedSignIDs.push(currentSign['SIGNID']);
 					for each(var sign:Object in otherSigns)
 					{
 						if (sign['Linked'])
 							linkedSignIDs.push(sign['SIGNID']);
 					}
-					linkedSignCallback(linkedSignIDs);
+					linkIDPair['NEW'] = linkedSignIDs.join("_");
+					linkIDPair['OLD'] = oldLinkID;
+					linkedSignCallback(linkIDPair);
 					PopUpManager.removePopUp(this);
 				}
 				catch(err:Error)

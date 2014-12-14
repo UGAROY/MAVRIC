@@ -471,6 +471,19 @@
 				</mate:faultHandlers>
 			</mate:HTTPServiceInvoker>
 		</mate:EventHandlers>
+		
+		<mate:EventHandlers type="{DdotRecordEvent.LINK_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onLinkServiceResult'}" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
+				</mate:faultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
 	
 		<mate:EventHandlers type="{ElementEvent.ELEMENT_REQUEST}" debug="{debugFlag}">
 			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getURL" arguments="{['assetevent',useAgsService, event.serviceURL, event.routeName, event.begMile, event.endMile, event.eventLayerID]}"/>

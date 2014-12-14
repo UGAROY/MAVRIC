@@ -9,6 +9,7 @@ package com.transcendss.mavric.events.ddot
 	{
 		private var _supportID:Number;
 		private var _supportIDs:Array;
+		private var _signID:Number;
 		private var _signIDs:Array;
 		private var _eventLayerID:Number;
 		private var _serviceURL:String;
@@ -24,6 +25,16 @@ package com.transcendss.mavric.events.ddot
 			super(type, bubbles, cancelable);
 		}
 
+
+		public function get signID():Number
+		{
+			return _signID;
+		}
+
+		public function set signID(value:Number):void
+		{
+			_signID = value;
+		}
 
 		public function get supportIDs():Array
 		{
