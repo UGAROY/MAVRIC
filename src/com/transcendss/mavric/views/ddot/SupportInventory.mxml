@@ -68,6 +68,7 @@
 			private var inspectionDetailsForm:InspectionDetails = null;
 			
 			private var currLinkDict:Object = new Object();
+			private var currLinkTrDict:Object = new Object();
 			
 			[Bindable]
 			private var dataRetrieved:Boolean = false;
@@ -182,6 +183,9 @@
 				
 				// Save the links
 				recordManager.saveLink(currLinkDict);
+				
+				// Save the time restrictions
+				recordManager.saveTimeRestriction(currLinkTrDict);
 			}
 			
 			public override function setBaseAsset(baseAsst:BaseAsset):void
@@ -277,6 +281,9 @@
 					// add link
 					if (currSignTab.linkSignPair != null)
 						currLinkDict[currSignTab.sign['SIGNID']] = currSignTab.linkSignPair;	
+					// add timerestriction
+					if (currSignTab.linkTimeRestrictions != null && currSignTab.linkTimeRestrictions.length >0)
+						currLinkTrDict[currSignTab.linkSignPair['NEW']] = currSignTab.linkTimeRestrictions;
 				}
 			}
 			
@@ -317,11 +324,6 @@
 				currSignTab.loadSignInfo();
 			}
 			
-//			private function updateSelectedSignValues(data:Object=null):void
-//			{
-//				currSignTab.updateSignValues();
-//				openSignPop();
-//			}
 			//-----------------------------------------------------------------------------------------
 			
 			//------------------------Inspection Tab--------------------------------------------------

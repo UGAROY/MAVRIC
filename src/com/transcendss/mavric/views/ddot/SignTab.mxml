@@ -44,9 +44,12 @@
 			public var linkSignPair:Object;
 			public var isNewSign:Boolean;
 			public var currSupportID:Number;
-			public var linkTimeRestriction:Object;
-			
+			[Bindable]
+			public var linkTimeRestrictions:ArrayCollection;
 			private var otherSigns:ArrayCollection;
+			
+			[Bindable]
+			private var trEnable:Boolean; 
 			
 			private function init():void
 			{
@@ -80,6 +83,8 @@
 					
 					attchView.init("SignInventory",true,true,true);
 					addAttchmentsHolder.addElement(attchView);
+					
+					trEnable = false;
 				}
 				catch (err:Error)
 				{
@@ -133,10 +138,16 @@
 			
 			protected function timeDayBtn_clickHandler(event:MouseEvent):void
 			{
-			    timeRestrictionForm = PopUpManager.createPopUp(this, TimeRestriction) as TimeRestriction;
+				var TimeRestrictionResp:mx.rpc.Responder = new mx.rpc.Responder(openTimeRestrictionForm,  failReqHandler);
+				recordManager.getTimeRestrictionByLinkID(this.linkSignPair['NEW'], TimeRestrictionResp); 
+			}
+			
+			private function openTimeRestrictionForm(data:ArrayCollection):void
+			{
+				timeRestrictionForm = PopUpManager.createPopUp(this, TimeRestriction) as TimeRestriction;
 				PopUpManager.centerPopUp(linkedSignForm);
-			    timeRestrictionForm.timeRestrictionCallback = timeRestrictionCompleteHandler;
-				timeRestrictionForm.loadTimeRestrictionInfo();
+				timeRestrictionForm.currTimeRestriction = data;
+				timeRestrictionForm.timeRestrictionCallback = timeRestrictionCompleteHandler;
 			}
 			
 			private function failReqHandler(data:Object):void
@@ -148,11 +159,12 @@
 			protected function linkedSignCompleteHandler(linkIDPair:Object):void
 			{
 				this.linkSignPair = linkIDPair;
+				trEnable = true;
 			}
 			
-			protected function timeRestrictionCompleteHandler(linkIDPair:Object):void
+			protected function timeRestrictionCompleteHandler(timeRestrictions:ArrayCollection):void
 			{
-				
+				linkTimeRestrictions = timeRestrictions;
 			}
 			
 			protected function signSelectCompleteHandler(evt:DropDownViewEvent):void
@@ -266,7 +278,7 @@
 								  click="linkedSignBtn_clickHandler(event)"/>
 						<s:Spacer width="10%"/>
 						<s:Button id="timeDayBtn" width="45%" label="Time and Day"
-								  click="timeDayBtn_clickHandler(event)"/>
+								  click="timeDayBtn_clickHandler(event)" enabled="{trEnable}"/>
 					</s:HGroup>
 					
 				</s:VGroup>

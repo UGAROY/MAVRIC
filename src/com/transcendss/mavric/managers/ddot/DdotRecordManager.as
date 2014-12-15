@@ -36,6 +36,7 @@ package com.transcendss.mavric.managers.ddot
 		private var _signEventLayerID:Number = 9;
 		private var _inspectionEventLayerID:Number = 14;
 		private var _linkEventLayerID:Number = 15;
+		private var _trEventLayerID:Number = 17;
 		
 		/**
 		 * Creates tables for an list of different types of assets.
@@ -405,31 +406,6 @@ package com.transcendss.mavric.managers.ddot
 				resp.result(localLink);
 			else
 				resp.result(link);
-					
-				
-//			
-//			// Get Local Link
-//			var signs:ArrayCollection = _mdbm.getLinkBySignID(supportIDs);
-//			
-//			// Get existing signIds
-//			var signIDs:Array = new Array();
-//			for each(var item:Object in signs)
-//			signIDs.push(item['SIGNID']);
-//			
-//			// Add live signs to the signs if the sign id is different from the existing ones
-//			for each (var liveSign:Object in liveSigns)
-//			{
-//				if (signIDs.indexOf(liveSign['SIGNID']) == -1)
-//					signs.addItem(liveSign);
-//			}
-//			
-//			// Have to do a bit pre-processing on each sign to make sure they can communicate with flex components
-//			for each (var sign:Object in signs)
-//			{
-//				prepareSignBeforeLoad(sign);
-//			}
-//			
-//			resp.result(signs);
 		}
 		
 		public function saveLink(link:Object):void
@@ -447,5 +423,47 @@ package com.transcendss.mavric.managers.ddot
 				}
 			}
 		}
+		
+		public function getTimeRestrictionByLinkID(linkID:String, responder:IResponder):void
+		{
+			_requestEvent = new DdotRecordEvent(DdotRecordEvent.TIME_RESTRICTION_REQUEST);
+			var whereClause:String =  "LINKID = '@linkId'".replace("@linkId", linkID);
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._trEventLayerID, whereClause);
+			_requestEvent.responder = responder;
+			_requestEvent.linkID = linkID;
+			_dispatcher.dispatchEvent(_requestEvent);
+			_requestEvent = null;
+		}
+		
+		public function onTimeRestrictionServiceResult(obj:Object,event:DdotRecordEvent):void
+		{
+			event.stopPropagation();
+			
+			var resp:IResponder = event.responder;
+			var linkID:String = event.linkID;
+			var arr:Array = parseJsonObj(obj);
+			var dataArr:Array = new Array();
+			for each(var arrItem:Object in arr)
+				dataArr.push(arrItem.attributes);
+			var liveTrs:ArrayCollection = new ArrayCollection(dataArr);
+			
+			var localTrs:ArrayCollection = _mdbm.getTimeRestrictionByLinkID(linkID);
+			
+			if (localTrs != null && localTrs.length > 0)
+				resp.result(localTrs);
+			else
+				resp.result(liveTrs);
+		}
+		
+		public function saveTimeRestriction(linkTrDict:Object):void
+		{
+			for (var key:String in linkTrDict)
+			{
+				_mdbm.deleteOldTrByLinkID(key);
+				for each(var tr:Object in linkTrDict[key])
+					_mdbm.addTimeRestriction(key, tr);
+			}
+		}
+		
 	}
 }

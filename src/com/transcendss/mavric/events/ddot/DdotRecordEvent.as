@@ -11,6 +11,7 @@ package com.transcendss.mavric.events.ddot
 		private var _supportIDs:Array;
 		private var _signID:Number;
 		private var _signIDs:Array;
+		private var _linkID:String;
 		private var _eventLayerID:Number;
 		private var _serviceURL:String;
 		private var _responder:IResponder;
@@ -19,12 +20,23 @@ package com.transcendss.mavric.events.ddot
 		public static const INSPECTION_REQUEST:String="relatedInspection_event";
 		public static const OTHER_SIGN_REQUEST:String="otherSign_event";
 		public static const LINK_REQUEST:String="link_event";
+		public static const TIME_RESTRICTION_REQUEST:String="timeRestriction_event";
 		
 		public function DdotRecordEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=true)
 		{
 			super(type, bubbles, cancelable);
 		}
 
+
+		public function get linkID():String
+		{
+			return _linkID;
+		}
+
+		public function set linkID(value:String):void
+		{
+			_linkID = value;
+		}
 
 		public function get signID():Number
 		{

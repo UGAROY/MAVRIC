@@ -75,8 +75,8 @@
 				endDayDDView.domainID = String(currTimeObj['ENDDAY']);
 				startTimeDDView.domainID = String(currTimeObj['STARTTIME']);
 				endTimeDDView.domainID = String(currTimeObj['ENDTIME']);
-				hourLimitTextInut.text = String(currTimeObj['HOURLIMIT']);
-				orderTextInut.text = String(currTimeObj['RESTRICTIONORDER']);
+				hourLimitTextInut.text = String(currTimeObj['HOURLIMIT']) || "";
+				orderTextInut.text = String(currTimeObj['RESTRICTIONORDER']) || "";
 			}
 
 			
@@ -94,8 +94,8 @@
 					currTimeObj['ENDDAY'] =  parseInt(startDayDDView.domainID);
 					currTimeObj['STARTTIME'] =  parseInt(startTimeDDView.domainID);
 					currTimeObj['ENDTIME'] =  parseInt(endTimeDDView.domainID);
-					currTimeObj['HOURLIMIT'] = parseInt(hourLimitTextInut.text);
-					currTimeObj['RESTRICTIONORDER'] = parseInt(orderTextInut.text);
+					currTimeObj['HOURLIMIT'] = parseInt(hourLimitTextInut.text) || null;
+					currTimeObj['RESTRICTIONORDER'] = parseInt(orderTextInut.text) || null;
 					
 					trEditorCallback(currTimeObj, this.isNewTimeObj); 
 					

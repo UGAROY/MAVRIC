@@ -2266,5 +2266,39 @@ package com.transcendss.mavric.db
 			else
 				return null;
 		}
+		
+		public function getTimeRestrictionByLinkID(linkID:String):ArrayCollection
+		{
+			sStat.text = "SELECT * FROM TIMERESTRICTIONS WHERE LINKID = '" + linkID + "'";
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			return new ArrayCollection(data);
+		}
+		
+		public function deleteOldTrByLinkID(LinkID:String):void
+		{
+			try
+			{
+				sStat.text = "DELETE FROM TIMERESTRICTIONS WHERE LINKID='" + LinkID + "'";
+				sStat.execute();
+			}
+			catch(err:Error)
+			{
+				trace(err.message);
+			}
+		}
+		
+		public function addTimeRestriction(linkID:String, tr:Object):void
+		{
+			sStat.text = "INSERT INTO TIMERESTRICTIONS (LINKID, STARTDAY, ENDDAY, STARTTIME, ENDTIME, HOURLIMIT, RESTRICTIONORDER) VALUES ('@linkID', @startDay, @endDay, @startTime, @endTime, @hourLimit, @restrictionOrder)"
+				.replace("@linkID", linkID)
+				.replace("@startDay", tr['STARTDAY'])
+				.replace("@endDay", tr['ENDDAY'])
+				.replace("@startTime", tr['STARTTIME'])
+				.replace("@endTime", tr['ENDTIME'])
+				.replace("@hourLimit", tr['HOURLIMIT'])
+				.replace("@restrictionOrder", tr['RESTRICTIONORDER']);
+			sStat.execute();
+		}
 	}
 }

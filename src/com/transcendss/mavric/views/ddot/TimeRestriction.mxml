@@ -14,21 +14,26 @@
 			import mx.managers.PopUpManager;
 			
 			import spark.events.GridEvent;
-			import spark.skins.mobile.TextInputSkin;
 			
 			public var currLink:String;
 			[Bindable]
-			public var currTimeRestriction:ArrayCollection = new ArrayCollection();
-			
+			public var currTimeRestriction:ArrayCollection = new ArrayCollection();	
 			public var timeRestrictionCallback:Function;
-			
 			private var trEditorForm:TREditor;
+			
+			private var dayDomainObj:Object;
+			private var timeDomainObj:Object;
 
 			private function init():void
 			{
 				try
 				{
+					var dayDomain:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("DAY");
+					var timeDomain:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("HOUR");
+					dayDomainObj = domainToObj(dayDomain);
+					timeDomainObj = domainToObj(timeDomain);
 					
+					currTimeRestriction.refresh();
 				}
 				catch(err:Error)
 				{
@@ -36,9 +41,12 @@
 				}
 			}
 			
-			public function loadTimeRestrictionInfo():void
+			private function domainToObj(domain:ArrayCollection):Object
 			{
-				
+				var domainObj:Object = new Object();
+				for each (var item:Object in domain)
+					domainObj[item['ID']] = item['DESCRIPTION'];
+				return domainObj;
 			}
 			
 			protected function handleCloseEvent():void
@@ -51,6 +59,7 @@
 			{
 				try
 				{
+					timeRestrictionCallback(currTimeRestriction);
 					PopUpManager.removePopUp(this);
 				}
 				catch(err:Error)
@@ -85,6 +94,8 @@
 				trEditorForm.isNewTimeObj = isNewTimeObj;
 				trEditorForm.trEditorCallback = editCompleteHandler;
 				PopUpManager.centerPopUp(trEditorForm);
+				
+				trEditorForm.loadTimeObj();
 			}
 			
 			private function editCompleteHandler(returnTimeObj:Object, isNewTimeObj:Boolean):void
@@ -93,6 +104,16 @@
 					currTimeRestriction.addItem(returnTimeObj);
 				else
 					currTimeRestriction.refresh();
+			}
+			
+			private function formatDayColumn(item:Object, column:GridColumn):String
+			{
+				return dayDomainObj != null ? dayDomainObj[item[column.dataField]] : "";
+			}
+			
+			private function formatTimeColumn(item:Object, column:GridColumn):String
+			{
+				return timeDomainObj != null ? timeDomainObj[item[column.dataField]] : "";
 			}
 			
 		]]>
@@ -118,10 +139,10 @@
 					dataProvider="{currTimeRestriction}">
 			<s:columns>
 				<s:ArrayList>
-					<s:GridColumn dataField="STARTDAY" headerText="Start Day"/>
-					<s:GridColumn dataField="ENDDAY" headerText="End Day"/>
-					<s:GridColumn dataField="STARTTIME" headerText="Start Time"/>
-					<s:GridColumn dataField="ENDTIME" headerText="End Time"/>
+					<s:GridColumn dataField="STARTDAY" headerText="Start Day" labelFunction="formatDayColumn"/>
+					<s:GridColumn dataField="ENDDAY" headerText="End Day" labelFunction="formatDayColumn"/>
+					<s:GridColumn dataField="STARTTIME" headerText="Start Time" labelFunction="formatTimeColumn"/>
+					<s:GridColumn dataField="ENDTIME" headerText="End Time" labelFunction="formatTimeColumn"/>
 					<s:GridColumn dataField="HOURLIMIT" headerText="Hour Limit"/>
 					<s:GridColumn dataField="RESTRICTIONORDER" headerText="Order"/> 
 				</s:ArrayList>
