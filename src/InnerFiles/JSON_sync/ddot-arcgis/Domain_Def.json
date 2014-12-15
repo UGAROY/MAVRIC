@@ -1868,6 +1868,141 @@
   },
   {
     "DOMAIN_DEF": {
+      "TYPE": "DAY",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Monday"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Tuesday"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Wednesday"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "Thursday"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "Friday"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "Saturday"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Sunday"
+        }
+      ]
+    }
+  },
+  {
+    "DOMAIN_DEF": {
+      "TYPE": "HOUR",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "0:00"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "1:00 am"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "3:00 am"
+        },
+        {
+          "ID": "4",
+          "DESCRIPTION": "4:00 am"
+        },
+        {
+          "ID": "5",
+          "DESCRIPTION": "5:00 am"
+        },
+        {
+          "ID": "6",
+          "DESCRIPTION": "6:00 am"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "7:00 am"
+        },
+        {
+          "ID": "8",
+          "DESCRIPTION": "8:00 am"
+        },
+        {
+          "ID": "9",
+          "DESCRIPTION": "9:00 am"
+        },
+        {
+          "ID": "10",
+          "DESCRIPTION": "10:00 am"
+        },
+        {
+          "ID": "11",
+          "DESCRIPTION": "11:00 am"
+        },
+        {
+          "ID": "12",
+          "DESCRIPTION": "12:00 am"
+        },
+        {
+          "ID": "13",
+          "DESCRIPTION": "1:00 pm"
+        },
+        {
+          "ID": "14",
+          "DESCRIPTION": "2:00 pm"
+        },
+        {
+          "ID": "15",
+          "DESCRIPTION": "3:00 pm"
+        },
+        {
+          "ID": "16",
+          "DESCRIPTION": "4:00 pm"
+        },
+        {
+          "ID": "17",
+          "DESCRIPTION": "5:00 pm"
+        },
+        {
+          "ID": "18",
+          "DESCRIPTION": "6:00 pm"
+        },
+        {
+          "ID": "19",
+          "DESCRIPTION": "7:00 pm"
+        },
+        {
+          "ID": "20",
+          "DESCRIPTION": "8:00 pm"
+        },
+        {
+          "ID": "21",
+          "DESCRIPTION": "9:00 pm"
+        },
+        {
+          "ID": "22",
+          "DESCRIPTION": "10:00 pm"
+        },
+        {
+          "ID": "23",
+          "DESCRIPTION": "11:00 pm"
+        }
+      ]
+    }
+  },
+  
+  {
+    "DOMAIN_DEF": {
       "TYPE": "SIGN_MAJOR_CAT_ID",
       "LIST": [
         {

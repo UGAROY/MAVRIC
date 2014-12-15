@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" title="Edit Time Restrictions"
+			   width="620" height="300"
+			   close="handleCloseEvent()"
+			   creationComplete="init()"
+			   skinClass="skins.MavricTitleWindowSkin" xmlns:ddot="com.transcendss.mavric.views.ddot.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.transcendss.mavric.util.DropDownViewHoriz;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.skins.mobile.TextInputSkin;
+
+			[Bindable]
+			public var currTimeObj:Object;
+			public var isNewTimeObj:Boolean;
+			public var trEditorCallback:Function;
+			
+			private var startDayDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			private var endDayDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			private var startTimeDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			private var endTimeDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			
+			private function init():void
+			{
+				try
+				{
+					startDayDDView.domainTableIDColName =  "DAY";
+					startDayDDView.fetchDomainValues();
+					startDayDDView.btnText = "Start   Day";
+					startDayDDView.width_TI = 120;
+					startDayDDView.genericPopup.height = 200;
+					startDayDDView.genericPopup.width = 200;
+					startDayDDGroup.addElement(startDayDDView);
+					
+					endDayDDView.domainTableIDColName =  "DAY";
+					endDayDDView.fetchDomainValues();
+					endDayDDView.btnText = "End    Day";
+					endDayDDView.width_TI = 120;
+					endDayDDView.genericPopup.height = 200;
+					endDayDDView.genericPopup.width = 200;
+					endDayDDGroup.addElement(endDayDDView);
+					
+					startTimeDDView.domainTableIDColName =  "HOUR";
+					startTimeDDView.fetchDomainValues();
+					startTimeDDView.btnText = "Start Hour";
+					startTimeDDView.width_TI = 120;
+					startTimeDDView.genericPopup.height = 200;
+					startTimeDDView.genericPopup.width = 200;
+					startTimeDDGroup.addElement(startTimeDDView);
+					
+					endTimeDDView.domainTableIDColName =  "HOUR";
+					endTimeDDView.fetchDomainValues();
+					endTimeDDView.btnText = "End   Hour";
+					endTimeDDView.width_TI = 120;
+					endTimeDDView.genericPopup.height = 200;
+					endTimeDDView.genericPopup.width = 200;
+					endTimeDDGroup.addElement(endTimeDDView);
+				}
+				catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());		
+				}
+			}
+			
+			public function loadTimeObj():void
+			{
+				startDayDDView.domainID = String(currTimeObj['STARTDAY']);
+				endDayDDView.domainID = String(currTimeObj['ENDDAY']);
+				startTimeDDView.domainID = String(currTimeObj['STARTTIME']);
+				endTimeDDView.domainID = String(currTimeObj['ENDTIME']);
+				hourLimitTextInut.text = String(currTimeObj['HOURLIMIT']);
+				orderTextInut.text = String(currTimeObj['RESTRICTIONORDER']);
+			}
+
+			
+			protected function handleCloseEvent():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			
+			protected function SaveHandler(event:MouseEvent):void
+			{
+				try
+				{
+					currTimeObj['STARTDAY'] = parseInt(startDayDDView.domainID);
+					currTimeObj['ENDDAY'] =  parseInt(startDayDDView.domainID);
+					currTimeObj['STARTTIME'] =  parseInt(startTimeDDView.domainID);
+					currTimeObj['ENDTIME'] =  parseInt(endTimeDDView.domainID);
+					currTimeObj['HOURLIMIT'] = parseInt(hourLimitTextInut.text);
+					currTimeObj['RESTRICTIONORDER'] = parseInt(orderTextInut.text);
+					
+					trEditorCallback(currTimeObj, this.isNewTimeObj); 
+					
+					PopUpManager.removePopUp(this);
+				}
+				catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Please fill out all fields."); //err.getStackTrace()
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout verticalAlign="top"/>
+	</s:layout>
+	<s:VGroup gap="15" width="100%" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20">
+		
+		<s:Spacer height="10"/>
+		
+		<s:VGroup width="100%">
+			<s:HGroup verticalAlign="middle" width="100%">
+				<s:Group id="startDayDDGroup" width="45%"/>
+				<s:Spacer width="10%"/>
+				<s:Group id="endDayDDGroup" width="45%"/>
+			</s:HGroup>
+			<s:HGroup verticalAlign="middle" width="100%">
+				<s:Group id="startTimeDDGroup" width="45%"/>
+				<s:Spacer width="10%"/>
+				<s:Group id="endTimeDDGroup" width="45%"/>
+			</s:HGroup>
+			<s:Spacer height="5"/>
+			<s:HGroup verticalAlign="middle">
+				<s:Label text="Hour Limit:" fontWeight="bold" />
+				<s:Spacer width="40"/>
+				<s:TextInput id="hourLimitTextInut" width="120" skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:Spacer width="50"/>
+				<s:Label text="Order:" fontWeight="bold"/>
+				<s:Spacer width="80"/>
+				<s:TextInput id="orderTextInut" width="120"  skinClass="spark.skins.mobile.TextInputSkin"/>
+				
+			</s:HGroup>
+			<s:Spacer height="20"/>
+			<s:HGroup verticalAlign="middle">
+				<s:Spacer width="210"/>
+				<s:Button label="Save" height="35" click="SaveHandler(event)"/>
+				<s:Spacer width="10"/>
+				<s:Button label="Cancel" height="35" click="handleCloseEvent()"/>
+			</s:HGroup>
+		</s:VGroup>	
+	</s:VGroup>	
+	
+		
+</s:TitleWindow>

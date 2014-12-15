@@ -31,6 +31,7 @@
 			
 			private var signSelectorForm:SignSelector;
 			private var linkedSignForm:LinkedSign;
+			private var timeRestrictionForm:TimeRestriction;
 			
 			public var signFacingDDView:DropDownViewHoriz = new DropDownViewHoriz();
 			public var signSizeDDView:DropDownViewHoriz = new DropDownViewHoriz();
@@ -43,6 +44,7 @@
 			public var linkSignPair:Object;
 			public var isNewSign:Boolean;
 			public var currSupportID:Number;
+			public var linkTimeRestriction:Object;
 			
 			private var otherSigns:ArrayCollection;
 			
@@ -129,6 +131,14 @@
 				linkedSignForm.loadLinkedSignsInfo();
 			}
 			
+			protected function timeDayBtn_clickHandler(event:MouseEvent):void
+			{
+			    timeRestrictionForm = PopUpManager.createPopUp(this, TimeRestriction) as TimeRestriction;
+				PopUpManager.centerPopUp(linkedSignForm);
+			    timeRestrictionForm.timeRestrictionCallback = timeRestrictionCompleteHandler;
+				timeRestrictionForm.loadTimeRestrictionInfo();
+			}
+			
 			private function failReqHandler(data:Object):void
 			{
 				FlexGlobals.topLevelApplication.setBusyStatus(false);
@@ -138,6 +148,11 @@
 			protected function linkedSignCompleteHandler(linkIDPair:Object):void
 			{
 				this.linkSignPair = linkIDPair;
+			}
+			
+			protected function timeRestrictionCompleteHandler(linkIDPair:Object):void
+			{
+				
 			}
 			
 			protected function signSelectCompleteHandler(evt:DropDownViewEvent):void
@@ -175,15 +190,6 @@
 				setSignImage();
 			}
 			
-//			public function signValuesbeenChanged():Boolean
-//			{
-//				return signFacingDDView.domainID != sign['SIGNFACING'] ||
-//					signSizeDDView.domainID != sign['SIGNSIZE'] ||
-//					signStatusDDView.domainID != sign['SIGNSTATUS'] ||
-//					signCodeTextInut.text != sign['SIGNNAME'] ||
-//					descriptionTextInut.text != sign['DESCRIPTION'];
-//			}
-			
 			public function updateSignValues():void
 			{
 				sign['SIGNNAME'] = signCodeTextInut.text;
@@ -193,6 +199,8 @@
 				sign['SIGNSTATUS'] = signStatusDDView.domainID;
 				sign['COMMENT'] = signComments.text;
 			}
+			
+			
 			
 		]]>
 	</fx:Script>
@@ -257,7 +265,8 @@
 						<s:Button id="linkedSignBtn" width="45%" label="Linked Sign"
 								  click="linkedSignBtn_clickHandler(event)"/>
 						<s:Spacer width="10%"/>
-						<s:Button id="timeDayBtn" width="45%" label="Time and Day"/>
+						<s:Button id="timeDayBtn" width="45%" label="Time and Day"
+								  click="timeDayBtn_clickHandler(event)"/>
 					</s:HGroup>
 					
 				</s:VGroup>

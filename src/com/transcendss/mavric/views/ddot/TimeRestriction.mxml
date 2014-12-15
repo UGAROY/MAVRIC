@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" title="Manage Time Restrictions"
+			   width="750" height="580"
+			   close="handleCloseEvent()"
+			   creationComplete="init()"
+			   skinClass="skins.MavricTitleWindowSkin" xmlns:ddot="com.transcendss.mavric.views.ddot.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.events.GridEvent;
+			import spark.skins.mobile.TextInputSkin;
+			
+			public var currLink:String;
+			[Bindable]
+			public var currTimeRestriction:ArrayCollection = new ArrayCollection();
+			
+			public var timeRestrictionCallback:Function;
+			
+			private var trEditorForm:TREditor;
+
+			private function init():void
+			{
+				try
+				{
+					
+				}
+				catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());		
+				}
+			}
+			
+			public function loadTimeRestrictionInfo():void
+			{
+				
+			}
+			
+			protected function handleCloseEvent():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			
+			
+			protected function SaveHandler(event:MouseEvent):void
+			{
+				try
+				{
+					PopUpManager.removePopUp(this);
+				}
+				catch(err:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Please fill out all fields."); //err.getStackTrace()
+				}
+			}
+			
+			
+			private function addTimeObj(event:MouseEvent):void
+			{
+				var newTimeObj:Object = new Object();
+				newTimeObj['STARTDAY'] = null;
+				newTimeObj['ENDDAY'] = null;
+				newTimeObj['STARTHOUR'] = null;
+				newTimeObj['ENDHOUR'] = null;
+				newTimeObj['HOURLIMIT'] = null;
+				newTimeObj['RESTRICTIONORDER'] = null;
+				
+				openTrEditor(newTimeObj, true);
+			}
+			
+			private function editTimeObj(event:GridEvent):void
+			{
+				openTrEditor(event.item, false);
+			}
+			
+			private function openTrEditor(timeObj:Object=null, isNewTimeObj:Boolean=false):void
+			{
+				trEditorForm = PopUpManager.createPopUp(this, TREditor) as TREditor;
+				trEditorForm.currTimeObj = timeObj;
+				trEditorForm.isNewTimeObj = isNewTimeObj;
+				trEditorForm.trEditorCallback = editCompleteHandler;
+				PopUpManager.centerPopUp(trEditorForm);
+			}
+			
+			private function editCompleteHandler(returnTimeObj:Object, isNewTimeObj:Boolean):void
+			{
+				if (isNewTimeObj == true)
+					currTimeRestriction.addItem(returnTimeObj);
+				else
+					currTimeRestriction.refresh();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		
+		
+	</fx:Declarations>
+	
+	<s:layout>
+		<s:VerticalLayout verticalAlign="top"/>
+	</s:layout>
+	<s:VGroup gap="15" width="100%" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20">
+		
+		<s:Spacer height="10"/>
+		<s:DataGrid id="timeRestrictionGrid" 
+					width="100%" height="180"
+				    editable="false"
+				    gridClick="editTimeObj(event)"
+					verticalScrollPolicy="off"
+					dataProvider="{currTimeRestriction}">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="STARTDAY" headerText="Start Day"/>
+					<s:GridColumn dataField="ENDDAY" headerText="End Day"/>
+					<s:GridColumn dataField="STARTTIME" headerText="Start Time"/>
+					<s:GridColumn dataField="ENDTIME" headerText="End Time"/>
+					<s:GridColumn dataField="HOURLIMIT" headerText="Hour Limit"/>
+					<s:GridColumn dataField="RESTRICTIONORDER" headerText="Order"/> 
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+		
+		<s:VGroup width="100%" horizontalAlign="center" >
+			<s:HGroup verticalAlign="middle">
+				<s:Button label="Add" width="100" height="35" click="addTimeObj(event)"/>
+				<s:Spacer width="40"/>
+				<s:Spacer width="40"/>
+				<s:Button label="Save"  width="100" height="35" click="SaveHandler(event)"/>
+				<s:Spacer width="20"/>
+				<s:Button label="Cancel" width="100" height="35" click="handleCloseEvent()"/>
+			</s:HGroup>
+		</s:VGroup>	
+	</s:VGroup>	
+	
+		
+</s:TitleWindow>

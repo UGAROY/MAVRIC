@@ -16,8 +16,6 @@
 			
 			import spark.skins.mobile.TextInputSkin;
 			
-			public var inspectionEditedCallback:Function;
-			
 			public var currentSign:Object;
 			public var otherSigns:ArrayCollection;
 			[Bindable]
