@@ -38,6 +38,7 @@
 			import spark.events.GridEvent;
 			import spark.events.GridSelectionEvent;
 			import spark.events.IndexChangeEvent;
+			import spark.skins.mobile.TextAreaSkin;
 			import spark.skins.mobile.TextInputSkin;
 			
 			import skins.HeaderlessPanelSkin;
@@ -158,6 +159,21 @@
 			private function onSave():void
 			{
 				saveSupport();
+				
+				// Save the signs
+				keepValuesInCurrSignTab(); // Keep the values of current sign tab. The workflow here is not very straightforward, but anyway...
+				recordManager.saveSigns(currSigns);
+				
+				// Save the inspections
+				recordManager.saveInspections(currInspections);
+				
+				// Save the links
+				recordManager.saveLink(currLinkDict);
+				
+				// Save the time restrictions
+				recordManager.saveTimeRestriction(currLinkTrDict);
+				
+				PopUpManager.removePopUp(this);
 			}
 			
 			private function saveSupport():void
@@ -183,19 +199,7 @@
 				supportEvent.culvert = currSupport;
 				dispatchEvent(supportEvent);
 				
-				
-				// Save the signs
-				keepValuesInCurrSignTab(); // Keep the values of current sign tab. The workflow here is not very straightforward, but anyway...
-				recordManager.saveSigns(currSigns);
-				
-				// Save the inspections
-				recordManager.saveInspections(currInspections);
-				
-				// Save the links
-				recordManager.saveLink(currLinkDict);
-				
-				// Save the time restrictions
-				recordManager.saveTimeRestriction(currLinkTrDict);
+
 			}
 			
 			public override function setBaseAsset(baseAsst:BaseAsset):void
@@ -212,7 +216,7 @@
 				numberOfBasesDDView.domainID = currSupport['invProperties'].NOOFHEADS.value || "";
 				subBaseDDView.domainID = currSupport['invProperties'].SUBBASE.value || "";
 				PoleHeightTextInut.text = currSupport['invProperties'].POLEHEIGHT.value || "";
-				PoleComments.text = currSupport['invProperties'].COMMENTS.value || "";
+				PoleComments.text = (currSupport['invProperties'].COMMENTS.value == null || currSupport['invProperties'].COMMENTS.value == "<Null>") ?  " " : currSupport['invProperties'].COMMENTS.value;
 				
 				var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
 				recordManager.getSigns(currSupportID, signResp);
@@ -836,7 +840,7 @@
 				<s:Spacer width="10"/>
 				<s:VGroup width="30%">
 					<s:Label text="Comments:  " fontWeight="bold"/>
-					<s:TextArea height="170" width="100%" id= "PoleComments"/>
+					<s:TextArea height="170" width="100%" id= "PoleComments" skinClass="spark.skins.mobile.TextAreaSkin"/>
 					<s:Spacer height="10"/>
 					<s:Label text="MS Utility ID:  " fontWeight="bold"/>
 					<s:TextInput id="MsUtilityTextInut" width="{textInputWidth}"/>

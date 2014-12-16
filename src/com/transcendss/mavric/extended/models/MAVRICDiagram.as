@@ -18,6 +18,7 @@ package com.transcendss.mavric.extended.models
 	import com.transcendss.mavric.managers.FeatureSetManager;
 	import com.transcendss.mavric.managers.MavricConfiguredSyncManager;
 	import com.transcendss.mavric.managers.RandHSyncManager;
+	import com.transcendss.mavric.managers.ddot.DdotRandHSyncManager;
 	import com.transcendss.mavric.util.FileUtility;
 	import com.transcendss.mavric.util.TSSRectangle;
 	import com.transcendss.mavric.views.InventoryMenu;
@@ -93,7 +94,7 @@ package com.transcendss.mavric.extended.models
 		private var gtManager:GeotagsManager = new GeotagsManager();
 		
 		private var exportManager:CSVExportManager;
-		private var RHSyncMgr:RandHSyncManager;
+		private var RHSyncMgr:DdotRandHSyncManager;
 		private var mavicConfiguredSyncMgr:MavricConfiguredSyncManager;
 		private var fileUtility:FileUtility;
 		private var addingMarkers:ArrayList;
@@ -162,7 +163,7 @@ package com.transcendss.mavric.extended.models
 			
 			dbManager = MAVRICDBManager.newInstance();
 		
-			RHSyncMgr = new RandHSyncManager();
+			RHSyncMgr = new DdotRandHSyncManager();
 			exportManager = new CSVExportManager();
 			fileUtility = new FileUtility();
 			addingMarkers = new ArrayList();

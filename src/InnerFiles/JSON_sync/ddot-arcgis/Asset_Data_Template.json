@@ -12,6 +12,11 @@
       "BASE_ID": "",
       "INV_COLUMNS": [
         {
+          "NAME": "OBJECTID",
+          "Nullable": "False",
+          "TYPE": "INTEGER"
+        },
+        {
           "NAME": "POLEID",
           "TYPE": "INTEGER",
           "Nullable": "FALSE"

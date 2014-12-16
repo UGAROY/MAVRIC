@@ -2329,5 +2329,22 @@ package com.transcendss.mavric.db
 			}
 			return gtArray;
 		}
+		
+		public function exportDdotRecords(tableName:String):Array
+		{
+			var data2:Array = new Array();
+			try
+			{
+				sStat.text = "SELECT *  from " + tableName;
+				sStat.execute();
+				data2 = sStat.getResult().data;
+				return data2;
+			}
+			catch(e:Error)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert( "Error in exportAssets:\n" + e.message );
+			}
+			return null;
+		}
 	}
 }

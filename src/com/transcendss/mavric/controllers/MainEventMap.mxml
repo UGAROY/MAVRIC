@@ -22,7 +22,8 @@
 			import com.transcendss.mavric.managers.ExternalFileManager;
 			import com.transcendss.mavric.managers.MavricConfiguredSyncManager;
 			import com.transcendss.mavric.managers.MenuManager;
-			import com.transcendss.mavric.managers.RandHSyncManager;
+			//import com.transcendss.mavric.managers.RandHSyncManager;
+			import com.transcendss.mavric.managers.ddot.DdotRandHSyncManager;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.AssetEditForm;
@@ -231,7 +232,7 @@
 					<mate:MethodInvoker generator="{ArcGISServiceManager}" method="onServiceObjResult" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
 					</mate:MethodInvoker>
-					<mate:MethodInvoker generator="{RandHSyncManager}" method="clearLocalData" arguments="{[lastReturn,event]}" >
+					<mate:MethodInvoker generator="{DdotRandHSyncManager}" method="clearLocalData" arguments="{[lastReturn,event]}" >
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
 					</mate:MethodInvoker>
 				</mate:resultHandlers>
@@ -239,7 +240,7 @@
 					<mate:MethodInvoker generator="{ArcGISServiceManager}" method="onServiceObjResult" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
 					</mate:MethodInvoker>
-					<mate:MethodInvoker generator="{RandHSyncManager}" method="clearLocalData" arguments="{[lastReturn,event]}" >
+					<mate:MethodInvoker generator="{DdotRandHSyncManager}" method="clearLocalData" arguments="{[lastReturn,event]}" >
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
 					</mate:MethodInvoker>
 				</mate:faultHandlers>
