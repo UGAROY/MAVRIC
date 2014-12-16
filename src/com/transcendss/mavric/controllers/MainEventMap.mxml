@@ -25,6 +25,7 @@
 			//import com.transcendss.mavric.managers.RandHSyncManager;
 			import com.transcendss.mavric.managers.ddot.DdotRandHSyncManager;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
+			import com.transcendss.mavric.views.ddot.SupportInventory;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.AssetEditForm;
 			import com.transcendss.mavric.views.ControlBar;
@@ -796,6 +797,10 @@
 		<mate:Injectors target="{GuardrailMenu}" debug="{debugFlag}">
 			<mate:ListenerInjector eventType="{GuardrailMenuEvent.GUARDRAIL_GEOTAG_READY}" method="setGeotagsFromServer" useWeakReference="true"/>
 			
+		</mate:Injectors>
+		
+		<mate:Injectors target="{SupportInventory}" debug="{debugFlag}">
+			<mate:ListenerInjector eventType="{DdotRecordEvent.SUPPORT_SAVED}" method="saveOtherRecords" useWeakReference="true"/>
 		</mate:Injectors>
 		
 		

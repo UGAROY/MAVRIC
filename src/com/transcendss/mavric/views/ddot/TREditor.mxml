@@ -10,7 +10,6 @@
 		<![CDATA[
 			import com.transcendss.mavric.util.DropDownViewHoriz;
 			
-			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
@@ -75,8 +74,8 @@
 				endDayDDView.domainID = String(currTimeObj['ENDDAY']);
 				startTimeDDView.domainID = String(currTimeObj['STARTTIME']);
 				endTimeDDView.domainID = String(currTimeObj['ENDTIME']);
-				hourLimitTextInut.text = String(currTimeObj['HOURLIMIT']) || "";
-				orderTextInut.text = String(currTimeObj['RESTRICTIONORDER']) || "";
+				hourLimitTextInut.text = String(currTimeObj['HOURLIMIT'] || "");
+				orderTextInut.text = String(currTimeObj['RESTRICTIONORDER'] || "") ;
 			}
 
 			
@@ -91,7 +90,7 @@
 				try
 				{
 					currTimeObj['STARTDAY'] = parseInt(startDayDDView.domainID);
-					currTimeObj['ENDDAY'] =  parseInt(startDayDDView.domainID);
+					currTimeObj['ENDDAY'] =  parseInt(endDayDDView.domainID);
 					currTimeObj['STARTTIME'] =  parseInt(startTimeDDView.domainID);
 					currTimeObj['ENDTIME'] =  parseInt(endTimeDDView.domainID);
 					currTimeObj['HOURLIMIT'] = parseInt(hourLimitTextInut.text) || null;

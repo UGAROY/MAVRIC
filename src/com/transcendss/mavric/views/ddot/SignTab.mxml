@@ -38,15 +38,14 @@
 			
 			[Bindable]
 			public var sign:Object;
-			public var linkSignPair:Object;
+			public var linkSignPair:Object = new Object();
 			public var isNewSign:Boolean;
 			public var currSupportID:Number;
 			[Bindable]
 			public var linkTimeRestrictions:ArrayCollection;
-			private var otherSigns:ArrayCollection;
 			
 			[Bindable]
-			private var trEnable:Boolean; 
+			private var trEnable:Boolean = false; 
 			
 			private function init():void
 			{
@@ -81,13 +80,21 @@
 					attchView.init("SignInventory",true,true,true);
 					addAttchmentsHolder.addElement(attchView);
 					
-					trEnable = false;
+					var linkResp:mx.rpc.Responder = new mx.rpc.Responder(linkRetrieved,  failReqHandler);
+					recordManager.getLinkBySignID(sign['SIGNID'], linkResp);
 				}
 				catch (err:Error)
 				{
 					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
 				}
 				
+			}
+			
+			private function linkRetrieved(linkID:String):void
+			{
+				this.linkSignPair['NEW'] = linkID;
+				linkIdLabel.text = linkSignPair['NEW'];
+				trEnable = linkID != "";
 			}
 			
 			protected function selectSignBtn_clickHandler(event:MouseEvent):void
@@ -99,8 +106,6 @@
 			
 			protected function linkedSignBtn_clickHandler(event:MouseEvent):void
 			{
-//				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
-//				recordManager.getOtherSignsOnRoute(sign['ROUTEID'], sign['SIGNID'], 9, routeSignsResp);
 				var supports:ArrayCollection = recordManager.getAllSupports();
 				
 				var otherSupportIDs:Array = new Array();
@@ -110,25 +115,18 @@
 						otherSupportIDs.push(support['invProperties'].POLEID.value);
 				}
 				
-				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(getLink,  failReqHandler);
+				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
 				recordManager.getOtherSignsOnRoute(otherSupportIDs, 9, routeSignsResp);
 			}
 			
-			private function getLink(data:ArrayCollection):void
-			{
-				this.otherSigns = data;
-				
-				var linkResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
-				recordManager.getLinkBySignID(sign['SIGNID'], linkResp); //(otherSupportIDs, 9, routeSignsResp);
-			}
-			
-			private function openLinkedSignEditor(linkID:String):void
+			private function openLinkedSignEditor(data:ArrayCollection):void
 			{
 				linkedSignForm = PopUpManager.createPopUp(this, LinkedSign) as LinkedSign;
 				PopUpManager.centerPopUp(linkedSignForm);
-				linkedSignForm.currentSign = this.sign;
-				linkedSignForm.otherSigns =  this.otherSigns;
-				linkedSignForm.oldLinkID = linkID;
+				updateSignValues(); // update the current sign value before passing in to the linked form
+				linkedSignForm.currentSign = sign;
+				linkedSignForm.otherSigns =  data;
+				linkedSignForm.oldLinkID = this.linkSignPair['NEW'];
 				linkedSignForm.linkedSignCallback = linkedSignCompleteHandler;
 				linkedSignForm.loadLinkedSignsInfo();
 			}
@@ -156,7 +154,7 @@
 			protected function linkedSignCompleteHandler(linkIDPair:Object):void
 			{
 				this.linkSignPair = linkIDPair;
-				trEnable = true;
+				linkRetrieved(linkSignPair['NEW']);
 			}
 			
 			protected function timeRestrictionCompleteHandler(timeRestrictions:ArrayCollection):void
@@ -217,7 +215,7 @@
 		
 	</fx:Declarations>
 	
-	<s:VGroup paddingBottom="10" paddingLeft="20" paddingRight="10" paddingTop="10">
+	<s:VGroup paddingBottom="10" paddingLeft="0" paddingRight="10" paddingTop="20">
 		<s:VGroup>
 			<s:HGroup>
 				<s:VGroup width="60%">
@@ -259,15 +257,16 @@
 				</s:VGroup>
 				<s:Spacer width="5%"/>
 				<s:VGroup width="20%">
+					<s:Spacer height="20"/>
 					<s:Label fontWeight="bold" text="Comments:  "/>
 					<s:TextArea id="signComments" height="170"/>
-					<s:Spacer height="10"/>
+<!--					<s:Spacer height="10"/>
 					<s:HGroup verticalAlign="middle">
 						<s:Label fontWeight="bold" text="Zone ID"/>
 						<s:Spacer width="10"/>
 						<s:TextInput id="zoneIdTextInut" width="210"
 									 skinClass="spark.skins.mobile.TextInputSkin"/>
-					</s:HGroup>
+					</s:HGroup>-->
 					<s:Spacer height="10"/>
 					<s:HGroup width="100%" verticalAlign="middle">
 						<s:Button id="linkedSignBtn" width="45%" label="Linked Sign"
@@ -275,6 +274,12 @@
 						<s:Spacer width="10%"/>
 						<s:Button id="timeDayBtn" width="45%" label="Time and Day"
 								  click="timeDayBtn_clickHandler(event)" enabled="{trEnable}"/>
+					</s:HGroup>
+					<s:Spacer height="10"/>
+					<s:HGroup verticalAlign="middle" visible="{trEnable}">
+						<s:Label fontWeight="bold" text="Link ID:"/>
+						<s:Spacer width="10"/>
+						<s:Label id="linkIdLabel" width="210"/>
 					</s:HGroup>
 					
 				</s:VGroup>

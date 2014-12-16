@@ -12,6 +12,7 @@ package com.transcendss.mavric.extended.models
 	import com.transcendss.mavric.events.GPSEvent;
 	import com.transcendss.mavric.events.LocalRouteEvent;
 	import com.transcendss.mavric.events.SignInvEvent;
+	import com.transcendss.mavric.events.ddot.DdotRecordEvent;
 	import com.transcendss.mavric.extended.models.Components.AccessPoint;
 	import com.transcendss.mavric.managers.AssetManager;
 	import com.transcendss.mavric.managers.CSVExportManager;
@@ -1078,7 +1079,7 @@ package com.transcendss.mavric.extended.models
 					FlexGlobals.topLevelApplication.GlobalComponents.assetManager.saveAsset(cul);
 					stickDrawing.applyAssetToDiagram(cul.description, cul, true);	
 					if(isNewAsset)
-						stickDrawing.spriteLists[cul.description].push(cul);
+						stickDrawing.spriteLists[cul.description].addItem(cul);
 						
 					if(gtags != null && gtags.length >0)
 					{
@@ -1092,6 +1093,10 @@ package com.transcendss.mavric.extended.models
 								dbManager.addGeoTag(gt,false);
 						}
 					}
+					
+					var culSavedEvent:DdotRecordEvent = new DdotRecordEvent(DdotRecordEvent.SUPPORT_SAVED , true, true);
+					culSavedEvent.support = cul;
+					dispatchEvent(culSavedEvent);
 				}
 					
 				//} else

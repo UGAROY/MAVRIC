@@ -223,6 +223,7 @@ package com.transcendss.mavric.managers.ddot
 				FlexGlobals.topLevelApplication.failedSyncDetails += " \n"+response.error.message;
 			else
 			{
+				dbManager.deleteGeoTag(gtArray[0].id);
 				fileUtil.deleteFiles(filename);
 			}
 			gtArray.shift();

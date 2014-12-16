@@ -48,13 +48,6 @@ package com.transcendss.mavric.managers.ddot
 			_stkDiagram = FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram;
 			_dispatcher = new Dispatcher(); 
 			
-//			// Get the signTypes domain here since it can be used cross several tabs
-//			var signTypes:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGNTYPE");
-//			for each(var signType:Object in signTypes)
-//			{
-//				signTypeDictionary[signType['ID']] = signType['DESCRIPTION'];
-//			}
-			
 			// Get the mininum and <0  signID and InspectionID
 			_newSignID = _mdbm.assignNewSignID();
 			_newInspectionID = _mdbm.assignNewInspectionID();
@@ -66,17 +59,17 @@ package com.transcendss.mavric.managers.ddot
 		}
 		
 		// Build a support dictionary. supportid as key and (measure, routeid) as value
-		public function buildSupportDict():Object
+		public function buildSupportDict():void
 		{
-			var supportDict:Object = new Object();
-			for each(var support:Object in _stkDiagram.spriteLists['SUPPORT'])
+			var allSupports:ArrayCollection = getAllSupports();
+			this._supportDict = new Object();
+			for each(var support:Object in allSupports)
 			{
 				var supportProperties:Object = new Object();
 				supportProperties['MEASURE'] = support['invProperties'].MEASURE.value;
 				supportProperties['ROUTEID'] = support['invProperties'].ROUTEID.value;
-				supportDict[support['invProperties'].POLEID.value] = supportProperties;
+				this._supportDict[parseInt(support['invProperties'].POLEID.value)] = supportProperties;
 			}
-			return supportDict;
 		}
 			
 		
@@ -93,6 +86,8 @@ package com.transcendss.mavric.managers.ddot
 			sign['SIGNSTATUS'] = null;
 			sign['ARROWDIRECTION'] = null;
 			sign['COMMENT'] = null;
+			
+			sign['MEASURE'] = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
 			
 			return sign;
 		}
@@ -118,8 +113,17 @@ package com.transcendss.mavric.managers.ddot
 			sign['DESCRIPTION'] = sign['DESCRIPTION'] || sign['SIGNNAME'];
 			
 			// Add the routeId and measure to the sign
-			sign['MEASURE'] = this._supportDict[sign['POLEID']]['MEASURE'];
-			sign['ROUTEID'] = this._supportDict[sign['POLEID']]['ROUTEID'];
+			if (sign['POLEID'] < 0)
+			{
+				// if new sign, get the current route id and measure 
+				sign['MEASURE'] = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+				sign['ROUTEID'] = FlexGlobals.topLevelApplication.currentRouteName;
+			} 
+			else
+			{
+				sign['MEASURE'] = this._supportDict[sign['POLEID']]['MEASURE'];
+				sign['ROUTEID'] = this._supportDict[sign['POLEID']]['ROUTEID'];
+			}
 			
 			return sign;
 		}
@@ -162,7 +166,7 @@ package com.transcendss.mavric.managers.ddot
 					signs.addItem(liveSign);
 				
 			// Have to do a bit pre-processing on each sign to make sure they can communicate with flex components
-			_supportDict = buildSupportDict();
+			buildSupportDict();
 			for each (var sign:Object in signs)
 				prepareSignBeforeLoad(sign);
 			
@@ -272,6 +276,7 @@ package com.transcendss.mavric.managers.ddot
 				inspections.addItem(liveInspection);
 			
 			// Have to do a bit pre-processing on each inspection to make sure they can communicate with flex components
+			buildSupportDict();
 			for each (var inspection:Object in inspections)
 				prepareInspectionBeforeLoad(inspection);
 			
@@ -318,10 +323,9 @@ package com.transcendss.mavric.managers.ddot
 			}
 			
 			// Have to do a bit pre-processing on each sign to make sure they can communicate with flex components
+			buildSupportDict();
 			for each (var sign:Object in signs)
-			{
 				prepareSignBeforeLoad(sign);
-			}
 			
 			resp.result(signs);
 		}
@@ -412,13 +416,14 @@ package com.transcendss.mavric.managers.ddot
 		{
 			for (var key:String in link)
 			{
-				var newLinkID:String = link[key]['NEW'];
-				var oldLinkID:String = link[key]['OLD'];
-				if (oldLinkID != null)
-					_mdbm.deleteOldLinkByLinkID(oldLinkID);
-				var allSignIDs:Array = newLinkID.split('_');
-				for each (var signID:String in allSignIDs)
+				if (link[key]['NEW'] != null && link[key]['NEW'] != "")
 				{
+					var newLinkID:String = link[key]['NEW'];
+					var oldLinkID:String = link[key]['OLD'];
+					if (oldLinkID != null)
+						_mdbm.deleteOldLinkByLinkID(oldLinkID);
+					var allSignIDs:Array = newLinkID.split('_');
+					for each (var signID:String in allSignIDs)
 					_mdbm.addLink(newLinkID, parseInt(signID), oldLinkID);
 				}
 			}

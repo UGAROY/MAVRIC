@@ -11,6 +11,8 @@
 		<![CDATA[
 			import com.transcendss.mavric.db.MAVRICDBManager;
 			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.events.ddot.DdotRecordEvent;
+			import com.transcendss.mavric.managers.ddot.DdotRandHSyncManager;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewHoriz;
@@ -36,7 +38,6 @@
 			
 			import spark.components.Button;
 			import spark.events.GridEvent;
-			import spark.events.GridSelectionEvent;
 			import spark.events.IndexChangeEvent;
 			import spark.skins.mobile.TextAreaSkin;
 			import spark.skins.mobile.TextInputSkin;
@@ -64,6 +65,9 @@
 			
 			[Bindable]
 			private var allAssets:ArrayCollection = new ArrayCollection();
+			
+			private var currRouteID:String = "";
+			private var currMilePost:Number;
 			
 			private var currSupport:BaseAsset = null;
 			private var currSupportID:Number = -1;
@@ -93,6 +97,9 @@
 					
 					dbManager = MAVRICDBManager.newInstance();
 					recordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;
+					// Build a support POLEID --- ROUTEID/MEASURE dictionary
+					// TODO: place it somewhere else
+					recordManager.buildSupportDict();
 					
 					locDDView.domainTableIDColName =  "LOCATION";
 					locDDView.fetchDomainValues();
@@ -143,10 +150,6 @@
 					var eve:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
 					dispatchEvent(eve);
 					
-					// Listen to viewStack index change event
-//					viewStack.addEventListener(IndexChangeEvent.CHANGE, function (event:Event) {
-//						trace("HaHa");
-//					});
 				}
 				catch (err:Error)
 				{
@@ -158,22 +161,10 @@
 			
 			private function onSave():void
 			{
-				saveSupport();
-				
 				// Save the signs
 				keepValuesInCurrSignTab(); // Keep the values of current sign tab. The workflow here is not very straightforward, but anyway...
-				recordManager.saveSigns(currSigns);
 				
-				// Save the inspections
-				recordManager.saveInspections(currInspections);
-				
-				// Save the links
-				recordManager.saveLink(currLinkDict);
-				
-				// Save the time restrictions
-				recordManager.saveTimeRestriction(currLinkTrDict);
-				
-				PopUpManager.removePopUp(this);
+				saveSupport();
 			}
 			
 			private function saveSupport():void
@@ -184,6 +175,8 @@
 				}
 				else
 				{
+					currSupport['invProperties'].ROUTEID.value = this.currRouteID;
+					currSupport['invProperties'].MEASURE.value = this.currMilePost;
 					currSupport['invProperties'].LOCATION.value = locDDView.domainID;
 					currSupport['invProperties'].POLEMATERIAL.value = signSupportDDView.domainID;
 					currSupport['invProperties'].POLESTATUS.value = supportStatusDDView.domainID;
@@ -198,8 +191,35 @@
 				supportEvent.geoTags = geoTagsArr;
 				supportEvent.culvert = currSupport;
 				dispatchEvent(supportEvent);
+			}
+			
+			public function saveOtherRecords(event:DdotRecordEvent):void
+			{
+				// This function is called after the support has been saved
+				updateSupportID(event.support.id);
 				
-
+				// Save the signs
+				recordManager.saveSigns(currSigns);
+				
+				// Save the inspections
+				recordManager.saveInspections(currInspections);
+				
+				// Save the links
+				recordManager.saveLink(currLinkDict);
+				
+				// Save the time restrictions
+				recordManager.saveTimeRestriction(currLinkTrDict);
+				
+				PopUpManager.removePopUp(this);
+			}
+			
+			public function updateSupportID(supportID:Number):void
+			{
+				// update the newly assigned support id based on the return asset
+				for each(var sign:Object in currSigns)
+					sign['POLEID'] = supportID;
+				for each(var inspection:Object in currInspections)
+					inspection['POLEID'] = supportID;
 			}
 			
 			public override function setBaseAsset(baseAsst:BaseAsset):void
@@ -207,8 +227,21 @@
 				currSupport = baseAsst;
 				currSupportID = currSupport.id;
 				
-				supportRouteIdInput.text = currSupport['routeName'] || "";
-				milepostTextInut.text = parseFloat(currSupport['milePost'] || "").toFixed(3);
+				if (currSupportID == -1)
+				{
+					this.currRouteID = FlexGlobals.topLevelApplication.currentRouteName;
+					this.currMilePost = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					//set lat long from GPS if new GR
+					//currSupport.setAssetLocation("LATITUDE","LONGITUDE");
+				}
+				else 
+				{
+					this.currRouteID = currSupport['invProperties'].ROUTEID.value || "";
+					this.currMilePost = parseFloat(currSupport['invProperties'].MEASURE.value || "");
+				}
+				
+				supportRouteIdInput.text = this.currRouteID;
+				milepostTextInut.text = this.currMilePost.toFixed(3);
 				locDDView.domainID = currSupport['invProperties'].LOCATION.value || "";
 				signSupportDDView.domainID = currSupport['invProperties'].POLEMATERIAL.value || "";
 				supportStatusDDView.domainID = currSupport['invProperties'].POLESTATUS.value || "";
@@ -218,11 +251,12 @@
 				PoleHeightTextInut.text = currSupport['invProperties'].POLEHEIGHT.value || "";
 				PoleComments.text = (currSupport['invProperties'].COMMENTS.value == null || currSupport['invProperties'].COMMENTS.value == "<Null>") ?  " " : currSupport['invProperties'].COMMENTS.value;
 				
-				var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
-				recordManager.getSigns(currSupportID, signResp);
-				
 				if (currSupportID != -1)
 				{
+					// Get the Signs
+					var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
+					recordManager.getSigns(currSupportID, signResp);
+					
 					var gtArray:Array = dbManager.getDdotGeotags(currSupportID);
 					
 					for (var gti:int=0;gti<gtArray.length;gti++)
@@ -234,6 +268,7 @@
 						if(viE)
 						{
 							var vContainer:VGroup = new VGroup();
+							vContainer.horizontalAlign = "center";
 							var assetLabel:Label = new Label();
 							assetLabel.text = tmpGT.asset_ty_id + tmpGT.local_asset_id;
 							vContainer.addElement(viE);
@@ -248,13 +283,15 @@
 							{
 								InspAttachments.addElement(vContainer);
 							}
-								
-						
 						}
 						tmpMedia.geoTag = tmpGT;
 						tmpMedia.geoLocalId = tmpGT.id;
 					}
-					
+				}
+				else 
+				{
+					// If a new Support. directly set the dataRetrieved to true
+					dataRetrieved = true;
 				}
 			}
 			
@@ -327,7 +364,10 @@
 					currSignTab.updateSignValues();
 					// If it is a new sign, push it to the currSign list
 					if (currSignTab.isNewSign)
+					{
 						currSigns.addItem(selectedSign);
+						currSignTab.isNewSign = false;
+					}
 					// add link
 					if (currSignTab.linkSignPair != null)
 						currLinkDict[currSignTab.sign['SIGNID']] = currSignTab.linkSignPair;	

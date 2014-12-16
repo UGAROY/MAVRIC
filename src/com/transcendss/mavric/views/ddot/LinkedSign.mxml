@@ -12,7 +12,6 @@
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
-			import mx.rpc.Responder;
 			
 			import spark.skins.mobile.TextInputSkin;
 			
@@ -57,16 +56,6 @@
 				}
 				otherSignsDp = otherSigns;
 			}
-			
-//			private function formatSignTypeColumn(item:Object, column:GridColumn):String
-//			{
-//				for each(var type:Object in signTypes)
-//				{
-//					if(type['ID'] == item[column.dataField])
-//						return type['DESCRIPTION'];
-//				}
-//				return "";
-//			}
 			
 			private function formatMeasureColumn(item:Object, column:GridColumn):String
 			{
@@ -124,7 +113,7 @@
 					dataProvider="{currentSignDp}">
 			<s:columns>
 				<s:ArrayList>
-					<s:GridColumn dataField="DESCRIPTION" headerText="Sign Type"/>
+					<s:GridColumn dataField="DESCRIPTION" headerText="Sign Code"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn"/>
 					<s:GridColumn dataField="POLEID" headerText="Support ID"/>

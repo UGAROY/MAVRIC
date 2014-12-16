@@ -151,7 +151,7 @@
 				SubCatID = 0;
 				keywordText.text = "";
 				signdesc.text = "";
-				mutcdList.dataProvider.removeAll();
+				mutcdList.dataProvider = null;
 				mutcdImagegrp.removeAllElements();
 			}
 			

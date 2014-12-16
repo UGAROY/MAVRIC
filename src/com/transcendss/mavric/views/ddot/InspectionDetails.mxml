@@ -97,6 +97,12 @@
 				
 			}
 			
+			override protected function closeButton_clickHandler(event:MouseEvent):void
+			{
+				handleCloseEvent();
+			}
+
+			
 			protected function handleCloseEvent():void
 			{
 				PopUpManager.removePopUp(this);

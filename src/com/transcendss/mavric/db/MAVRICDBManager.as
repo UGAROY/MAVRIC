@@ -946,7 +946,7 @@ package com.transcendss.mavric.db
 			var colNames : String;
 			var vals : String;
 			//invCols = asset.ASSET_DATA_TEMPLATE.INV_COLUMNS
-			var isNew:Boolean= (asset.id < 0);
+			var isNew:Boolean= (asset.id  == -1);
 			if (isNew)
 				assignAssetId(asset, asset.description);
 			var colObj:Object = buildColNames(primaryKey, "INV", asset, isNew);
@@ -1002,14 +1002,23 @@ package com.transcendss.mavric.db
 		
 		private function assignAssetId(asset : BaseAsset, table:String):void
 		{
-			var rowid : int;
-			sStat.text = "SELECT COUNT(" + asset.primaryKey + ") FROM " + table + "_INV";
+//			var rowid : int;
+//			sStat.text = "SELECT COUNT(" + asset.primaryKey + ") FROM " + table + "_INV";
+//			sStat.execute();
+//			
+//			var arr:Array = sStat.getResult().data;
+//			rowid = arr[0]["COUNT(" + asset.primaryKey + ")"];
+//			
+//			asset.id = rowid + 1;
+			
+			//Custom Code for Ddot. -1 means fresh newly created asset on the air.  the id <-1 are the assets created but cached at the local db
+			sStat.text = StringUtil.substitute("SELECT min({0}) FROM {1}_INV WHERE {0} < 0", [asset.primaryKey, table]);
 			sStat.execute();
-			
-			var arr:Array = sStat.getResult().data;
-			rowid = arr[0]["COUNT(" + asset.primaryKey + ")"];
-			
-			asset.id = rowid + 1;
+			var data:Array = sStat.getResult().data;
+			if (data != null && data.length > 0 && data[0]["min(" + asset.primaryKey + ")"] != null)
+				asset.id = data[0]["min(" + asset.primaryKey + ")"];
+			else	
+				asset.id = -2;
 		}
 		
 		public function assignSignAssemblyLocalID():int

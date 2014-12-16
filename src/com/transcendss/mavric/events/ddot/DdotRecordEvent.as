@@ -1,12 +1,15 @@
 package com.transcendss.mavric.events.ddot
 {
 	
+	import com.transcendss.transcore.sld.models.components.BaseAsset;
+	
 	import flash.events.Event;
 	
 	import mx.rpc.IResponder;
 	
 	public class DdotRecordEvent extends Event
 	{
+		private var _support:BaseAsset;
 		private var _supportID:Number;
 		private var _supportIDs:Array;
 		private var _signID:Number;
@@ -21,12 +24,23 @@ package com.transcendss.mavric.events.ddot
 		public static const OTHER_SIGN_REQUEST:String="otherSign_event";
 		public static const LINK_REQUEST:String="link_event";
 		public static const TIME_RESTRICTION_REQUEST:String="timeRestriction_event";
+		public static const SUPPORT_SAVED:String="supportSaved_event";
 		
 		public function DdotRecordEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=true)
 		{
 			super(type, bubbles, cancelable);
 		}
 
+
+		public function get support():BaseAsset
+		{
+			return _support;
+		}
+
+		public function set support(value:BaseAsset):void
+		{
+			_support = value;
+		}
 
 		public function get linkID():String
 		{
