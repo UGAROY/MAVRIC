@@ -21,9 +21,6 @@
 			import spark.components.Button;
 			import spark.skins.mobile.TextInputSkin;
 			
-			import skins.HeaderlessPanelSkin;
-			import skins.TSSSkinnablePopUpContainerSkin;
-			
 			private var recordManager:DdotRecordManager;
 			
 			[Bindable]
@@ -211,8 +208,7 @@
 				sign['SIGNSTATUS'] = signStatusDDView.domainID;
 				sign['COMMENT'] = signComments.text;
 			}
-			
-			
+
 			
 		]]>
 	</fx:Script>

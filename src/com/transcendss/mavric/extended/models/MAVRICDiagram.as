@@ -1084,9 +1084,9 @@ package com.transcendss.mavric.extended.models
 						for(var i:int =0; i<gtags.length;i++)
 						{
 							var gt:GeoTag = gtags[i] as GeoTag;
-							gt.local_asset_id = "" + cul.id;
-							if(cul.invProperties.hasOwnProperty("ASSET_BASE_ID"))	
-								gt.asset_base_id=cul.invProperties["ASSET_BASE_ID"].value;
+							//gt.local_asset_id = "" + cul.id;
+							//if(cul.invProperties.hasOwnProperty("ASSET_BASE_ID"))	
+							//	gt.asset_base_id=cul.invProperties["ASSET_BASE_ID"].value;
 							if(gt.id == 0)	// to avoid adding duplicates
 								dbManager.addGeoTag(gt,false);
 						}

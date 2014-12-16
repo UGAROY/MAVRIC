@@ -74,6 +74,7 @@
 			[Bindable]
 			private var currInspections:ArrayCollection = new ArrayCollection();
 			private var inspectionDetailsForm:InspectionDetails = null;
+			private var currInspectionAsset:Object;
 			
 			private var currLinkDict:Object = new Object();
 			private var currLinkTrDict:Object = new Object();
@@ -178,6 +179,7 @@
 				}
 				
 				var supportEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT , true, true);
+				supportEvent.geoTags = geoTagsArr;
 				supportEvent.culvert = currSupport;
 				dispatchEvent(supportEvent);
 				
@@ -214,6 +216,42 @@
 				
 				var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
 				recordManager.getSigns(currSupportID, signResp);
+				
+				if (currSupportID != -1)
+				{
+					var gtArray:Array = dbManager.getDdotGeotags(currSupportID);
+					
+					for (var gti:int=0;gti<gtArray.length;gti++)
+					{
+						var tmpMedia:Object = new Object();
+						var tmpGT:GeoTag = gtArray[gti] as GeoTag;	
+						//tmpGT.asset_ty_id = currentSign.assetType;
+						var viE:* = new GeotagsManager().ConvertGeotags(tmpGT,"","local");
+						if(viE)
+						{
+							var vContainer:VGroup = new VGroup();
+							var assetLabel:Label = new Label();
+							assetLabel.text = tmpGT.asset_ty_id + tmpGT.local_asset_id;
+							vContainer.addElement(viE);
+							vContainer.addElement(assetLabel);
+//							if(viE is TSSPicture)
+//								picArray.addItem(viE);
+							if (tmpGT.is_insp == 0)
+							{
+								InvAttachments.addElement(vContainer);
+							}
+							else
+							{
+								InspAttachments.addElement(vContainer);
+							}
+								
+						
+						}
+						tmpMedia.geoTag = tmpGT;
+						tmpMedia.geoLocalId = tmpGT.id;
+					}
+					
+				}
 			}
 			
 			private function signReqReponse(result:Object):void
@@ -369,6 +407,9 @@
 				// Create a new inspection object
 				inspectionDetailsForm.isNewInspection = true;
 				inspectionDetailsForm.inspection = recordManager.createNewInspection(AssetList.selectedItem['POLEID'], AssetList.selectedItem['SIGNID']);
+			
+				// Get the current inspection asset id 
+				this.currInspectionAsset = AssetList.selectedItem;
 			}
 			
 			private function inspHistoryGrid_gridClickHandler(event:GridEvent):void
@@ -379,6 +420,9 @@
 				inspectionDetailsForm.isNewInspection = false;
 				inspectionDetailsForm.inspection = event.item;
 				inspectionDetailsForm.loadInspectionInfo();
+				
+				// Get the current inspection asset id 
+				this.currInspectionAsset = event.item;
 			}
 			
 			private function openInspectionEditor():void
@@ -433,186 +477,278 @@
 			//-----------------------------GeoTags----------------------------------------------------
 			public override function handlePicture(event:CameraEvent):void
 			{
-//				event.stopImmediatePropagation();
-//				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
-//				{
-//					var bmp:Bitmap = event.bitmap;
-//					var tmpImage:TSSPicture = new TSSPicture();
-//					tmpImage.source = bmp; //icon is now the captured image itself
-//					tmpImage.bitmap = bmp;
-//					tmpImage.width = 40;//120;
-//					tmpImage.height = 40;//120;
-//					
-//					
-//					var fileName:String = new Date().time + ".png";
-//					var tmpGT:GeoTag = new GeoTag();
-//					tmpGT.cached_route_id = signRouteInput.text;
-//					if(milepost==-1)
-//						milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
-//					tmpGT.begin_mile_point = milepost;
-//					if(asset_base_id != null && asset_base_id !="")
-//					{
-//						tmpGT.asset_base_id = asset_base_id;
-//						tmpGT.local_asset_id = ""+sign_id;
-//					}
-//					else if (sign_id !=-1)
-//					{
-//						tmpGT.local_asset_id = sign_id.toString();
-//						tmpGT.asset_base_id = "";
-//					}
-//					else
-//					{
-//						tmpGT.local_asset_id = "";
-//						tmpGT.asset_base_id = "";
-//					}
-//					tmpGT.end_mile_point = 0;
-//					tmpGT.image_file_name = fileName;
-//					tmpGT.text_memo = event.memo;
-//					tmpGT.is_insp = 0;
-//					
-//					tmpGT.asset_ty_id = currentSign!=null?currentSign.assetType:"1";
-//					geoTagsArr.addItem(tmpGT);
-//					
-//					tmpImage.geoTag = tmpGT;
-//					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SupportInventory")
-//						InvAttachments.addElement(tmpImage);
-//				}
-//				try
-//				{
-//					FlexGlobals.topLevelApplication.setBusyStatus(true);
-//					fileUtility.WritePicture(fileName, bmp);
-//					FlexGlobals.topLevelApplication.setBusyStatus(false);
-//				} catch (er:Error)
-//				{
-//					FlexGlobals.topLevelApplication.setBusyStatus(false);
-//					FlexGlobals.topLevelApplication.TSSAlert(er.message);
-//				}
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
+				{
+					var assetBaseID:String = "";
+					var assetLabelText:String = "";
+					var localAssetID:String = "";
+					var assetTypeID:String = "";
+					var isInsp:int = 0;
+					var attachContainer:Group;
+					
+					var captureSource:String = FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource;
+					if(captureSource == "SupportInventory")
+					{
+						assetBaseID = "" + this.currSupportID;
+						localAssetID = "" + this.currSupportID;
+						assetTypeID = currSupport!=null ? currSupport.assetType:"1";
+						assetLabelText = "Support -- " + localAssetID;
+						attachContainer = InvAttachments;
+						isInsp = 0;
+					}
+					else if (captureSource == "SignInventory")
+					{
+						assetBaseID = "" + this.currSupportID;
+						localAssetID = "" + this.currSignTab.sign['SIGNID'];
+						assetTypeID = "SIGN";
+						assetLabelText = "Sign -- " + localAssetID;
+						attachContainer = InvAttachments;
+						isInsp = 0;
+					} 
+					else if (captureSource == "InspectionDetails")
+					{
+						assetBaseID = "" + this.currSupportID;
+						if (this.currInspectionAsset['POLEID'] != null)
+						{
+							localAssetID = "" + currInspectionAsset['POLEID'];
+							assetLabelText = "Pole -- " + localAssetID;
+							assetTypeID = "POLE";
+						}
+						else
+						{
+							localAssetID = "" + currInspectionAsset['SIGNID'];
+							assetLabelText = "Sign -- " + localAssetID;
+							assetTypeID = "SIGN";
+						}
+						
+						attachContainer = InspAttachments;
+						isInsp = 1;
+					}
+					
+					var bmp:Bitmap = event.bitmap;
+					var tmpImage:TSSPicture = new TSSPicture();
+					tmpImage.source = bmp; //icon is now the captured image itself
+					tmpImage.bitmap = bmp;
+					tmpImage.width = 40;//120;
+					tmpImage.height = 40;//120;
+					
+					var fileName:String = new Date().time + ".png";
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = supportRouteIdInput.text;
+					tmpGT.begin_mile_point = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = fileName;
+					tmpGT.text_memo = event.memo;
+					
+					tmpGT.asset_base_id = assetBaseID;
+					tmpGT.local_asset_id = localAssetID;
+					tmpGT.is_insp = isInsp;
+					tmpGT.asset_ty_id = assetTypeID;;
+					
+					geoTagsArr.addItem(tmpGT);
+					tmpImage.geoTag = tmpGT;
+					
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SupportInventory")
+						InvAttachments.addElement(tmpImage);
+				}
+				try
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(true);
+					fileUtility.WritePicture(fileName, bmp);
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+				} catch (er:Error)
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+					FlexGlobals.topLevelApplication.TSSAlert(er.message);
+				}
 			}
 			
 			//function to handle VideoEvent
 			public override function handleVideo(event:videoEvent):void{
-//				event.stopImmediatePropagation();
-//				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
-//				{
-//					var vid:TSSVideo =new TSSVideo();
-//					vid.source=gtManager.video;
-//					vid.video=event.video;
-//					//					vid.x=stickGroup.horizontalScrollPosition + (stickGroup.width / 2) - 20;
-//					//					vid.y=getIconY("video");
-//					vid.width=40;
-//					vid.height=40;
-//					
-//					try
-//					{
-//						FlexGlobals.topLevelApplication.setBusyStatus(true);
-//						var fileName:String=new Date().time +".3gp";
-//						fileUtility.WriteVideo(vid.video, fileName, event.path);
-//						//vid.filePath="file:///mnt/sdcard/geotags/" + fileName;
-//						vid.filePath = fileName;
-//						FlexGlobals.topLevelApplication.setBusyStatus(false);
-//						
-//						
-//						var tmpGT:GeoTag=new GeoTag();
-//						tmpGT.cached_route_id=signRouteInput.text;
-//						if(asset_base_id != null && asset_base_id !="")
-//						{
-//							tmpGT.asset_base_id = asset_base_id;
-//							tmpGT.local_asset_id = ""+sign_id;
-//						}
-//						else if (sign_id != -1)
-//						{
-//							tmpGT.local_asset_id = sign_id.toString();
-//							tmpGT.asset_base_id = "";
-//						}
-//						else
-//						{
-//							tmpGT.local_asset_id = "";
-//							tmpGT.asset_base_id = "";
-//						}
-//						if(milepost==-1)
-//							milepost =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
-//						tmpGT.begin_mile_point=milepost;
-//						tmpGT.end_mile_point=0;
-//						tmpGT.voice_file_name="";
-//						tmpGT.image_file_name="";
-//						//tmpGT.video_file_name = vid.filePath;
-//						tmpGT.video_file_name = fileName;
-//						tmpGT.text_memo = event.memo;
-//						tmpGT.is_insp = 0;
-//						
-//						tmpGT.asset_ty_id = currentSign!=null?currentSign.assetType:"1";
-//						//						if((tmpGT.local_asset_id == null ||  tmpGT.local_asset_id == "") && (tmpGT.asset_base_id == null ||  tmpGT.asset_base_id == ""))
-//						geoTagsArr.addItem(tmpGT);
-//						//						else
-//						//							vid.geoLocalId = ""+ dbManager.addGeoTag(tmpGT);
-//						vid.geoTag = tmpGT;
-//						if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
-//							InvAttachments.addElement(vid);
-//						//						else
-//						//							InspAttachments.addElement(vid);
-//						
-//					} catch (er:Error)
-//					{
-//						FlexGlobals.topLevelApplication.setBusyStatus(false);
-//						FlexGlobals.topLevelApplication.TSSAlert(er.message);
-//					}
-//					
-//					
-//				}
+				event.stopImmediatePropagation();
+				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SignInv")
+				{
+					var assetBaseID:String = "";
+					var assetLabelText:String = "";
+					var localAssetID:String = "";
+					var assetTypeID:String = "";
+					var isInsp:int = 0;
+					var attachContainer:Group;
+					
+					var captureSource:String = FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource;
+					if(captureSource == "SupportInventory")
+					{
+						assetBaseID = "" + this.currSupportID;
+						localAssetID = "" + this.currSupportID;
+						assetTypeID = currSupport!=null ? currSupport.assetType:"1";
+						assetLabelText = "Support -- " + localAssetID;
+						attachContainer = InvAttachments;
+						isInsp = 0;
+					}
+					else if (captureSource == "SignInventory")
+					{
+						assetBaseID = "" + this.currSupportID;
+						localAssetID = "" + this.currSignTab.sign['SIGNID'];
+						assetTypeID = "SIGN";
+						assetLabelText = "Sign -- " + localAssetID;
+						attachContainer = InvAttachments;
+						isInsp = 0;
+					} 
+					else if (captureSource == "InspectionDetails")
+					{
+						assetBaseID = "" + this.currSupportID;
+						if (this.currInspectionAsset['POLEID'] != null)
+						{
+							localAssetID = "" + currInspectionAsset['POLEID'];
+							assetLabelText = "Pole -- " + localAssetID;
+							assetTypeID = "POLE";
+						}
+						else
+						{
+							localAssetID = "" + currInspectionAsset['SIGNID'];
+							assetLabelText = "Sign -- " + localAssetID;
+							assetTypeID = "SIGN";
+						}
+						
+						attachContainer = InspAttachments;
+						isInsp = 1;
+					}
+					
+					var vid:TSSVideo =new TSSVideo();
+					vid.source=gtManager.video;
+					vid.video=event.video;
+					vid.width=40;
+					vid.height=40;
+					
+					var fileName:String = new Date().time + ".3gp";
+					vid.filePath = fileName;
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = supportRouteIdInput.text;
+					tmpGT.begin_mile_point = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					tmpGT.end_mile_point = 0;
+					tmpGT.image_file_name = fileName;
+					tmpGT.text_memo = event.memo;
+					
+					tmpGT.asset_base_id = assetBaseID;
+					tmpGT.local_asset_id = localAssetID;
+					tmpGT.is_insp = isInsp;
+					tmpGT.asset_ty_id = assetTypeID;;
+					
+					geoTagsArr.addItem(tmpGT);
+					vid.geoTag = tmpGT;
+					
+					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SupportInventory")
+						InvAttachments.addElement(vid);
+				}
+				try
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(true);
+					fileUtility.WriteVideo(vid.video, fileName, event.path);
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+				} catch (er:Error)
+				{
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+					FlexGlobals.topLevelApplication.TSSAlert(er.message);
+				}
 				
 			}		
 			
 			public override function handleVoiceMemo(event:VoiceEvent):void
 			{
 				event.stopImmediatePropagation();
-				if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SupportInventory")
+				
+				var assetBaseID:String = "";
+				var assetLabelText:String = "";
+				var localAssetID:String = "";
+				var assetTypeID:String = "";
+				var isInsp:int = 0;
+				var attachContainer:Group;
+				
+				var captureSource:String = FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource;
+				if(captureSource == "SupportInventory")
 				{
-					
-					var soundBytes:ByteArray=event.byteArray;
-					var tmpImage:TSSAudio = new TSSAudio();
-					tmpImage.source = gtManager.voice;
-					tmpImage.soundBytes = event.byteArray;
-					tmpImage.width = 40;
-					tmpImage.height = 40;
-					var fileName:String = new Date().time +".wav";
-					var tmpGT:GeoTag = new GeoTag();
-					tmpGT.cached_route_id = supportRouteIdInput.text;
-					
-					tmpGT.begin_mile_point = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
-					tmpGT.local_asset_id = "" + currSupportID;
-					tmpGT.end_mile_point = 0;
-					tmpGT.image_file_name = "";
-					tmpGT.voice_file_name= fileName;
-					tmpGT.video_file_name="";
-					tmpGT.image_file_name="";
-					tmpGT.text_memo = "";
-					tmpGT.is_insp = 0;
-					
-					tmpGT.asset_ty_id = currSupport!=null? currSupport.assetType:"1";
-					geoTagsArr.addItem(tmpGT);
-					tmpImage.geoTag = tmpGT;
-					if(FlexGlobals.topLevelApplication.GlobalComponents.capturEventSource == "SupportInventory")
+					assetBaseID = "" + this.currSupportID;
+					localAssetID = "" + this.currSupportID;
+					assetTypeID = currSupport!=null ? currSupport.assetType:"1";
+					assetLabelText = "Support -- " + localAssetID;
+					attachContainer = InvAttachments;
+					isInsp = 0;
+				}
+				else if (captureSource == "SignInventory")
+				{
+					assetBaseID = "" + this.currSupportID;
+					localAssetID = "" + this.currSignTab.sign['SIGNID'];
+					assetTypeID = "SIGN";
+					assetLabelText = "Sign -- " + localAssetID;
+					attachContainer = InvAttachments;
+					isInsp = 0;
+				} 
+				else if (captureSource == "InspectionDetails")
+				{
+					assetBaseID = "" + this.currSupportID;
+					if (this.currInspectionAsset['POLEID'] != null)
 					{
-						var vContainer:VGroup = new VGroup();
-						vContainer.horizontalAlign = "center";
-						var assetLabel:Label = new Label();
-						assetLabel.text = "Support --- " + currSupportID;
-						vContainer.addElement(tmpImage);
-						vContainer.addElement(assetLabel);
-						InvAttachments.addElement(vContainer);
+						localAssetID = "" + currInspectionAsset['POLEID'];
+						assetLabelText = "Pole -- " + localAssetID;
+						assetTypeID = "POLE";
+					}
+					else
+					{
+						localAssetID = "" + currInspectionAsset['SIGNID'];
+						assetLabelText = "Sign -- " + localAssetID;
+						assetTypeID = "SIGN";
 					}
 						
 					
-					try{
-						FlexGlobals.topLevelApplication.setBusyStatus(true);
-						fileUtility.saveToWAV(event.byteArray, fileName);
-						FlexGlobals.topLevelApplication.setBusyStatus(false);
-					}
-					catch(e:Error){
-						FlexGlobals.topLevelApplication.setBusyStatus(false);
-						FlexGlobals.topLevelApplication.TSSAlert(e.message);
-					}
+					attachContainer = InspAttachments;
+					isInsp = 1;
 				}
+				
+				var soundBytes:ByteArray=event.byteArray;
+				var tmpImage:TSSAudio = new TSSAudio();
+				tmpImage.source = gtManager.voice;
+				tmpImage.soundBytes = event.byteArray;
+				tmpImage.width = 40;
+				tmpImage.height = 40;
+				var fileName:String = new Date().time +".wav";
+				var tmpGT:GeoTag = new GeoTag();
+				tmpGT.cached_route_id = supportRouteIdInput.text;
+				tmpGT.asset_base_id = assetBaseID;
+				tmpGT.begin_mile_point = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					
+				tmpGT.end_mile_point = 0;
+				tmpGT.image_file_name = "";
+				tmpGT.voice_file_name= fileName;
+				tmpGT.video_file_name="";
+				tmpGT.image_file_name="";
+				tmpGT.text_memo = "";
+				
+				tmpGT.local_asset_id = localAssetID;
+				tmpGT.is_insp = isInsp;
+				tmpGT.asset_ty_id = assetTypeID;
+					
+				geoTagsArr.addItem(tmpGT);
+				tmpImage.geoTag = tmpGT;
+				
+				var vContainer:VGroup = new VGroup();
+				vContainer.horizontalAlign = "center";
+				var assetLabel:Label = new Label();
+				assetLabel.text = assetLabelText
+				vContainer.addElement(tmpImage);
+				vContainer.addElement(assetLabel);
+				attachContainer.addElement(vContainer);
+					
+				try{
+					FlexGlobals.topLevelApplication.setBusyStatus(true);
+					fileUtility.saveToWAV(event.byteArray, fileName);
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+				}
+				catch(e:Error){
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
+					FlexGlobals.topLevelApplication.TSSAlert(e.message);
+				}
+				
 			}
 			
 			
@@ -764,7 +900,7 @@
 			<s:Label text="Inventory Attachments" fontWeight="bold"/>
 			<s:Group id ="InvAttachments"  height="99%">
 				<s:layout>
-					<s:TileLayout/>
+					<s:TileLayout orientation="rows"/>
 					
 				</s:layout>
 			</s:Group>

@@ -2300,5 +2300,34 @@ package com.transcendss.mavric.db
 				.replace("@restrictionOrder", tr['RESTRICTIONORDER']);
 			sStat.execute();
 		}
+		
+		public function getDdotGeotags(supportID:Number):Array
+		{
+			var gtArray:Array = [];
+			sStat.text = "SELECT * from GEOTAGS where asset_base_id ='" + supportID.toString() + "'";
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data != null)
+			{
+				for (var i:int=0;i<data.length;i++)
+				{
+					var tmpgt:GeoTag = new GeoTag();
+					tmpgt.id = data[i].id;
+					tmpgt.cached_route_id = data[i].cached_route_id;
+					tmpgt.asset_base_id = data[i].asset_base_id;
+					tmpgt.asset_ty_id = data[i].asset_type == "1" ? "SUPPORT" : data[i].asset_type;
+					tmpgt.local_asset_id = data[i].local_asset_id;
+					tmpgt.is_insp = data[i].is_insp_tag;
+					tmpgt.begin_mile_point = data[i].begin_mile;
+					tmpgt.end_mile_point = data[i].end_mile;
+					tmpgt.image_file_name = data[i].image_filename;
+					tmpgt.video_file_name = data[i].video_filename;
+					tmpgt.voice_file_name = data[i].voice_filename;
+					tmpgt.text_memo = data[i].text_memo;
+					gtArray[i] = tmpgt;
+				}
+			}
+			return gtArray;
+		}
 	}
 }
