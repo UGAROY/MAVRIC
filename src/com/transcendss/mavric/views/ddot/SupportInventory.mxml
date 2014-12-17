@@ -523,15 +523,18 @@
 			
 			private function inspHistoryGrid_gridClickHandler(event:GridEvent):void
 			{
-				openInspectionEditor();
-				
-				// Load the current inspection
-				inspectionDetailsForm.isNewInspection = false;
-				inspectionDetailsForm.inspection = event.item;
-				inspectionDetailsForm.loadInspectionInfo();
-				
-				// Get the current inspection asset id 
-				this.currInspectionAsset = event.item;
+				if (event.item != null)
+				{
+					openInspectionEditor();
+					
+					// Load the current inspection
+					inspectionDetailsForm.isNewInspection = false;
+					inspectionDetailsForm.inspection = event.item;
+					inspectionDetailsForm.loadInspectionInfo();
+					
+					// Get the current inspection asset id 
+					this.currInspectionAsset = event.item;
+				}
 			}
 			
 			private function openInspectionEditor():void

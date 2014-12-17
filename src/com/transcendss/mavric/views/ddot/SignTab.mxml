@@ -133,14 +133,22 @@
 			
 			protected function timeDayBtn_clickHandler(event:MouseEvent):void
 			{
-				var TimeRestrictionResp:mx.rpc.Responder = new mx.rpc.Responder(openTimeRestrictionForm,  failReqHandler);
-				recordManager.getTimeRestrictionByLinkID(this.linkSignPair['NEW'], TimeRestrictionResp); 
+				if (this.linkTimeRestrictions != null)
+				{
+					// Temporary cached linkTR found
+					openTimeRestrictionForm(linkTimeRestrictions);
+				} 
+				else
+				{
+					var TimeRestrictionResp:mx.rpc.Responder = new mx.rpc.Responder(openTimeRestrictionForm,  failReqHandler);
+					recordManager.getTimeRestrictionByLinkID(this.linkSignPair['NEW'], TimeRestrictionResp); 
+				}
 			}
 			
 			private function openTimeRestrictionForm(data:ArrayCollection):void
 			{
 				timeRestrictionForm = PopUpManager.createPopUp(this, TimeRestriction) as TimeRestriction;
-				PopUpManager.centerPopUp(linkedSignForm);
+				PopUpManager.centerPopUp(timeRestrictionForm);
 				timeRestrictionForm.currTimeRestriction = data;
 				timeRestrictionForm.timeRestrictionCallback = timeRestrictionCompleteHandler;
 			}

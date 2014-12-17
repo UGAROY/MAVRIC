@@ -84,7 +84,8 @@
 			
 			private function editTimeObj(event:GridEvent):void
 			{
-				openTrEditor(event.item, false);
+				if (event.item != null)
+					openTrEditor(event.item, false);
 			}
 			
 			private function openTrEditor(timeObj:Object=null, isNewTimeObj:Boolean=false):void
