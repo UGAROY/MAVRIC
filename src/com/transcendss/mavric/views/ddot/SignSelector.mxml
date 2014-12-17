@@ -48,7 +48,7 @@
 			private var SubCatID:Number;
 			
 			[Bindable]
-			private var mutcdAc:ArrayCollection;
+			private var mutcdAc:ArrayCollection = new ArrayCollection();
 			
 			private var signselCatDDView:DropDownViewVert = new DropDownViewVert();
 			private var signselsubCatDDView:DropDownViewVert = new DropDownViewVert();
@@ -236,12 +236,16 @@
 			<s:HGroup verticalAlign="middle" id="SSSubCatGroup"></s:HGroup>
 		</s:HGroup>
 		<s:HGroup verticalAlign="middle" >
+			<s:Spacer width="2"/>
 			<s:TextInput id="keywordText" alpha="0.5" editable="true" skinClass="spark.skins.mobile.TextInputSkin" focusIn="keywordText_focusInHandler(event)"/>
 			<s:Spacer width="5"/>
 			<s:Image id="keywordSearch" source="{searchIcon}" height="40" width="40" buttonMode="true" click="keywordSearch_clickHandler(event)"/>
 		</s:HGroup>
 		<s:HGroup height="40%" width="100%">
-			<s:List left="0" id="mutcdList" dataProvider="{mutcdAc}" width="50%" height="100%" labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false" change="mutcdList_changeHandler(event)"/>
+			<s:Group width="50%" height="100%">
+				<s:List left="0" id="mutcdList" dataProvider="{mutcdAc}" height="100%" width="100%" visible="{mutcdAc.length}" labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false" change="mutcdList_changeHandler(event)"/>
+				<!--<s:Label text="select the category or search by Keywords to populate the mutcd list" verticalCenter="0" horizontalCenter="0" width="100%" visible="{!mutcdAc.length}"/>-->
+			</s:Group>
 			<s:Group id="mutcdImagegrp" width="50%" height="100%"/>
 		</s:HGroup>
 	

@@ -138,7 +138,7 @@
 							</fx:Component>
 						</s:itemRenderer>
 					</s:GridColumn>
-					<s:GridColumn dataField="DESCRIPTION" headerText="Sign Type"/>
+					<s:GridColumn dataField="DESCRIPTION" headerText="Sign Code"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn">
 					</s:GridColumn>

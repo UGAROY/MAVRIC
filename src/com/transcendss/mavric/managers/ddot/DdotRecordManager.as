@@ -11,6 +11,7 @@ package com.transcendss.mavric.managers.ddot
 	import com.transcendss.transcore.sld.models.managers.CoreAssetManager;
 	
 	import flash.events.Event;
+	import flash.events.IEventDispatcher;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
@@ -18,6 +19,7 @@ package com.transcendss.mavric.managers.ddot
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
 	import mx.rpc.IResponder;
+	
 	
 	public class DdotRecordManager extends CoreAssetManager
 	{
@@ -38,6 +40,8 @@ package com.transcendss.mavric.managers.ddot
 		private var _inspectionEventLayerID:Number = 14;
 		private var _linkEventLayerID:Number = 15;
 		private var _trEventLayerID:Number = 17;
+		
+		public var dispatcher:IEventDispatcher;
 		
 		/**
 		 * Creates tables for an list of different types of assets.
@@ -177,7 +181,7 @@ package com.transcendss.mavric.managers.ddot
 		public function getInspections(supportID:Number, signIDs:Array, responder:IResponder):void
 		{
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.INSPECTION_REQUEST);
-			var whereClause:String =  "POLEID = @poleId & SIGNID in (@signIds)"
+			var whereClause:String =  "POLEID = @poleId and SIGNID in (@signIds)"
 				.replace("@poleId", supportID.toString())
 				.replace('@signIds', signIDs.join(","));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._inspectionEventLayerID, whereClause);
@@ -284,11 +288,11 @@ package com.transcendss.mavric.managers.ddot
 			resp.result(inspections);
 		}
 		
-		public function getOtherSignsOnRoute(poleIDs:Array, eventLayerID:Number, responder:IResponder):void
+		public function getOtherSignsOnRoute(poleIDs:Array, responder:IResponder):void
 		{
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.OTHER_SIGN_REQUEST);
 			var whereClause:String =  "POLEID in (@poleIds)".replace("@poleIds", poleIDs.join(","));
-			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(eventLayerID, whereClause);
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(_signEventLayerID, whereClause);
 			_requestEvent.supportIDs = poleIDs;
 			_requestEvent.responder = responder;
 			_dispatcher.dispatchEvent(_requestEvent);

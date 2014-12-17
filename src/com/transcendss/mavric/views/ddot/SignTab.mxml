@@ -116,7 +116,7 @@
 				}
 				
 				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
-				recordManager.getOtherSignsOnRoute(otherSupportIDs, 9, routeSignsResp);
+				recordManager.getOtherSignsOnRoute(otherSupportIDs, routeSignsResp);
 			}
 			
 			private function openLinkedSignEditor(data:ArrayCollection):void

@@ -857,9 +857,7 @@
 					FlexGlobals.topLevelApplication.setBusyStatus(false);
 					FlexGlobals.topLevelApplication.TSSAlert(e.message);
 				}
-				
-			}
-			
+			}	
 			
 			//----------------------------------------------------------------------------------------
 		]]>

@@ -492,12 +492,14 @@
 					GlobalComponents.ConfigManager.readExternalConfigFiles();
 					}*/
 					
-					
-					
 					showRouteSelector();
+					
 					var rsEvent:RouteSelectorEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTOR_POPULATE,sldDiagram.getRoute(),sldDiagram.getScale());
 					rsEvent.routeName = sldDiagram.getRoute().routeName;
-					dispatchEvent(rsEvent);
+					//dispatchEvent(rsEvent);
+					setTimeout(dispatchEvent, 500, rsEvent);
+					// Delay the dispatch route event to make sure the RouteSelector has been loaded
+					// TODO:verify this
 				}
 				else
 				{
@@ -512,7 +514,7 @@
 				checkConnection();
 				if(connected)
 				{
-					
+
 					//GlobalComponents.ConfigManager.readExternalConfigFiles();
 					
 					showRouteSelector();
@@ -1356,6 +1358,9 @@
 				}
 				else
 				{
+					// Temporary codes for ddot. 
+					// Just in case it pop up edit form for milemarker
+					return;
 					customize = true;
 					var popup : IFlexDisplayObject = PopUpManager.createPopUp(this,AssetEditForm,true);
 					inForm = popup as AssetEditForm;
