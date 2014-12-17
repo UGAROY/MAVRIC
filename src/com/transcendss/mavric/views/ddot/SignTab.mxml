@@ -188,7 +188,7 @@
 			
 			public function loadSignInfo():void
 			{
-				signCodeTextInut.text = sign['SIGNNAME'];
+				signCodeTextInut.text = sign['SIGNNAME'] || sign['MUTCD'];
 				descriptionTextInut.text = sign['DESCRIPTION'];
 				signFacingDDView.domainID = sign['SIGNFACING'];
 				signSizeDDView.domainID = sign['SIGNSIZE'];

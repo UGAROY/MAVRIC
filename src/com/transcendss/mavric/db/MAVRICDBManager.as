@@ -1016,7 +1016,7 @@ package com.transcendss.mavric.db
 			sStat.execute();
 			var data:Array = sStat.getResult().data;
 			if (data != null && data.length > 0 && data[0]["min(" + asset.primaryKey + ")"] != null)
-				asset.id = data[0]["min(" + asset.primaryKey + ")"];
+				asset.id = data[0]["min(" + asset.primaryKey + ")"] - 1;
 			else	
 				asset.id = -2;
 		}

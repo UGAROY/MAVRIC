@@ -34,7 +34,7 @@ package com.transcendss.mavric.managers.ddot
 		
 		private var _supportDict:Object;
 		
-		private var _signEventLayerID:Number = 9;
+		private var _signEventLayerID:Number = 18;
 		private var _inspectionEventLayerID:Number = 14;
 		private var _linkEventLayerID:Number = 15;
 		private var _trEventLayerID:Number = 17;

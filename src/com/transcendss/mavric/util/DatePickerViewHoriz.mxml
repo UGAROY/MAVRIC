@@ -6,7 +6,7 @@
 		<s:SkinnablePopUpContainer id="DatePopUp" height="270"  name="Date"  skinClass="skins.TSSSkinnablePopUpContainerSkin"  >
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 				<s:VGroup id="DateVGroup" width="100%" height="100%" horizontalAlign="center" gap="0">
-					<s:DateSpinner id="datePicker" width="100%" height="100%" maxDate="{new Date()}" change="changeDate()"/>
+					<s:DateSpinner id="datePicker" width="100%" height="100%" change="changeDate()"/>
 					<s:Button id="confirmDateButton" label="OK" width="100%" height="40" click="confirmDateHandler()"/>
 				</s:VGroup>
 			</s:Panel>
@@ -24,7 +24,6 @@
 		<![CDATA[
 			import com.transcendss.mavric.db.MAVRICDBManager;
 			
-			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.managers.PopUpManager;
 			

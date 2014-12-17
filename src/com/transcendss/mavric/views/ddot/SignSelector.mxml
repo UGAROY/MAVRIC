@@ -47,6 +47,8 @@
 			private var CatID:Number;
 			private var SubCatID:Number;
 			
+			[Bindable]
+			private var mutcdAc:ArrayCollection;
 			
 			private var signselCatDDView:DropDownViewVert = new DropDownViewVert();
 			private var signselsubCatDDView:DropDownViewVert = new DropDownViewVert();
@@ -90,7 +92,6 @@
 				}catch(err:Error)
 				{
 					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());
-					
 				}
 				
 				
@@ -111,10 +112,10 @@
 			public function getMutcdDP(evnt:Event=null):void
 			{			
 				SubCatID = new Number(signselsubCatDDView.domainID);
-				var ac:ArrayCollection =  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("BARCODEID");
-				ac.filterFunction = Mutcd_Domain_FilterFunc;
-				ac.refresh();
-				mutcdList.dataProvider =ac
+				mutcdAc =  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("BARCODEID");
+				mutcdAc.filterFunction = Mutcd_Domain_FilterFunc;
+				mutcdAc.refresh();
+				//mutcdList.dataProvider =mutcdAc
 			}
 
 			
@@ -147,11 +148,13 @@
 				// Reset all the fields
 				signselCatDDView.description = "";
 				signselsubCatDDView.description = "";
+				signselCatDDView.domainID = "";
+				signselsubCatDDView.domainID = "";
 				CatID = 0;
 				SubCatID = 0;
 				keywordText.text = "";
 				signdesc.text = "";
-				mutcdList.dataProvider = null;
+				mutcdAc.removeAll();
 				mutcdImagegrp.removeAllElements();
 			}
 			
@@ -206,7 +209,11 @@
 			protected function keywordSearch_clickHandler(event:MouseEvent):void
 			{
 				if (keywordText.text == initialKeyword)
-					return;
+				{
+					keywordText.text = "";
+					keywordText.alpha = 1;
+				}
+					
 				getMutcdDP();
 			}
 			
@@ -234,7 +241,7 @@
 			<s:Image id="keywordSearch" source="{searchIcon}" height="40" width="40" buttonMode="true" click="keywordSearch_clickHandler(event)"/>
 		</s:HGroup>
 		<s:HGroup height="40%" width="100%">
-			<s:List left="0" id="mutcdList" width="50%" height="100%" labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false" change="mutcdList_changeHandler(event)"/>
+			<s:List left="0" id="mutcdList" dataProvider="{mutcdAc}" width="50%" height="100%" labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false" change="mutcdList_changeHandler(event)"/>
 			<s:Group id="mutcdImagegrp" width="50%" height="100%"/>
 		</s:HGroup>
 	
