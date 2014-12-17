@@ -1403,6 +1403,11 @@ package com.transcendss.mavric.managers
 		{
 			return String(_assetDefs[_assetDescriptions[type]].VISIBLE_ON_STICK).toLowerCase()=="true";
 		}
+		
+		public function isAssetCaptureAvailable(type:String):Boolean
+		{
+			return String(_assetDefs[_assetDescriptions[type]].CAPTURE_AVAILABLE).toLowerCase()=="true";
+		}
 			
 	}
 }

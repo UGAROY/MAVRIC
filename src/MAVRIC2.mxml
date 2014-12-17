@@ -1358,9 +1358,6 @@
 				}
 				else
 				{
-					// Temporary codes for ddot. 
-					// Just in case it pop up edit form for milemarker
-					return;
 					customize = true;
 					var popup : IFlexDisplayObject = PopUpManager.createPopUp(this,AssetEditForm,true);
 					inForm = popup as AssetEditForm;

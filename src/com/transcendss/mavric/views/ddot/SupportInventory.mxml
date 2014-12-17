@@ -555,12 +555,12 @@
 			
 			private function assetLabelFunction(item:Object):String
 			{
-				return item['POLEID'] != null ? "Support -- " + item['POLEID'] : "Sign -- " + item['SIGNID'] 
+				return item['POLEID'] != null ? "Support" : "Sign -- " + item['SIGNID'] 
 			}
 			
 			private function formatAssetLabelColumn(item:Object, column:GridColumn):String
 			{
-				return item['POLEID'] != null ? "Support -- " + item['POLEID'] : "Sign -- " + item['SIGNID'];
+				return item['POLEID'] != null ? "Support" : "Sign -- " + item['SIGNID'];
 			}
 			
 			private function formatAssetTypeColumn(item:Object, column:GridColumn):String

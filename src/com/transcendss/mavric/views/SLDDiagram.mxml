@@ -383,7 +383,7 @@
 				
 				var tolerance:Number = BASE_TOLERANCE*zoomAdjustment;
 				for (var key:String in _spriteList){
-					if(FlexGlobals.topLevelApplication.GlobalComponents.assetManager.isAssetOnStick(key))
+					if(FlexGlobals.topLevelApplication.GlobalComponents.assetManager.isAssetOnStick(key) && FlexGlobals.topLevelApplication.GlobalComponents.assetManager.isAssetCaptureAvailable(key))
 					{
 						for each(var spriteObj:Object in _spriteList[key]){
 							
