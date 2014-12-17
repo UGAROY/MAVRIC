@@ -7,6 +7,7 @@ package com.transcendss.mavric.managers.ddot
 	import com.transcendss.mavric.events.ddot.DdotRecordEvent;
 	import com.transcendss.mavric.util.FileUtility;
 	import com.transcendss.transcore.sld.models.StickDiagram;
+	import com.transcendss.transcore.sld.models.components.BaseAsset;
 	import com.transcendss.transcore.sld.models.managers.CoreAssetManager;
 	
 	import flash.events.Event;
@@ -468,6 +469,16 @@ package com.transcendss.mavric.managers.ddot
 				for each(var tr:Object in linkTrDict[key])
 					_mdbm.addTimeRestriction(key, tr);
 			}
+		}
+		
+		public function getGeotags(supportID:Number):Array
+		{
+			return _mdbm.getDdotGeotags(supportID);
+		}
+		
+		public function getUpdatedSupportID(support:BaseAsset):Number
+		{
+			return _mdbm.getDdotUpdatedSupportID(support);
 		}
 		
 	}

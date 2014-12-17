@@ -2062,11 +2062,11 @@ package com.transcendss.mavric.db
 				"RESTRICTIONORDER INTEGER);";
 			sStat.execute();
 			
-			// MS Utility Table
-			sStat.text = "CREATE TABLE IF NOT EXISTS MSUTILITY ( MSUTILITY INTEGER PRIMARY KEY AUTOINCREMENT, " + 
-				"MSSTARTDATE REAL, " + 
-				"MSENDDATE REAL);";
-			sStat.execute();
+//			// MS Utility Table
+//			sStat.text = "CREATE TABLE IF NOT EXISTS MSUTILITY ( MSUTILITY INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+//				"MSSTARTDATE REAL, " + 
+//				"MSENDDATE REAL);";
+//			sStat.execute();
 
 		}
 		
@@ -2354,6 +2354,17 @@ package com.transcendss.mavric.db
 				FlexGlobals.topLevelApplication.TSSAlert( "Error in exportAssets:\n" + e.message );
 			}
 			return null;
+		}
+		
+		public function getDdotUpdatedSupportID(asset:BaseAsset, table:String="SUPPORT"):Number
+		{
+			sStat.text = StringUtil.substitute("SELECT min({0}) FROM {1}_INV WHERE {0} < 0", [asset.primaryKey, table]);
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data != null && data.length > 0 && data[0]["min(" + asset.primaryKey + ")"] != null)
+				return data[0]["min(" + asset.primaryKey + ")"];
+			else	
+				return -2;
 		}
 	}
 }

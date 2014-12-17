@@ -71,6 +71,21 @@
           "TYPE": "TEXT",
           "Nullable": "TRUE"
         },
+		{
+          "NAME": "MSUTILITYID",
+          "TYPE": "ID",
+          "Nullable": "TRUE"
+        },
+		{
+          "NAME": "MSSTARTDATE",
+          "TYPE": "TEXT",
+          "Nullable": "TRUE"
+        },
+		{
+          "NAME": "MSENDDATE",
+          "TYPE": "TEXT",
+          "Nullable": "TRUE"
+        },
         {
           "NAME": "RETIRED",
           "TYPE": "INTEGER",

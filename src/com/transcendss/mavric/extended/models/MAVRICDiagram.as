@@ -1093,10 +1093,6 @@ package com.transcendss.mavric.extended.models
 								dbManager.addGeoTag(gt,false);
 						}
 					}
-					
-					var culSavedEvent:DdotRecordEvent = new DdotRecordEvent(DdotRecordEvent.SUPPORT_SAVED , true, true);
-					culSavedEvent.support = cul;
-					dispatchEvent(culSavedEvent);
 				}
 					
 				//} else

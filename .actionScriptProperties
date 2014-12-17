@@ -29,26 +29,26 @@
       <multiPlatformSettings enabled="true" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.android.platform" reducedSizePackaging="false" version="2"/>
       <airSettings airCertificatePath="" airTimestamp="true" anePathSet="true" version="1">
         <airExcludes>
-          <pathEntry path="images/loading8.swf"/>
-          <pathEntry path="images/loading11.swf"/>
-          <pathEntry path="images/loading2.swf"/>
-          <pathEntry path="images/loading7.swf"/>
-          <pathEntry path="MAVRIC2-app_bk.xml"/>
-          <pathEntry path="images/loading18.swf"/>
           <pathEntry path="images/loading3.swf"/>
-          <pathEntry path="images/loading5.swf"/>
-          <pathEntry path="MAVRIC-app2.xml"/>
-          <pathEntry path="images/loading16.swf"/>
-          <pathEntry path="images/loading10.swf"/>
-          <pathEntry path="images/loading17.swf"/>
+          <pathEntry path="images/loading12.swf"/>
           <pathEntry path="images/loading14.swf"/>
+          <pathEntry path="images/loading15.swf"/>
+          <pathEntry path="images/loading4.swf"/>
+          <pathEntry path="images/loading1.swf"/>
+          <pathEntry path="images/loading11.swf"/>
+          <pathEntry path="MAVRIC-app2.xml"/>
+          <pathEntry path="images/loading8.swf"/>
+          <pathEntry path="images/loading7.swf"/>
+          <pathEntry path="images/loading5.swf"/>
+          <pathEntry path="images/loading9.swf"/>
           <pathEntry path="images/loading6.swf"/>
           <pathEntry path="images/loading13.swf"/>
-          <pathEntry path="images/loading1.swf"/>
-          <pathEntry path="images/loading15.swf"/>
-          <pathEntry path="images/loading9.swf"/>
-          <pathEntry path="images/loading12.swf"/>
-          <pathEntry path="images/loading4.swf"/>
+          <pathEntry path="images/loading17.swf"/>
+          <pathEntry path="images/loading18.swf"/>
+          <pathEntry path="images/loading16.swf"/>
+          <pathEntry path="images/loading2.swf"/>
+          <pathEntry path="images/loading10.swf"/>
+          <pathEntry path="MAVRIC2-app_bk.xml"/>
         </airExcludes>
         <anePaths/>
         <newLaunchParams/>
@@ -70,28 +70,28 @@
       </airSettings>
       <actionScriptSettings version="1"/>
     </buildTarget>
-    <buildTarget buildTargetName="device" iosSettingsVersion="2" isCurrent="true" platformId="com.adobe.flexide.multiplatform.ios.platform" provisioningFile="" releasePackageType="">
+    <buildTarget buildTargetName="device" iosSettingsVersion="2" isCurrent="true" platformId="com.adobe.flexide.multiplatform.ios.platform" provisioningFile="">
       <multiPlatformSettings enabled="true" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.ios.platform" reducedSizePackaging="false" version="1"/>
       <airSettings airCertificatePath="" airTimestamp="true" anePathSet="true" version="1">
         <airExcludes>
-          <pathEntry path="images/loading8.swf"/>
-          <pathEntry path="images/loading11.swf"/>
-          <pathEntry path="images/loading2.swf"/>
-          <pathEntry path="images/loading7.swf"/>
-          <pathEntry path="images/loading18.swf"/>
-          <pathEntry path="images/loading3.swf"/>
-          <pathEntry path="images/loading5.swf"/>
-          <pathEntry path="images/loading16.swf"/>
-          <pathEntry path="images/loading10.swf"/>
-          <pathEntry path="images/loading17.swf"/>
+          <pathEntry path="images/loading12.swf"/>
           <pathEntry path="images/loading14.swf"/>
+          <pathEntry path="images/loading3.swf"/>
+          <pathEntry path="images/loading15.swf"/>
+          <pathEntry path="images/loading4.swf"/>
+          <pathEntry path="images/loading1.swf"/>
+          <pathEntry path="images/loading11.swf"/>
+          <pathEntry path="images/loading8.swf"/>
+          <pathEntry path="images/loading7.swf"/>
+          <pathEntry path="images/loading5.swf"/>
+          <pathEntry path="images/loading9.swf"/>
           <pathEntry path="images/loading6.swf"/>
           <pathEntry path="images/loading13.swf"/>
-          <pathEntry path="images/loading1.swf"/>
-          <pathEntry path="images/loading15.swf"/>
-          <pathEntry path="images/loading9.swf"/>
-          <pathEntry path="images/loading12.swf"/>
-          <pathEntry path="images/loading4.swf"/>
+          <pathEntry path="images/loading17.swf"/>
+          <pathEntry path="images/loading18.swf"/>
+          <pathEntry path="images/loading16.swf"/>
+          <pathEntry path="images/loading2.swf"/>
+          <pathEntry path="images/loading10.swf"/>
         </airExcludes>
         <anePaths/>
         <newLaunchParams/>

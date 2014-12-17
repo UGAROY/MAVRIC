@@ -796,13 +796,7 @@
 		
 		<mate:Injectors target="{GuardrailMenu}" debug="{debugFlag}">
 			<mate:ListenerInjector eventType="{GuardrailMenuEvent.GUARDRAIL_GEOTAG_READY}" method="setGeotagsFromServer" useWeakReference="true"/>
-			
 		</mate:Injectors>
-		
-		<mate:Injectors target="{SupportInventory}" debug="{debugFlag}">
-			<mate:ListenerInjector eventType="{DdotRecordEvent.SUPPORT_SAVED}" method="saveOtherRecords" useWeakReference="true"/>
-		</mate:Injectors>
-		
 		
 	</fx:Declarations>
 </mate:EventMap >

@@ -9,7 +9,6 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import com.transcendss.mavric.db.MAVRICDBManager;
 			import com.transcendss.mavric.events.AssetEvent;
 			import com.transcendss.mavric.events.ddot.DdotRecordEvent;
 			import com.transcendss.mavric.managers.ddot.DdotRandHSyncManager;
@@ -33,6 +32,7 @@
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
+			import mx.core.UIComponent;
 			import mx.managers.PopUpManager;
 			import mx.rpc.Responder;
 			
@@ -60,7 +60,6 @@
 			private var startDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
 			private var endDateView:DatePickerViewHoriz = new DatePickerViewHoriz();
 			
-			private var dbManager:MAVRICDBManager;
 			private var recordManager:DdotRecordManager;
 			
 			[Bindable]
@@ -94,8 +93,6 @@
 			{
 				try
 				{
-					
-					dbManager = MAVRICDBManager.newInstance();
 					recordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;
 					// Build a support POLEID --- ROUTEID/MEASURE dictionary
 					// TODO: place it somewhere else
@@ -164,7 +161,34 @@
 				// Save the signs
 				keepValuesInCurrSignTab(); // Keep the values of current sign tab. The workflow here is not very straightforward, but anyway...
 				
+				// Pre-processing
+				// If it is a newly added support, then it will be assigned a new ID
+				// We need to get the updated Support ID and update the poleid in signs and inspections
+				if (currSupportID == -1)
+				{
+					var updatedSupportID:Number = recordManager.getUpdatedSupportID(currSupport);
+					updateSupportID(updatedSupportID);
+				}
+				
+				// Save the support
 				saveSupport();
+				
+				if(!this.retireChk.selected) // Don't save other recrods if the support is marked as retried.
+				{
+					// Save the signs
+					recordManager.saveSigns(currSigns);
+					
+					// Save the inspections
+					recordManager.saveInspections(currInspections);
+					
+					// Save the links
+					recordManager.saveLink(currLinkDict);
+					
+					// Save the time restrictions
+					recordManager.saveTimeRestriction(currLinkTrDict);
+				}
+				
+				PopUpManager.removePopUp(this);
 			}
 			
 			private function saveSupport():void
@@ -185,6 +209,9 @@
 					currSupport['invProperties'].SUBBASE.value = subBaseDDView.domainID;
 					currSupport['invProperties'].POLEHEIGHT.value = PoleHeightTextInut.text;
 					currSupport['invProperties'].COMMENTS.value = PoleComments.text;
+					currSupport['invProperties'].MSUTILITYID.value = MsUtilityTextInut.text;
+					currSupport['invProperties'].MSSTARTDATE.value = startDateView.text;
+					currSupport['invProperties'].MSENDDATE.value = endDateView.text;
 				}
 				
 				var supportEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT , true, true);
@@ -193,25 +220,25 @@
 				dispatchEvent(supportEvent);
 			}
 			
-			public function saveOtherRecords(event:DdotRecordEvent):void
-			{
-				// This function is called after the support has been saved
-				updateSupportID(event.support.id);
-				
-				// Save the signs
-				recordManager.saveSigns(currSigns);
-				
-				// Save the inspections
-				recordManager.saveInspections(currInspections);
-				
-				// Save the links
-				recordManager.saveLink(currLinkDict);
-				
-				// Save the time restrictions
-				recordManager.saveTimeRestriction(currLinkTrDict);
-				
-				PopUpManager.removePopUp(this);
-			}
+//			public function saveOtherRecords(event:DdotRecordEvent):void
+//			{
+//				// This function is called after the support has been saved
+//				updateSupportID(event.support.id);
+//				
+//				// Save the signs
+//				recordManager.saveSigns(currSigns);
+//				
+//				// Save the inspections
+//				recordManager.saveInspections(currInspections);
+//				
+//				// Save the links
+//				recordManager.saveLink(currLinkDict);
+//				
+//				// Save the time restrictions
+//				recordManager.saveTimeRestriction(currLinkTrDict);
+//				
+//				PopUpManager.removePopUp(this);
+//			}
 			
 			public function updateSupportID(supportID:Number):void
 			{
@@ -220,6 +247,8 @@
 					sign['POLEID'] = supportID;
 				for each(var inspection:Object in currInspections)
 					inspection['POLEID'] = supportID;
+				for each(var geotag:GeoTag in geoTagsArr)
+					geotag.asset_base_id = "" + supportID;
 			}
 			
 			public override function setBaseAsset(baseAsst:BaseAsset):void
@@ -250,6 +279,9 @@
 				subBaseDDView.domainID = currSupport['invProperties'].SUBBASE.value || "";
 				PoleHeightTextInut.text = currSupport['invProperties'].POLEHEIGHT.value || "";
 				PoleComments.text = (currSupport['invProperties'].COMMENTS.value == null || currSupport['invProperties'].COMMENTS.value == "<Null>") ?  " " : currSupport['invProperties'].COMMENTS.value;
+				MsUtilityTextInut.text = currSupport['invProperties'].MSUTILITYID.value || "";
+				startDateView.value = currSupport['invProperties'].MSSTARTDATE.value != null ? new Date(currSupport['invProperties'].MSSTARTDATE.value) : null;
+				endDateView.value = currSupport['invProperties'].MSENDDATE.value != null ? new Date(currSupport['invProperties'].MSENDDATE.value) : null;
 				
 				if (currSupportID != -1)
 				{
@@ -257,7 +289,7 @@
 					var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
 					recordManager.getSigns(currSupportID, signResp);
 					
-					var gtArray:Array = dbManager.getDdotGeotags(currSupportID);
+					var gtArray:Array = recordManager.getGeotags(currSupportID);
 					
 					for (var gti:int=0;gti<gtArray.length;gti++)
 					{
@@ -270,7 +302,7 @@
 							var vContainer:VGroup = new VGroup();
 							vContainer.horizontalAlign = "center";
 							var assetLabel:Label = new Label();
-							assetLabel.text = tmpGT.asset_ty_id + tmpGT.local_asset_id;
+							assetLabel.text = tmpGT.asset_ty_id + " -- " + tmpGT.local_asset_id;
 							vContainer.addElement(viE);
 							vContainer.addElement(assetLabel);
 //							if(viE is TSSPicture)
@@ -292,6 +324,12 @@
 				{
 					// If a new Support. directly set the dataRetrieved to true
 					dataRetrieved = true;
+				}
+				
+				if(currSupport.invProperties["RETIRED"].value==1)
+				{
+					this.retireChk.selected = true;
+					this.retireOkay(true);					
 				}
 			}
 			
@@ -330,7 +368,34 @@
 			
 			protected function retireChk_changeHandler(event:Event):void
 			{
-				
+				if(this.retireChk.selected)
+				{	
+					var _retireResp:mx.rpc.Responder = new mx.rpc.Responder(retireOkay, fault);
+					
+					FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to retire this record? All the local changes made to the asset will be discarded on retirement.", "Retire Asset Confirmation", _retireResp);
+					
+					
+					function fault(data:Object):void
+					{	
+						FlexGlobals.topLevelApplication.TSSAlert("Error in Opening Retire Confirmation Dialog.");
+					}
+					
+				}
+			}
+			protected function retireOkay(data:Object):void
+			{
+				if(data == true)
+				{
+					for (var forIndex:int = 0; forIndex < viewStack.numChildren; forIndex++)
+					{
+						var curr:DisplayObject = viewStack.getChildAt(forIndex);
+						if (curr is UIComponent)
+						{
+							var curr2:UIComponent = curr as UIComponent;
+							curr2.enabled = false;
+						}
+					}
+				}
 			}
 			
 			protected function moveBtn_changeHandler(event:Event):void
@@ -645,8 +710,8 @@
 						if (this.currInspectionAsset['POLEID'] != null)
 						{
 							localAssetID = "" + currInspectionAsset['POLEID'];
-							assetLabelText = "Pole -- " + localAssetID;
-							assetTypeID = "POLE";
+							assetLabelText = "Support -- " + localAssetID;
+							assetTypeID = currSupport!=null ? currSupport.assetType:"1";
 						}
 						else
 						{
