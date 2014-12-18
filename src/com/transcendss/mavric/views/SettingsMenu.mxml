@@ -134,6 +134,7 @@
 				linearEditingEnabled.selected = app.GlobalComponents.ConfigManager.linearEditingSwitch;
 				linearEditFormEnabled.selected = app.GlobalComponents.ConfigManager.linearEditFormSwitch;
 				setMan.getSetting("DEFAULT_BP_CONTENT")=="bars"?this.barRadio.selected=true:mapRadio.selected=true;
+				dataUnitRadioSelect.selectedValue = int(setMan.getSetting("UNITS"));
 				measureBarRadioSelect.selectedValue = int(setMan.getSetting("TYPE_MEASURE"));
 				inspDays.text = setMan.getSetting("INSP_DAYS");
 				var tmpSync:String = setMan.getSetting("SYNC_ACTIVITY");
@@ -188,6 +189,7 @@
 				serviceUrl.text = ConfigUtility.get("serviceURL");
 				this.defScale.text = ConfigUtility.get("default_scale");
 				 ConfigUtility.get("default_bp_content")=="bars"?this.barRadio.selected=true:mapRadio.selected=true;
+			 	dataUnitRadioSelect.selectedValue = ConfigUtility.getInt("units");
 				measureBarRadioSelect.selectedValue = ConfigUtility.getInt("type_measure");
 				inspDays.text = ConfigUtility.get("inspect_days");
 				geotagUrl.text=	BaseConfigUtility.get('geotags_folder');
@@ -349,6 +351,11 @@
 					setMan.saveSetting("TYPE_MEASURE", measureBarRadioSelect.selectedValue.toString());
 				else
 					setMan.saveSetting("TYPE_MEASURE", ConfigUtility.get("type_measure"));
+				
+				if (dataUnitRadioSelect.selectedValue)
+					setMan.saveSetting("UNITS", dataUnitRadioSelect.selectedValue.toString());
+				else
+					setMan.saveSetting("UNITS", ConfigUtility.get("units"));
 				
 				measureChange();
 				
@@ -781,6 +788,8 @@
 		</s:SkinnablePopUpContainer>
 		
 		<s:RadioButtonGroup id="btmPanelRadioSelect"  />
+		<s:RadioButtonGroup id="dataUnitRadioSelect" 
+							selectedValue="{app.GlobalComponents.ConfigManager.dataUnits}"/>
 		<s:RadioButtonGroup id="measureBarRadioSelect"
 							selectedValue="{app.GlobalComponents.ConfigManager.measureBarUnit}"/>
 	</fx:Declarations>
@@ -904,10 +913,14 @@
 			</s:HGroup>
 			<s:Label text="Data Unit:"/>
 			<s:HGroup>
+				<s:RadioButton label="Feet (FT)" groupName="dataUnitRadioSelect"
+							   value="{Units.FEET}" enabled="{dataUnitRadioSelect.selectedValue == Units.FEET}"></s:RadioButton>
+				<s:RadioButton label="Kilometer (KM)" groupName="dataUnitRadioSelect"
+							   value="{Units.KILOMETER}" enabled="{dataUnitRadioSelect.selectedValue == Units.KILOMETER}"></s:RadioButton>
 				<s:RadioButton label="Mile (MI)" groupName="dataUnitRadioSelect"
-							   value="{Units.MILE}"></s:RadioButton>
+							   value="{Units.MILE}" enabled="{dataUnitRadioSelect.selectedValue == Units.MILE}"></s:RadioButton>
 				<s:RadioButton label="Meter (M)" groupName="dataUnitRadioSelect"
-							   value="{Units.METER}"></s:RadioButton>
+							   value="{Units.METER}" enabled="{dataUnitRadioSelect.selectedValue == Units.METER}"></s:RadioButton>
 			</s:HGroup>
 			
 			<s:Label text="Measure Bar Unit:"/>
