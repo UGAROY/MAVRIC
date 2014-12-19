@@ -135,9 +135,11 @@
 					SubBaseDDGroup.addElement(subBaseDDView);
 					
 					startDateView.btnText = "MS Start Date";
+					startDateView.enabled = false;
 					startDateView.width_TI = 120;
 					MsStartDateGroup.addElement(startDateView);
 					endDateView.btnText = "MS End Date";
+					endDateView.enabled = false;
 					endDateView.width_TI = 120;
 					MsEndDateGroup.addElement(endDateView);
 					
@@ -949,7 +951,7 @@
 					<s:TextArea height="170" width="100%" id= "PoleComments" skinClass="spark.skins.mobile.TextAreaSkin"/>
 					<s:Spacer height="10"/>
 					<s:Label text="MS Utility ID:  " fontWeight="bold"/>
-					<s:TextInput id="MsUtilityTextInut" width="{textInputWidth}"/>
+					<s:TextInput id="MsUtilityTextInut" width="{textInputWidth}" editable="false"/>
 					<s:Spacer height="10"/>
 					<s:Group id="MsStartDateGroup"></s:Group>
 					<s:Spacer height="10"/>

@@ -58,7 +58,7 @@ package com.transcendss.mavric.managers.ddot
 				{
 					var dataArr:Array = dbManager.exportAssets(def.DESCRIPTION);
 					var gtArr:Array = dbManager.exportGeotagData(def.ASSET_TYPE);
-					assetData.addItem({eventLayerID:def.EVENT_LAYER_ID,assetTy:def.ASSET_TYPE, assetDesc:def.DESCRIPTION, data : dataArr, geotags:gtArr, primaryKey:def.ASSET_DATA_TEMPLATE.PRIMARY_KEY});
+					assetData.addItem({eventLayerID:def.EVENT_LAYER_ID,assetTy:def.ASSET_TYPE, assetDesc:def.DESCRIPTION, data: dataArr, geotags:gtArr, primaryKey:def.ASSET_DATA_TEMPLATE.PRIMARY_KEY});
 				}
 			}
 			
@@ -82,12 +82,15 @@ package com.transcendss.mavric.managers.ddot
 				return;
 			}
 			
+			
+		}
+		
+		public function applyEdits():void
+		{
 			var assetData:ArrayCollection = getLocalData();
 			
 			for (var i:int =0;i< assetData.length;i++)
 			{
-				
-				
 				var assetTypeObj:Object = assetData[i];
 				if(assetTypeObj.data ==null)
 				{
@@ -127,10 +130,8 @@ package com.transcendss.mavric.managers.ddot
 					});
 					FlexGlobals.topLevelApplication.incrementEventStack();
 					dispatcher.dispatchEvent(sync);
-				}
-				
+				}	
 			}
-			
 		}
 		
 		public function clearLocalData(syncResult:Object, event:SyncEvent):void
@@ -142,7 +143,7 @@ package com.transcendss.mavric.managers.ddot
 			if(syncResult && syncResult.error)
 				onSyncError(layerID,null, event.assetTy,assetDesc, event.assetID, event.assetPK, {error:{description:"Error occured during sync process."}});
 				
-			else if(syncResult )
+			else if(syncResult)
 			{
 				var result:Array = syncResult as Array;
 				var layerID:String = String(result[0].id);

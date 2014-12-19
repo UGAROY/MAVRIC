@@ -222,13 +222,11 @@
 		<mate:EventHandlers type="{com.transcendss.mavric.events.SyncEvent.APPLY_EDITS}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}"  resultFormat="text" debug="{debugFlag}" useProxy="false" method="POST" contentType="application/x-www-form-urlencoded">
 				
-				<mate:Request edits = "{event.editsJson }" 
+				<mate:Request edits = "{event.editsJson}" 
 							  gdbVersion = "{ConfigUtility.get('gdb_version')}"
 							  f = "pjson"
 							  rollbackOnFailure ="{ConfigUtility.get('rollback_on_failure')}"/>
 							  <!--userName = "{event.userName}"-->
-						
-				
 				<mate:resultHandlers>
 					<mate:MethodInvoker generator="{ArcGISServiceManager}" method="onServiceObjResult" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>

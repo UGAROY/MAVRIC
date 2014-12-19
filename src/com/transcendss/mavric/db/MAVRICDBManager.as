@@ -2018,6 +2018,7 @@ package com.transcendss.mavric.db
 				"SIGNHEIGHT REAL, " +
 				"SIGNSTATUS INTEGER,"+
 				"ARROWDIRECTION TEXT," +
+				"ISLOADINGZONE INTEGER," +
 				"COMMENT TEXT);";
 			sStat.execute();
 			

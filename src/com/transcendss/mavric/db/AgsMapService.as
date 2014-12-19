@@ -165,6 +165,12 @@ package com.transcendss.mavric.db
 			FlexGlobals.topLevelApplication.TSSAlert('Unable to retrive context from ArcGIS server.');
 		}
 		
+		public function getMaxRecordIDUrl(idFieldName:String):String
+		{
+			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) 
+				+ '?f=json&outStatistics=[{"statisticType":"max","onStatisticField":"@infieldName","outStatisticFieldName":"max@FieldName"}]'.replace(/@infieldName\b/gi, idFieldName)
+		}
+		
 		public function getLatLongUrl(routeName:String):String
 		{
 			var whereClause:String = _query.routeEventWhereClause.replace(/@routeIdFieldName\b/gi, _networkLayerContext.compositeRouteIdFieldName)

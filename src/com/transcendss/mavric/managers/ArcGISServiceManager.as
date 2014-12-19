@@ -39,6 +39,11 @@ package com.transcendss.mavric.managers
 			
 		}
 		
+		public function getMaxIdUrl(idFieldName:String):String
+		{
+			return FlexGlobals.topLevelApplication.agsMapService.getMaxRecordIDUrl();
+		}
+		
 		
 		public function getAddAttachmentUrl(layerID:String, featureID:String):String
 		{

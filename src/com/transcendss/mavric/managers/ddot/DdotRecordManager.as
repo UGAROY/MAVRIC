@@ -105,6 +105,8 @@ package com.transcendss.mavric.managers.ddot
 			sign['SIGNSIZE'] = sign['SIGNSIZE'] || null;
 			sign['SIGNSTATUS'] = sign['SIGNSTATUS'] || null;
 			
+			sign['ISLOADINGZONE'] = sign['ISLOADINGZONE'] == true ? 1 : 0;
+			
 			return sign;
 		}
 		
@@ -113,6 +115,8 @@ package com.transcendss.mavric.managers.ddot
 			sign['SIGNFACING'] = sign['SIGNFACING'] != null ? sign['SIGNFACING'].toString() : null;
 			sign['SIGNSIZE'] = sign['SIGNSIZE'] != null ? sign['SIGNSIZE'].toString() : null;
 			sign['SIGNSTATUS'] = sign['SIGNSTATUS'] != null ? sign['SIGNSTATUS'].toString() : null;
+			
+			sign['ISLOADINGZONE'] = sign['ISLOADINGZONE'] == 1 ? true : false;
 			
 			// Set the DESCRIPTION. TODO: map it to the real description
 			sign['DESCRIPTION'] = sign['DESCRIPTION'] || sign['SIGNNAME'];
