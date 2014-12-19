@@ -75,10 +75,11 @@ package com.transcendss.mavric.managers
 			var arr:Array = parseJsonObj(obj);
 			for each(var arrItem:Object in arr)
 			{
-				var coords:Array = arrItem.geometry.paths[0] as Array;
-				for each(var coord:Array in coords)
+				for each (var path:Array in arrItem.geometry.paths as Array)
 				{
-					arrayColl.addItem({ "X" : String(coord[0]) , "Y" : String(coord[1]), "M" : String(coord[2])});
+					// Temporarily fix, just append all the x y coordinations to one arraycollection
+					for each (var coord:Array in path)
+						arrayColl.addItem({ "X" : String(coord[0]) , "Y" : String(coord[1]), "M" : String(coord[2])});
 				}
 			}
 			return arrayColl;

@@ -170,7 +170,9 @@ package com.transcendss.mavric.db
 			var whereClause:String = _query.routeEventWhereClause.replace(/@routeIdFieldName\b/gi, _networkLayerContext.compositeRouteIdFieldName)
 				.replace(/@routeId\b/gi,routeName);
 			whereClause = whereClause + ' and ' + _query.dateWhereClause.replace(/@fromDateFieldName\b/gi, _networkLayerContext.fromDateFieldName).replace(/@toDateFieldName\b/gi, _networkLayerContext.toDateFieldName);
-			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) + '?f=json&outSR=4236&returnM=true&returnGeometry=true&outFields=*&where=' + escape(whereClause);
+			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) 
+				+ '?f=json&outSR=@sr&returnM=true&returnGeometry=true&outFields=*&where='.replace('@sr', FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.baseMapSR) 
+				+ escape(whereClause);
 		}
 		
 		public function getRouteUrl():String
