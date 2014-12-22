@@ -3,8 +3,8 @@ package com.transcendss.mavric.managers.ddot
 	import com.adobe.net.MimeTypeMap;
 	import com.asfusion.mate.core.GlobalDispatcher;
 	import com.transcendss.mavric.db.MAVRICDBManager;
-	import com.transcendss.mavric.events.SyncEvent;
 	import com.transcendss.mavric.events.ddot.DdotRecordEvent;
+	import com.transcendss.mavric.events.ddot.DdotSyncEvent;
 	import com.transcendss.mavric.managers.ArcGISServiceManager;
 	import com.transcendss.mavric.util.FileUtility;
 	import com.transcendss.mavric.util.UploadPostHelper;
@@ -45,6 +45,10 @@ package com.transcendss.mavric.managers.ddot
 		private var _linkEventLayerID:Number = 15;
 		private var _trEventLayerID:Number = 17;
 		
+		private var maxSupportIDOnServer:Number;
+		private var maxSignIDOnServer:Number;
+		private var maxInspectionIDOnServer:Number;
+		
 		public function DdotRandHSyncManager()
 		{
 			mimeTyMap.addMimeType("video/3gpp", ["3gp","3gpp"]);
@@ -53,20 +57,47 @@ package com.transcendss.mavric.managers.ddot
 			dtFormatter.errorText="";
 		}
 		
-		private function getLocalData():ArrayCollection
+//		private function getLocalData():ArrayCollection
+//		{
+//			var assetDef:Object = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs;
+//			var assetsForSync:Array = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetsForSync;
+//			
+//			var assetData:ArrayCollection = new ArrayCollection();
+//			for each (var def:Object in assetDef) 
+//			{
+//				if(assetsForSync.indexOf(def.DESCRIPTION !=-1))//if asset sync is true
+//				{
+//					var dataArr:Array = dbManager.exportAssets(def.DESCRIPTION);
+//					var gtArr:Array = dbManager.exportGeotagData(def.ASSET_TYPE);
+//					assetData.addItem({eventLayerID:def.EVENT_LAYER_ID,assetTy:def.ASSET_TYPE, assetDesc:def.DESCRIPTION, data: dataArr, geotags:gtArr, primaryKey:def.ASSET_DATA_TEMPLATE.PRIMARY_KEY});
+//				}
+//			}
+//			
+//			return assetData;
+//		}
+		
+		private function getLocalRecords(assetType:String):Object
 		{
-			var assetDef:Object = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs;
-			var assetsForSync:Array = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetsForSync;
-			
-			var assetData:ArrayCollection = new ArrayCollection();
-			for each (var def:Object in assetDef) 
+			var dataArr:Array;
+			var gtArr:Array;
+			var assetData:Object = new Object();
+			if (assetType == "1" || assetType == "SUPPORT")
 			{
-				if(assetsForSync.indexOf(def.DESCRIPTION !=-1))//if asset sync is true
-				{
-					var dataArr:Array = dbManager.exportAssets(def.DESCRIPTION);
-					var gtArr:Array = dbManager.exportGeotagData(def.ASSET_TYPE);
-					assetData.addItem({eventLayerID:def.EVENT_LAYER_ID,assetTy:def.ASSET_TYPE, assetDesc:def.DESCRIPTION, data: dataArr, geotags:gtArr, primaryKey:def.ASSET_DATA_TEMPLATE.PRIMARY_KEY});
-				}
+				dataArr= dbManager.exportAssets("SUPPORT");
+				gtArr = dbManager.exportGeotagData("1");
+				assetData = {eventLayerID:_supportEventLayerID,assetTy:"1", assetDesc:"SUPPORT", data: dataArr, geotags:gtArr, primaryKey:"POLEID"};
+			}
+			else if (assetType == "SIGN")
+			{
+				dataArr = dbManager.exportDdotRecords("SIGNS");
+				gtArr = dbManager.exportGeotagData("SIGN");
+				assetData = {eventLayerID:_signEventLayerID,assetTy:"SIGN", assetDesc:"SIGN", data: dataArr, geotags:gtArr, primaryKey:"SIGNID"};
+			}
+			else if (assetType == "INSPECTION")
+			{
+				dataArr = dbManager.exportDdotRecords("INSPECTIONS");
+				gtArr = dbManager.exportGeotagData("INSPECTION");
+				assetData = {eventLayerID:_inspectionEventLayerID,assetTy:"INSPECTION", assetDesc:"INSPECTION", data: dataArr, geotags:gtArr, primaryKey:"INSPECTIONID"};
 			}
 			
 			return assetData;
@@ -89,30 +120,112 @@ package com.transcendss.mavric.managers.ddot
 				return;
 			}
 			
+			// temporary codes
+			dbManager.getDdotLocalGeoTags(-2, -999, false, "SUPPORT");
+			return;
+			
+			// Fire off find max support id event
+			fireMaxIDRequest("POLEID", this._supportEventLayerID);
+		}
+		
+		private function fireMaxIDRequest(idField:String, eventLayerID:Number)
+		{
 			var maxRecordIDEvent:DdotRecordEvent = new DdotRecordEvent(DdotRecordEvent.MAX_RECORD_ID_REQUEST);
-			maxRecordIDEvent.idField = "POLEID";
-			maxRecordIDEvent.eventLayerID = this._supportEventLayerID;
+			maxRecordIDEvent.idField = idField;
+			maxRecordIDEvent.eventLayerID = eventLayerID;
 			dispatcher.dispatchEvent(maxRecordIDEvent);
 		}
 		
-		public function applyEdits(obj:Object, evt:DdotRecordEvent):void
+		// Do it this way to kind of make a chain
+		public function onMaxIdServiceResult(obj:Object, evt:DdotRecordEvent):void
 		{
-			var maxSupportIDonServer:Number = extractMaxIDFromServiceResult(obj, evt.idField);
-			var assetData:ArrayCollection = getLocalData();
-			var assetTypeObj:Object ;
+			var maxId:Number = extractMaxIDFromServiceResult(obj, evt.idField);
+			if (maxId == -9999)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("Failed contacting the server.");
+				return;
+			}
 			
 			if (evt.eventLayerID == this._supportEventLayerID)
 			{
-				var supportAssetData:Object = getLocalData()[0];
-				if (supportAssetData.data ==null)
-					return;
-				for each(var supportAsset:Object in supportAssetData.data)
-				{
-					supportAsset['POLEID'] = maxSupportIDonServer - supportAsset['POLEID'] + 1; // start from -2
-				}
-				assetTypeObj = supportAssetData;
+				maxSupportIDOnServer = maxId;
+				syncSupport();
+				// fire off events to find the max sign id
+				fireMaxIDRequest("SIGNID", this._signEventLayerID)
+				
 			}
-			
+			else if (evt.eventLayerID == this._signEventLayerID)
+			{
+				maxSignIDOnServer = maxId;
+				syncSign();
+				// fire off events to find the max inspection id
+				fireMaxIDRequest("INSPECTIONID", this._inspectionEventLayerID);
+			}
+			else if (evt.eventLayerID == this._inspectionEventLayerID)
+			{
+				maxInspectionIDOnServer = maxId;
+				syncInspection();
+			}
+		}
+		
+		private function syncSupport():void
+		{	
+			var supportAssetData:Object = getLocalRecords("SUPPORT");
+			if (supportAssetData.data ==null)
+				return;
+			for each(var supportAsset:Object in supportAssetData.data)
+			{
+				if (supportAsset['POLEID'] < 0)
+					// Based on the current code, the support starts from -2. So do an extra -1
+					supportAsset['POLEID'] = maxSupportIDOnServer - supportAsset['POLEID'] - 1; 
+			}
+			applyEdits(supportAssetData);	
+		}
+		
+		private function syncSign():void
+		{
+			var signAssetData:Object = getLocalRecords("SIGN");
+			if (signAssetData.data ==null)
+				return;
+			if (signAssetData.data && signAssetData.data.length >0)
+			{
+				for each(var signAsset:Object in signAssetData.data)
+				{
+					if (signAsset['POLEID'] < 0)
+						signAsset['POLEID'] = maxSupportIDOnServer - signAsset['POLEID'] - 1; 
+					if (signAsset['SIGNID'] < 0)
+					{
+						signAsset['SIGNID'] = maxSignIDOnServer - signAsset['SIGNID'];
+						signAsset['STATUS'] = "NEW";
+					}
+				}
+				applyEdits(signAssetData);	
+			}
+		}
+		
+		private function syncInspection():void
+		{
+			var inspectionData:Object = getLocalRecords("INSPECTION");
+			if (inspectionData.data !=null && inspectionData.data.length > 0)
+			{
+				for each(var inspection:Object in inspectionData.data)
+				{
+					if (inspection['POLEID'] < 0)
+						inspection['POLEID'] = maxSupportIDOnServer - inspection['POLEID'] - 1; 
+					if (inspection['SIGNID'] != null && inspection['SIGNID'] < 0)
+						inspection['SIGNID'] = maxSignIDOnServer - inspection['SIGNID'];
+					if (inspection['INSPECTIONID'] < 0)
+					{
+						inspection['INSPECTIONID'] = maxInspectionIDOnServer - inspection['INSPECTIONID'];	
+						inspection['STATUS'] = "NEW";
+					}
+				}
+				applyEdits(inspectionData);
+			}	
+		}
+		
+		private function applyEdits(assetTypeObj:Object):void
+		{
 			var applyEditsObj:Object = new Object();
 			applyEditsObj.id= assetTypeObj.eventLayerID;
 			
@@ -127,11 +240,24 @@ package com.transcendss.mavric.managers.ddot
 				applyEditsObj.deletes = new Array();
 				
 				attrObj.attributes = asset;
-				var sync:SyncEvent = new SyncEvent(SyncEvent.APPLY_EDITS);
+				var sync:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.APPLY_EDITS);
 				sync.assetTy = assetTypeObj.assetTy;
 				sync.assetID = asset[assetTypeObj.primaryKey];
 				sync.assetPK = assetTypeObj.primaryKey;
 				sync.serviceURL = agsManager.getURL("edits");
+				
+				// add support ID and signID
+				try 
+				{
+					sync.supportID = asset['POLEID'];
+					sync.signID = asset['SIGNID'];
+				}
+				catch(er:Error)
+				{
+					sync.supportID = -9999;
+					sync.signID = -9999;
+				}
+				
 				
 				if(asset.STATUS == 'NEW')
 					applyEditsObj.adds.push(attrObj);
@@ -147,58 +273,18 @@ package com.transcendss.mavric.managers.ddot
 				});
 				FlexGlobals.topLevelApplication.incrementEventStack();
 				dispatcher.dispatchEvent(sync);
-			}	
-			
-//			for (var i:int =0;i< assetData.length;i++)
-//			{
-//				var assetTypeObj:Object = assetData[i];
-//				if(assetTypeObj.data ==null)
-//				{
-//					continue;
-//				}
-//				var applyEditsObj:Object = new Object();
-//				applyEditsObj.id= assetTypeObj.eventLayerID;
-//				
-//				for(var j:int =0;j< assetTypeObj.data.length;j++)
-//				{
-//					var editsArr:Array = new Array(); 
-//					var attrObj:Object = new Object();
-//					var asset:Object  = assetTypeObj.data[j];
-//					
-//					applyEditsObj.adds = new Array();
-//					applyEditsObj.updates = new Array();
-//					applyEditsObj.deletes = new Array();
-//					
-//					attrObj.attributes = asset;
-//					var sync:SyncEvent = new SyncEvent(SyncEvent.APPLY_EDITS);
-//					sync.assetTy = assetTypeObj.assetTy;
-//					sync.assetID = asset[assetTypeObj.primaryKey];
-//					sync.assetPK = assetTypeObj.primaryKey;
-//					sync.serviceURL = agsManager.getURL("edits");
-//					
-//					if(asset.STATUS == 'NEW')
-//						applyEditsObj.adds.push(attrObj);
-//					else
-//						applyEditsObj.updates.push(attrObj);
-//					
-//					editsArr.push(applyEditsObj);
-//					sync.editsJson = JSON.stringify(editsArr, function (k,v):* { 
-//						if(this[k] is Date)
-//							return Date.parse(this[k]); 
-//						else
-//							return this[k];
-//					});
-//					FlexGlobals.topLevelApplication.incrementEventStack();
-//					dispatcher.dispatchEvent(sync);
-//				}	
-//			}
+			}
 		}
 		
-		public function clearLocalData(syncResult:Object, event:SyncEvent):void
+		public function clearLocalData(syncResult:Object, event:DdotSyncEvent):void
 		{
 			FlexGlobals.topLevelApplication.decrementEventStack();
 			event.stopPropagation();
-			var assetDesc:String = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs[event.assetTy].DESCRIPTION;
+			var assetDesc:String;
+			if (event.assetTy == "1")
+				assetDesc = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs[event.assetTy].DESCRIPTION;
+			else
+				assetDesc = event.assetTy;
 			
 			if(syncResult && syncResult.error)
 				onSyncError(layerID,null, event.assetTy,assetDesc, event.assetID, event.assetPK, {error:{description:"Error occured during sync process."}});
@@ -209,9 +295,9 @@ package com.transcendss.mavric.managers.ddot
 				var layerID:String = String(result[0].id);
 				
 				if(result[0].updateResults && result[0].updateResults.length>0 && result[0].updateResults[0].success ==true)
-					onSyncSuccess(layerID,String(result[0].updateResults[0].objectId), event.assetTy,assetDesc, event.assetID, event.assetPK);
+					onSyncSuccess(layerID,String(result[0].updateResults[0].objectId), event.assetTy,assetDesc, event.assetID, event.assetPK, event.supportID, event.signID);
 				else if(result[0].addResults && result[0].addResults.length>0 && result[0].addResults[0].success ==true)
-					onSyncSuccess(layerID,String(result[0].addResults[0].objectId), event.assetTy,assetDesc, event.assetID, event.assetPK);
+					onSyncSuccess(layerID,String(result[0].addResults[0].objectId), event.assetTy,assetDesc, event.assetID, event.assetPK, event.supportID, event.signID);
 				else if(result[0].addResults && result[0].addResults.length>0 && result[0].addResults[0].success ==false)
 					onSyncError(layerID,String(result[0].addResults[0].objectId), event.assetTy,assetDesc, event.assetID, event.assetPK, result[0].addResults[0].error);
 				else if(result[0].addResults && result[0].updateResults.length>0 && result[0].updateResults[0].success ==false)
@@ -219,17 +305,37 @@ package com.transcendss.mavric.managers.ddot
 				else
 					onSyncError(layerID,String(result[0].addResults[0].objectId), event.assetTy,assetDesc, event.assetID, event.assetPK, {error:{description:"Error occured during sync process."}});
 			}
-			
 		}
 		
 		
-		private function onSyncSuccess(layer:String,objID:String, assetTy:String, assetDesc:String, assetID:String, assetPK:String):void
+		private function onSyncSuccess(layer:String,objID:String, assetTy:String, assetDesc:String, assetID:String, assetPK:String, supportID:Number, signID:Number):void
 		{
-			gtArray = dbManager.getLocalGeoTags(new Number(assetID),assetTy);
+			supportID = supportID > maxSupportIDOnServer ? maxSupportIDOnServer - supportID -1: supportID;
+			signID = signID > maxSignIDOnServer ? maxSignIDOnServer - signID: signID;
+			// Get the local id
+			var localAssetID:Number = Number(assetID);
+			if (assetTy == "1")
+			{
+				localAssetID = supportID;
+				gtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "SUPPORT");
+			}
+			else if (assetTy == "SIGN")
+			{
+				localAssetID = signID;
+				gtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "SIGN");
+			}
+			else if (assetTy == "INSPECTION")
+			{
+				localAssetID = localAssetID > maxInspectionIDOnServer ? maxInspectionIDOnServer - localAssetID: localAssetID;
+				gtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "INSPECTION");
+			}
+			
 			layerID = layer;
 			objectID = objID;
-			uploadAttachments();
-			dbManager.deleteLocalAsset(assetDesc,assetID,assetPK);
+			
+//			gtArray = dbManager.getLocalGeoTags(new Number(assetID),assetTy);
+//			uploadAttachments();
+			dbManager.deleteDdotLocalRecord(assetDesc, localAssetID.toString(), assetPK);
 		}
 		
 		private function onSyncError(layerID:String,objID:String, assetTy:String,assetDesc:String,  assetID:String, assetPK:String, error:Object):void
@@ -312,14 +418,14 @@ package com.transcendss.mavric.managers.ddot
 		private function extractMaxIDFromServiceResult(obj:Object, idField:String):Number
 		{
 			var maxId:Number = -9999;
-			if(!obj)
-				return maxId;
 			var rawData:String = String(obj);
-			if (rawData.length >0)
-			{
-				var arr:Array = (JSON.parse(rawData).features) as Array;
-				maxId = arr[0].attributes['MAX' + idField];
-			}
+			var arr:Array = (JSON.parse(rawData).features) as Array;
+			if (arr == null)
+				return maxId;
+			if (arr != null && arr.length > 0)
+				maxId = arr[0].attributes[idField]; 
+			else 
+				maxId = 0;
 			
 			return maxId;
 		}

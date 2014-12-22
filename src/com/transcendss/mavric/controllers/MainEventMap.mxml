@@ -17,15 +17,14 @@
 			import com.transcendss.mavric.events.LocalRouteEvent;
 			import com.transcendss.mavric.events.SignInvEvent;
 			import com.transcendss.mavric.events.ddot.DdotRecordEvent;
+			import com.transcendss.mavric.events.ddot.DdotSyncEvent;
 			import com.transcendss.mavric.extended.models.MAVRICDiagram;
 			import com.transcendss.mavric.managers.ArcGISServiceManager;
 			import com.transcendss.mavric.managers.ExternalFileManager;
 			import com.transcendss.mavric.managers.MavricConfiguredSyncManager;
 			import com.transcendss.mavric.managers.MenuManager;
-			//import com.transcendss.mavric.managers.RandHSyncManager;
 			import com.transcendss.mavric.managers.ddot.DdotRandHSyncManager;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
-			import com.transcendss.mavric.views.ddot.SupportInventory;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.AssetEditForm;
 			import com.transcendss.mavric.views.ControlBar;
@@ -38,12 +37,13 @@
 			import com.transcendss.mavric.views.VideoLog;
 			import com.transcendss.mavric.views.componentviews.MainEntryForm;
 			import com.transcendss.mavric.views.componentviews.RouteSelector;
+			import com.transcendss.mavric.views.ddot.SupportInventory;
 			import com.transcendss.transcore.events.AssetManagerEvent;
 			import com.transcendss.transcore.events.AttributeEvent;
 			import com.transcendss.transcore.events.CameraEvent;
 			import com.transcendss.transcore.events.ConfigManagerEvent;
-			import com.transcendss.transcore.events.ElementEvent;
 			import com.transcendss.transcore.events.ElementEditEvent;
+			import com.transcendss.transcore.events.ElementEvent;
 			import com.transcendss.transcore.events.ExternalFileEvent;
 			import com.transcendss.transcore.events.FeatureEvent;
 			import com.transcendss.transcore.events.InventoryMenuEvent;
@@ -223,14 +223,14 @@
 			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getMaxIdUrl" arguments="{[event.idField, event.eventLayerID]}"/>
 			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
 				<mate:resultHandlers>
-					<mate:MethodInvoker generator="{DdotRandHSyncManager}" method="applyEdits" arguments="{[resultObject, event]}">
+					<mate:MethodInvoker generator="{DdotRandHSyncManager}" method="onMaxIdServiceResult" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
 					</mate:MethodInvoker>
 				</mate:resultHandlers>
 			</mate:HTTPServiceInvoker>
 		</mate:EventHandlers>
 		
-		<mate:EventHandlers type="{com.transcendss.mavric.events.SyncEvent.APPLY_EDITS}" debug="{debugFlag}">
+		<mate:EventHandlers type="{com.transcendss.mavric.events.ddot.DdotSyncEvent.APPLY_EDITS}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}"  resultFormat="text" debug="{debugFlag}" useProxy="false" method="POST" contentType="application/x-www-form-urlencoded">
 				
 				<mate:Request edits = "{event.editsJson}" 

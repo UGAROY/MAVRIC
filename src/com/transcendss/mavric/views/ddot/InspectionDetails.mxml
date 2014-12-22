@@ -90,10 +90,10 @@
 				isLoose.selected = inspection['LOOSE'];
 				isRusted.selected = inspection['RUSTED'];
 				isFaded.selected = inspection['FADED'];
-				isPeeling.selected = inspection['PEELED'];
+				isPeeling.selected = inspection['PEELING'];
 				otherDamage.selected = inspection['OTHER'];
 				inspectorText.text = inspection['INSPECTOR'];
-				inspectionComment.text = inspection['COMMENT'];
+				inspectionComment.text = inspection['COMMENTS'];
 				
 			}
 			
@@ -124,10 +124,10 @@
 					inspection['LOOSE'] = isLoose.selected;
 					inspection['RUSTED'] = isRusted.selected;
 					inspection['FADED'] = isFaded.selected;
-					inspection['PEELED'] = isPeeling.selected;
+					inspection['PEELING'] = isPeeling.selected;
 					inspection['OTHER'] = otherDamage.selected;
 					inspection['INSPECTOR'] = inspectorText.text;
-					inspection['COMMENT'] = inspectionComment.text;
+					inspection['COMMENTS'] = inspectionComment.text;
 					
 					PopUpManager.removePopUp(this);
 					

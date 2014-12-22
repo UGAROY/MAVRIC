@@ -168,8 +168,10 @@ package com.transcendss.mavric.db
 		
 		public function getMaxRecordIDUrl(idFieldName:String, layerID:Number):String
 		{
+//			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) 
+//				+ StringUtil.substitute('?f=json&outStatistics=[{"statisticType":"max","onStatisticField":"{0}","outStatisticFieldName":"max{0}"}]', idFieldName)
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) 
-				+ StringUtil.substitute('?f=json&outStatistics=[{"statisticType":"max","onStatisticField":"{0}","outStatisticFieldName":"max{0}"}]', idFieldName)
+				+ StringUtil.substitute('?f=json&outFields={0}&orderByFields={0} DESC&returnGeometry=false&where=1=1', idFieldName);
 		}
 		
 		public function getLatLongUrl(routeName:String):String

@@ -313,7 +313,7 @@
 							var vContainer:VGroup = new VGroup();
 							vContainer.horizontalAlign = "center";
 							var assetLabel:Label = new Label();
-							assetLabel.text = tmpGT.asset_ty_id + " -- " + tmpGT.local_asset_id;
+							assetLabel.text = tmpGT.local_asset_id == "" ? tmpGT.asset_ty_id : tmpGT.asset_ty_id + " -- " + tmpGT.local_asset_id;
 							vContainer.addElement(viE);
 							vContainer.addElement(assetLabel);
 //							if(viE is TSSPicture)
@@ -570,17 +570,17 @@
 			
 			private function assetLabelFunction(item:Object):String
 			{
-				return item['POLEID'] != null ? "Support" : "Sign -- " + item['SIGNID'] 
+				return item['SIGNID'] == null ? "Support" : "Sign -- " + item['SIGNID'] 
 			}
 			
 			private function formatAssetLabelColumn(item:Object, column:GridColumn):String
 			{
-				return item['POLEID'] != null ? "Support" : "Sign -- " + item['SIGNID'];
+				return item['SIGNID'] == null ? "Support" : "Sign -- " + item['SIGNID'];
 			}
 			
 			private function formatAssetTypeColumn(item:Object, column:GridColumn):String
 			{
-				if (item['POLEID'] != null && item['POLEID'] != 0)
+				if (item['POLEID'] != null && item['POLEID'] != 0 && item['SIGNID'] == null)
 					return "Support";
 				else
 				{
@@ -589,7 +589,6 @@
 						if (sign['SIGNID'] == item['SIGNID'])
 							return sign['DESCRIPTION'];
 					}					
-					//return FlexGlobals.topLevelApplication.GlobalComponents.recordManager.signTypeDictionary[sign['SIGNTYPE']];
 				}
 				return "";
 			}
@@ -796,9 +795,9 @@
 				if(captureSource == "SupportInventory")
 				{
 					assetBaseID = "" + this.currSupportID;
-					localAssetID = "" + this.currSupportID;
+					localAssetID = ""; // "" + this.currSupportID;
 					assetTypeID = currSupport!=null ? currSupport.assetType:"1";
-					assetLabelText = "Support -- " + localAssetID;
+					assetLabelText = "Support";
 					attachContainer = InvAttachments;
 					isInsp = 0;
 				}
@@ -816,9 +815,9 @@
 					assetBaseID = "" + this.currSupportID;
 					if (this.currInspectionAsset['POLEID'] != null)
 					{
-						localAssetID = "" + currInspectionAsset['POLEID'];
-						assetLabelText = "Pole -- " + localAssetID;
-						assetTypeID = "POLE";
+						localAssetID = ""; //"" + currInspectionAsset['POLEID'];
+						assetLabelText = "Support";
+						assetTypeID = "1";
 					}
 					else
 					{

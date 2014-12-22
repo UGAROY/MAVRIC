@@ -682,10 +682,6 @@ package com.transcendss.mavric.db
 		//replaces the prev func in new sync
 		public function deleteLocalAsset(assetType:String ,idStr:String, idColName:String): void
 		{
-			
-			
-			
-			
 			if(assetHasInspTable(assetType))
 			{
 				sStat.text = "DELETE FROM "+assetType+"_INSP where "+idColName+"  in (" +idStr+")";
@@ -694,8 +690,6 @@ package com.transcendss.mavric.db
 			
 			sStat.text = "DELETE FROM "+assetType+"_INV where "+idColName+"  in (" +idStr+")";
 			sStat.execute();
-					
-			
 		}
 		
 		private function resultHandler(event:SQLEvent):void
@@ -2010,6 +2004,7 @@ package com.transcendss.mavric.db
 		{
 			// Signs Table
 			sStat.text = "CREATE TABLE IF NOT EXISTS SIGNS ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"OBJECTID INTEGER, " +
 				"SIGNID INTEGER, " +
 				"POLEID INTEGER, " + 
 				"SIGNNAME TEXT, " +
@@ -2019,11 +2014,12 @@ package com.transcendss.mavric.db
 				"SIGNSTATUS INTEGER,"+
 				"ARROWDIRECTION TEXT," +
 				"ISLOADINGZONE INTEGER," +
-				"COMMENT TEXT);";
+				"COMMENTS TEXT);";
 			sStat.execute();
 			
 			// Linked Sign Table
 			sStat.text = "CREATE TABLE IF NOT EXISTS LINKEDSIGN ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"OBJECTID INTEGER, " +
 				"SIGNID INTEGER, " +
 				"LINKID TEXT, " +
 				"OLDLINKEDID TEXT, " +
@@ -2032,6 +2028,7 @@ package com.transcendss.mavric.db
 			
 			// Inspections Table
 			sStat.text = "CREATE TABLE IF NOT EXISTS INSPECTIONS ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"OBJECTID INTEGER, " +
 				"INSPECTIONID INTEGER, " +
 				"POLEID INTEGER, " + 
 				"SIGNID INTEGER, " + 
@@ -2048,11 +2045,12 @@ package com.transcendss.mavric.db
 				"FADED INTEGER," +
 				"PEELING INTEGER," +
 				"OTHER INTEGER," +
-				"COMMENT TEXT);";
+				"COMMENTS TEXT);";
 			sStat.execute();
 			
 			// Time Restriction Table
 			sStat.text = "CREATE TABLE IF NOT EXISTS TIMERESTRICTIONS ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
+				"OBJECTID INTEGER, " +
 				"RESTRICTIONID INTEGER, " +
 				"LINKID TEXT, " + 
 				"STARTDAY INTEGER, " + 
@@ -2114,14 +2112,14 @@ package com.transcendss.mavric.db
 		
 		public function addDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENT")
+			var signColumns:Array = new Array("OBJECTID", "SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS")
 			sStat.text = "INSERT INTO SIGNS " + buildDdotInsertKeyValueStr(sign, signColumns); 
 			sStat.execute();
 		}
 		
 		public function updateDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENT");
+			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS");
 			sStat.text = StringUtil.substitute("UPDATE SIGNS SET {0} WHERE SIGNID={1}", [buildDdotUpdateKeyValueStr(sign, signColumns), sign['SIGNID'].toString()]);
 			sStat.execute();
 		}
@@ -2188,8 +2186,8 @@ package com.transcendss.mavric.db
 		
 		public function addDdotInspection(inspection:Object):void
 		{
-			var inspectionColumns:Array = new Array("INSPECTIONID", "POLEID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
-				"ADDITIONALACTIONNEEDED", "BENT", "TWISTED", "LOOSE", "RUSTED", "FADED", "PEELING", "OTHER");
+			var inspectionColumns:Array = new Array("OBJECTID", "INSPECTIONID", "POLEID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
+				"ADDITIONALACTIONNEEDED", "BENT", "TWISTED", "LOOSE", "RUSTED", "FADED", "PEELING", "OTHER", "COMMENTS");
 			sStat.text = "INSERT INTO INSPECTIONS " + buildDdotInsertKeyValueStr(inspection, inspectionColumns); 
 			sStat.execute();
 		}
@@ -2197,7 +2195,7 @@ package com.transcendss.mavric.db
 		public function updateDdotInspection(inspection:Object):void
 		{
 			var inspectionColumns:Array = new Array("INSPECTIONID", "POLEID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
-				"ADDITIONALACTIONNEEDED", "BENT", "TWISTED", "LOOSE", "RUSTED", "FADED", "PEELING", "OTHER");
+				"ADDITIONALACTIONNEEDED", "BENT", "TWISTED", "LOOSE", "RUSTED", "FADED", "PEELING", "OTHER", "COMMENTS");
 			sStat.text = StringUtil.substitute("UPDATE INSPECTIONS SET {0} WHERE INSPECTIONID={1}", [buildDdotUpdateKeyValueStr(inspection, inspectionColumns), inspection['INSPECTIONID'].toString()]);
 			sStat.execute();
 		}
@@ -2311,7 +2309,7 @@ package com.transcendss.mavric.db
 			sStat.execute();
 		}
 		
-		public function getDdotGeotags(supportID:Number):Array
+		public function getDdotGeotagsBySupportID(supportID:Number):Array
 		{
 			var gtArray:Array = [];
 			sStat.text = "SELECT * from GEOTAGS where asset_base_id ='" + supportID.toString() + "'";
@@ -2366,6 +2364,56 @@ package com.transcendss.mavric.db
 				return data[0]["min(" + asset.primaryKey + ")"];
 			else	
 				return -2;
+		}
+		
+		public function deleteDdotLocalRecord(assetType:String ,idStr:String, idColName:String): void
+		{
+			if (assetType == "SUPPORT")
+				sStat.text = "DELETE FROM "+assetType+"_INV where "+idColName+"  in (" +idStr+")";
+			else if (assetType == "SIGN")
+				sStat.text = "DELETE FROM SIGNS where "+idColName+"  in (" +idStr+")";
+			else if (assetType == "INSPECTION")
+				sStat.text = "DELETE FROM INSPECTIONS where "+idColName+"  in (" +idStr+")";
+			else 
+				return;
+			sStat.execute();
+		}
+		
+		public function getDdotLocalGeoTags(local_support_id:Number, local_sign_id, is_inspection:Boolean, atype:String):Array
+		{
+			var gtArray:Array = [];
+			if (atype == "SUPPORT")
+				sStat.text = StringUtil.substitute("SELECT * from GEOTAGS where asset_base_id ='{0}' and asset_type = '1' and is_insp_tag=0", local_support_id);
+			else if (atype == "SIGN")
+				sStat.text = StringUtil.substitute("SELECT * from GEOTAGS where local_asset_id ='{0}' and asset_type = 'SIGN' and is_insp_tag=0", local_sign_id);
+			else if (atype == "INSPECTION")
+			{
+				local_sign_id = local_sign_id == -9999 ? "": local_sign_id;
+				sStat.text = StringUtil.substitute("SELECT * from GEOTAGS where asset_base_id ='{0}' and local_asset_id ='{1}' and is_insp_tag=1", [local_support_id, local_sign_id]);
+			}
+			else
+				return gtArray;
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data != null)
+			{
+				for (var i:int=0;i<data.length;i++)
+				{
+					var tmpgt:GeoTag = new GeoTag();
+					tmpgt.id = data[i].id;
+					tmpgt.cached_route_id = data[i].cached_route_id;
+					tmpgt.asset_base_id = data[i].asset_base_id;
+					tmpgt.is_insp = data[i].is_insp_tag;
+					tmpgt.begin_mile_point = data[i].begin_mile;
+					tmpgt.end_mile_point = data[i].end_mile;
+					tmpgt.image_file_name = data[i].image_filename;
+					tmpgt.video_file_name = data[i].video_filename;
+					tmpgt.voice_file_name = data[i].voice_filename;
+					tmpgt.text_memo = data[i].text_memo;
+					gtArray[i] = tmpgt;
+				}
+			}
+			return gtArray;
 		}
 	}
 }

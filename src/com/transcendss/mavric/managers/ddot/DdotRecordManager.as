@@ -90,7 +90,7 @@ package com.transcendss.mavric.managers.ddot
 			sign['SIGNHEIGHT'] = null;
 			sign['SIGNSTATUS'] = null;
 			sign['ARROWDIRECTION'] = null;
-			sign['COMMENT'] = null;
+			sign['COMMENTS'] = null;
 			
 			sign['MEASURE'] = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
 			
@@ -214,7 +214,7 @@ package com.transcendss.mavric.managers.ddot
 			inspection['FADED'] = null;
 			inspection['PEELING'] = null;
 			inspection['OTHER'] = null;
-			inspection['COMMENT'] = null;
+			inspection['COMMENTS'] = null;
 			
 			return inspection;
 		}
@@ -233,7 +233,7 @@ package com.transcendss.mavric.managers.ddot
 			inspection['LOOSE'] = inspection['LOOSE'] ? 1 : 0;
 			inspection['RUSTED'] = inspection['RUSTED'] ? 1 : 0;
 			inspection['FADED'] = inspection['FADED'] ? 1 : 0;
-			inspection['PEELED'] = inspection['PEELED'] ? 1 : 0;
+			inspection['PEELING'] = inspection['PEELING'] ? 1 : 0;
 			inspection['OTHER'] = inspection['OTHER'] ? 1 : 0;
 			
 			return inspection;
@@ -251,7 +251,7 @@ package com.transcendss.mavric.managers.ddot
 			inspection['LOOSE'] = inspection['LOOSE'] == 1 || inspection['LOOSE'];
 			inspection['RUSTED'] = inspection['RUSTED'] == 1 || inspection['RUSTED'];
 			inspection['FADED'] = inspection['FADED'] == 1 || inspection['FADED'];
-			inspection['PEELED'] = inspection['PEELED'] == 1 || inspection['PEELED'];
+			inspection['PEELING'] = inspection['PEELING'] == 1 || inspection['PEELING'];
 			inspection['OTHER'] = inspection['OTHER'] == 1 || inspection['OTHER'];
 			
 			return inspection;
@@ -481,7 +481,7 @@ package com.transcendss.mavric.managers.ddot
 		
 		public function getGeotags(supportID:Number):Array
 		{
-			return _mdbm.getDdotGeotags(supportID);
+			return _mdbm.getDdotGeotagsBySupportID(supportID);
 		}
 		
 		public function getUpdatedSupportID(support:BaseAsset):Number
