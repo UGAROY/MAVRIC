@@ -8,6 +8,7 @@ package com.transcendss.mavric.db
 	import mx.core.FlexGlobals;
 	import mx.utils.ObjectUtil;
 	import mx.utils.URLUtil;
+	import mx.utils.StringUtil;
 	
 	public class AgsMapService
 	{
@@ -165,10 +166,10 @@ package com.transcendss.mavric.db
 			FlexGlobals.topLevelApplication.TSSAlert('Unable to retrive context from ArcGIS server.');
 		}
 		
-		public function getMaxRecordIDUrl(idFieldName:String):String
+		public function getMaxRecordIDUrl(idFieldName:String, layerID:Number):String
 		{
-			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) 
-				+ '?f=json&outStatistics=[{"statisticType":"max","onStatisticField":"@infieldName","outStatisticFieldName":"max@FieldName"}]'.replace(/@infieldName\b/gi, idFieldName)
+			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) 
+				+ StringUtil.substitute('?f=json&outStatistics=[{"statisticType":"max","onStatisticField":"{0}","outStatisticFieldName":"max{0}"}]', idFieldName)
 		}
 		
 		public function getLatLongUrl(routeName:String):String

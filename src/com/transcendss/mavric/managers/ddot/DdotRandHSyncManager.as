@@ -4,6 +4,7 @@ package com.transcendss.mavric.managers.ddot
 	import com.asfusion.mate.core.GlobalDispatcher;
 	import com.transcendss.mavric.db.MAVRICDBManager;
 	import com.transcendss.mavric.events.SyncEvent;
+	import com.transcendss.mavric.events.ddot.DdotRecordEvent;
 	import com.transcendss.mavric.managers.ArcGISServiceManager;
 	import com.transcendss.mavric.util.FileUtility;
 	import com.transcendss.mavric.util.UploadPostHelper;
@@ -37,6 +38,12 @@ package com.transcendss.mavric.managers.ddot
 		private var gtArray:Array = new Array();
 		private var layerID:String ="";
 		private var objectID:String="";
+		
+		private var _supportEventLayerID:Number = 10;
+		private var _signEventLayerID:Number = 18;
+		private var _inspectionEventLayerID:Number = 14;
+		private var _linkEventLayerID:Number = 15;
+		private var _trEventLayerID:Number = 17;
 		
 		public function DdotRandHSyncManager()
 		{
@@ -82,56 +89,109 @@ package com.transcendss.mavric.managers.ddot
 				return;
 			}
 			
-			
+			var maxRecordIDEvent:DdotRecordEvent = new DdotRecordEvent(DdotRecordEvent.MAX_RECORD_ID_REQUEST);
+			maxRecordIDEvent.idField = "POLEID";
+			maxRecordIDEvent.eventLayerID = this._supportEventLayerID;
+			dispatcher.dispatchEvent(maxRecordIDEvent);
 		}
 		
-		public function applyEdits():void
+		public function applyEdits(obj:Object, evt:DdotRecordEvent):void
 		{
+			var maxSupportIDonServer:Number = extractMaxIDFromServiceResult(obj, evt.idField);
 			var assetData:ArrayCollection = getLocalData();
+			var assetTypeObj:Object ;
 			
-			for (var i:int =0;i< assetData.length;i++)
+			if (evt.eventLayerID == this._supportEventLayerID)
 			{
-				var assetTypeObj:Object = assetData[i];
-				if(assetTypeObj.data ==null)
+				var supportAssetData:Object = getLocalData()[0];
+				if (supportAssetData.data ==null)
+					return;
+				for each(var supportAsset:Object in supportAssetData.data)
 				{
-					continue;
+					supportAsset['POLEID'] = maxSupportIDonServer - supportAsset['POLEID'] + 1; // start from -2
 				}
-				var applyEditsObj:Object = new Object();
-				applyEditsObj.id= assetTypeObj.eventLayerID;
-				
-				for(var j:int =0;j< assetTypeObj.data.length;j++)
-				{
-					var editsArr:Array = new Array(); 
-					var attrObj:Object = new Object();
-					var asset:Object  = assetTypeObj.data[j];
-					
-					applyEditsObj.adds = new Array();
-					applyEditsObj.updates = new Array();
-					applyEditsObj.deletes = new Array();
-					
-					attrObj.attributes = asset;
-					var sync:SyncEvent = new SyncEvent(SyncEvent.APPLY_EDITS);
-					sync.assetTy = assetTypeObj.assetTy;
-					sync.assetID = asset[assetTypeObj.primaryKey];
-					sync.assetPK = assetTypeObj.primaryKey;
-					sync.serviceURL = agsManager.getURL("edits");
-					
-					if(asset.STATUS == 'NEW')
-						applyEditsObj.adds.push(attrObj);
-					else
-						applyEditsObj.updates.push(attrObj);
-					
-					editsArr.push(applyEditsObj);
-					sync.editsJson = JSON.stringify(editsArr, function (k,v):* { 
-						if(this[k] is Date)
-							return Date.parse(this[k]); 
-						else
-							return this[k];
-					});
-					FlexGlobals.topLevelApplication.incrementEventStack();
-					dispatcher.dispatchEvent(sync);
-				}	
+				assetTypeObj = supportAssetData;
 			}
+			
+			var applyEditsObj:Object = new Object();
+			applyEditsObj.id= assetTypeObj.eventLayerID;
+			
+			for(var j:int =0;j< assetTypeObj.data.length;j++)
+			{
+				var editsArr:Array = new Array(); 
+				var attrObj:Object = new Object();
+				var asset:Object  = assetTypeObj.data[j];
+				
+				applyEditsObj.adds = new Array();
+				applyEditsObj.updates = new Array();
+				applyEditsObj.deletes = new Array();
+				
+				attrObj.attributes = asset;
+				var sync:SyncEvent = new SyncEvent(SyncEvent.APPLY_EDITS);
+				sync.assetTy = assetTypeObj.assetTy;
+				sync.assetID = asset[assetTypeObj.primaryKey];
+				sync.assetPK = assetTypeObj.primaryKey;
+				sync.serviceURL = agsManager.getURL("edits");
+				
+				if(asset.STATUS == 'NEW')
+					applyEditsObj.adds.push(attrObj);
+				else
+					applyEditsObj.updates.push(attrObj);
+				
+				editsArr.push(applyEditsObj);
+				sync.editsJson = JSON.stringify(editsArr, function (k,v):* { 
+					if(this[k] is Date)
+						return Date.parse(this[k]); 
+					else
+						return this[k];
+				});
+				FlexGlobals.topLevelApplication.incrementEventStack();
+				dispatcher.dispatchEvent(sync);
+			}	
+			
+//			for (var i:int =0;i< assetData.length;i++)
+//			{
+//				var assetTypeObj:Object = assetData[i];
+//				if(assetTypeObj.data ==null)
+//				{
+//					continue;
+//				}
+//				var applyEditsObj:Object = new Object();
+//				applyEditsObj.id= assetTypeObj.eventLayerID;
+//				
+//				for(var j:int =0;j< assetTypeObj.data.length;j++)
+//				{
+//					var editsArr:Array = new Array(); 
+//					var attrObj:Object = new Object();
+//					var asset:Object  = assetTypeObj.data[j];
+//					
+//					applyEditsObj.adds = new Array();
+//					applyEditsObj.updates = new Array();
+//					applyEditsObj.deletes = new Array();
+//					
+//					attrObj.attributes = asset;
+//					var sync:SyncEvent = new SyncEvent(SyncEvent.APPLY_EDITS);
+//					sync.assetTy = assetTypeObj.assetTy;
+//					sync.assetID = asset[assetTypeObj.primaryKey];
+//					sync.assetPK = assetTypeObj.primaryKey;
+//					sync.serviceURL = agsManager.getURL("edits");
+//					
+//					if(asset.STATUS == 'NEW')
+//						applyEditsObj.adds.push(attrObj);
+//					else
+//						applyEditsObj.updates.push(attrObj);
+//					
+//					editsArr.push(applyEditsObj);
+//					sync.editsJson = JSON.stringify(editsArr, function (k,v):* { 
+//						if(this[k] is Date)
+//							return Date.parse(this[k]); 
+//						else
+//							return this[k];
+//					});
+//					FlexGlobals.topLevelApplication.incrementEventStack();
+//					dispatcher.dispatchEvent(sync);
+//				}	
+//			}
 		}
 		
 		public function clearLocalData(syncResult:Object, event:SyncEvent):void
@@ -249,5 +309,19 @@ package com.transcendss.mavric.managers.ddot
 			
 		}
 		
+		private function extractMaxIDFromServiceResult(obj:Object, idField:String):Number
+		{
+			var maxId:Number = -9999;
+			if(!obj)
+				return maxId;
+			var rawData:String = String(obj);
+			if (rawData.length >0)
+			{
+				var arr:Array = (JSON.parse(rawData).features) as Array;
+				maxId = arr[0].attributes['MAX' + idField];
+			}
+			
+			return maxId;
+		}
 	}
 }

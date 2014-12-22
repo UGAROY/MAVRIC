@@ -39,9 +39,9 @@ package com.transcendss.mavric.managers
 			
 		}
 		
-		public function getMaxIdUrl(idFieldName:String):String
+		public function getMaxIdUrl(idFieldName:String, layerID:Number):String
 		{
-			return FlexGlobals.topLevelApplication.agsMapService.getMaxRecordIDUrl();
+			return FlexGlobals.topLevelApplication.agsMapService.getMaxRecordIDUrl(idFieldName, layerID);
 		}
 		
 		

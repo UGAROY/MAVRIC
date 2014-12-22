@@ -18,12 +18,14 @@ package com.transcendss.mavric.events.ddot
 		private var _eventLayerID:Number;
 		private var _serviceURL:String;
 		private var _responder:IResponder;
+		private var _idField:String;
 		
 		public static const SIGN_REQUEST:String="relatedSign_event";
 		public static const INSPECTION_REQUEST:String="relatedInspection_event";
 		public static const OTHER_SIGN_REQUEST:String="otherSign_event";
 		public static const LINK_REQUEST:String="link_event";
 		public static const TIME_RESTRICTION_REQUEST:String="timeRestriction_event";
+		public static const MAX_RECORD_ID_REQUEST:String="maxRecordId_event";
 		public static const SUPPORT_SAVED:String="supportSaved_event";
 		
 		public function DdotRecordEvent(type:String, bubbles:Boolean=true, cancelable:Boolean=true)
@@ -31,6 +33,16 @@ package com.transcendss.mavric.events.ddot
 			super(type, bubbles, cancelable);
 		}
 
+
+		public function get idField():String
+		{
+			return _idField;
+		}
+
+		public function set idField(value:String):void
+		{
+			_idField = value;
+		}
 
 		public function get support():BaseAsset
 		{

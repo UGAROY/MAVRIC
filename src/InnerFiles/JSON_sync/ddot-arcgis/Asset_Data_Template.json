@@ -71,20 +71,40 @@
           "TYPE": "TEXT",
           "Nullable": "TRUE"
         },
-		{
+        {
           "NAME": "MSUTILITYID",
           "TYPE": "ID",
           "Nullable": "TRUE"
         },
-		{
+        {
           "NAME": "MSSTARTDATE",
           "TYPE": "TEXT",
           "Nullable": "TRUE"
         },
-		{
+        {
           "NAME": "MSENDDATE",
           "TYPE": "TEXT",
           "Nullable": "TRUE"
+        },
+        {
+          "Nullable": "True",
+          "NAME": "LATITUDE",
+          "TYPE": "TEXT"
+        },
+        {
+          "NAME": "LONGITUDE",
+          "TYPE": "TEXT",
+          "Nullable": "True"
+        },
+        {
+          "NAME": "PRECISION",
+          "TYPE": "TEXT",
+          "Nullable": "True"
+        },
+        {
+          "NAME": "PDOP",
+          "TYPE": "TEXT",
+          "Nullable": "True"
         },
         {
           "NAME": "RETIRED",

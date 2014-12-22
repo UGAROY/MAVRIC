@@ -89,6 +89,12 @@
 			// A variable to store the new Sign ID
 			private var newSignID:Number = 0;
 			
+			private var moveToLat:String="";
+			private var moveToLong:String="";
+			private var moveToPrec:String="";
+			private var moveToRefpt:Number;
+			private var assetMoved:Boolean = false;
+			
 			private function init():void
 			{
 				try
@@ -214,6 +220,9 @@
 					currSupport['invProperties'].MSUTILITYID.value = MsUtilityTextInut.text;
 					currSupport['invProperties'].MSSTARTDATE.value = startDateView.text;
 					currSupport['invProperties'].MSENDDATE.value = endDateView.text;
+					
+					if(assetMoved)
+						currSupport.setAssetLocation("LATITUDE","LONGITUDE", this.moveToRefpt, this.moveToLat, this.moveToLong, this.moveToPrec);
 				}
 				
 				var supportEvent:AssetEvent = new AssetEvent(AssetEvent.NEWCULVERT , true, true);
@@ -402,7 +411,11 @@
 			
 			protected function moveBtn_changeHandler(event:Event):void
 			{
-				
+				moveToLat=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Lat;
+				moveToLong=FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Long;
+				moveToPrec =FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.captureBar.Precision;
+				moveToRefpt = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+				assetMoved = true;
 			}
 			
 			

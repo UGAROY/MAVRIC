@@ -219,6 +219,17 @@
 			</mate:HTTPServiceInvoker>
 		</mate:EventHandlers>
 		
+		<mate:EventHandlers type="{DdotRecordEvent.MAX_RECORD_ID_REQUEST}" debug="{debugFlag}">
+			<mate:MethodInvoker generator="{ArcGISServiceManager}" method="getMaxIdUrl" arguments="{[event.idField, event.eventLayerID]}"/>
+			<mate:HTTPServiceInvoker url="{lastReturn}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{DdotRandHSyncManager}" method="applyEdits" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
 		<mate:EventHandlers type="{com.transcendss.mavric.events.SyncEvent.APPLY_EDITS}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}"  resultFormat="text" debug="{debugFlag}" useProxy="false" method="POST" contentType="application/x-www-form-urlencoded">
 				
