@@ -35,7 +35,7 @@ package com.transcendss.mavric.managers.ddot
 		private var mimeTyMap:MimeTypeMap = new MimeTypeMap();
 		private var fileUtil:FileUtility = new FileUtility();
 		private var agsManager:ArcGISServiceManager = new ArcGISServiceManager();
-		private var gtArray:Array = new Array();
+		//private var gtArray:Array = new Array();
 		private var layerID:String ="";
 		private var objectID:String="";
 		
@@ -48,6 +48,10 @@ package com.transcendss.mavric.managers.ddot
 		private var maxSupportIDOnServer:Number;
 		private var maxSignIDOnServer:Number;
 		private var maxInspectionIDOnServer:Number;
+		
+		private var supportGtArray:Array = new Array();
+		private var signGtArray:Array = new Array();
+		private var inspectionGtArray:Array = new Array();
 		
 		public function DdotRandHSyncManager()
 		{
@@ -121,8 +125,8 @@ package com.transcendss.mavric.managers.ddot
 			}
 			
 			// temporary codes
-			dbManager.getDdotLocalGeoTags(-2, -999, false, "SUPPORT");
-			return;
+//			dbManager.getDdotLocalGeoTags(-2, -999, false, "SUPPORT");
+//			return;
 			
 			// Fire off find max support id event
 			fireMaxIDRequest("POLEID", this._supportEventLayerID);
@@ -247,17 +251,8 @@ package com.transcendss.mavric.managers.ddot
 				sync.serviceURL = agsManager.getURL("edits");
 				
 				// add support ID and signID
-				try 
-				{
-					sync.supportID = asset['POLEID'];
-					sync.signID = asset['SIGNID'];
-				}
-				catch(er:Error)
-				{
-					sync.supportID = -9999;
-					sync.signID = -9999;
-				}
-				
+				sync.supportID = asset.hasOwnProperty('POLEID') && asset['POLEID'] != null? asset['POLEID'] : -9999;
+				sync.signID = asset.hasOwnProperty('SIGNID') && asset['SIGNID'] != null? asset['SIGNID'] : -9999;
 				
 				if(asset.STATUS == 'NEW')
 					applyEditsObj.adds.push(attrObj);
@@ -317,23 +312,26 @@ package com.transcendss.mavric.managers.ddot
 			if (assetTy == "1")
 			{
 				localAssetID = supportID;
-				gtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "SUPPORT");
+				supportGtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "SUPPORT");
+				uploadAttachments(supportGtArray, layer, objID);
 			}
 			else if (assetTy == "SIGN")
 			{
 				localAssetID = signID;
-				gtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "SIGN");
+				signGtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "SIGN");
+				uploadAttachments(signGtArray, layer, objID);
 			}
 			else if (assetTy == "INSPECTION")
 			{
 				localAssetID = localAssetID > maxInspectionIDOnServer ? maxInspectionIDOnServer - localAssetID: localAssetID;
-				gtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "INSPECTION");
+				inspectionGtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "INSPECTION");
+				uploadAttachments(inspectionGtArray, layer, objID);
 			}
 			
-			layerID = layer;
-			objectID = objID;
-			
-//			gtArray = dbManager.getLocalGeoTags(new Number(assetID),assetTy);
+//			layerID = layer;
+//			objectID = objID;
+//			
+////			gtArray = dbManager.getLocalGeoTags(new Number(assetID),assetTy);
 //			uploadAttachments();
 			dbManager.deleteDdotLocalRecord(assetDesc, localAssetID.toString(), assetPK);
 		}
@@ -353,7 +351,7 @@ package com.transcendss.mavric.managers.ddot
 				FlexGlobals.topLevelApplication.TSSAlert("Error occured when syncing asset: " + FlexGlobals.topLevelApplication.failedSyncDetails);
 		}
 		
-		private function uploadAttachments():void
+		private function uploadAttachments(gtArray:Array, layerID:String, objectID:String):void
 		{
 			if(gtArray.length<1)
 			{
@@ -377,13 +375,13 @@ package com.transcendss.mavric.managers.ddot
 			urlLoader.dataFormat =  URLLoaderDataFormat.BINARY;
 			
 			
-			urlLoader.addEventListener( Event.COMPLETE,function(event:Event):void{urlLoaderEventHandler(event,filename);} );
-			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, ioErrorCallback);
-			urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, secErrorCallback);
+			urlLoader.addEventListener(Event.COMPLETE,function(event:Event):void{urlLoaderEventHandler(event,filename, gtArray, layerID, objectID);});
+			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, function(event:IOErrorEvent):void{ioErrorCallback(event, gtArray, layerID, objectID);});
+			urlLoader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, function(event:SecurityErrorEvent):void{secErrorCallback(event, gtArray, layerID, objectID);});
 			urlLoader.load(urlRequest);
 		}
 		
-		private function  urlLoaderEventHandler(event:Event,filename:String):void {
+		private function  urlLoaderEventHandler(event:Event,filename:String, gtArray:Array, layerID:String, ObjectID:String):void {
 			FlexGlobals.topLevelApplication.decrementEventStack();
 			var response:Object = JSON.parse(String(event.target.data));
 			if(response.error)
@@ -394,25 +392,23 @@ package com.transcendss.mavric.managers.ddot
 				fileUtil.deleteFiles(filename);
 			}
 			gtArray.shift();
-			uploadAttachments();
-			
+			uploadAttachments(gtArray, layerID, ObjectID);
 		}
 		
 		// Called on upload io error
-		private function ioErrorCallback(event:IOErrorEvent):void {
+		private function ioErrorCallback(event:IOErrorEvent, gtArray:Array, layerID:String, ObjectID:String):void {
 			FlexGlobals.topLevelApplication.decrementEventStack();
 			FlexGlobals.topLevelApplication.failedSyncDetails += " \nIO Error when uploading attachment";
 			gtArray.shift();
-			uploadAttachments();
+			uploadAttachments(gtArray, layerID, ObjectID);
 		}
 		
 		// Called on upload security error
-		private function secErrorCallback(event:SecurityErrorEvent):void {
+		private function secErrorCallback(event:SecurityErrorEvent, gtArray:Array, layerID:String, ObjectID:String):void {
 			FlexGlobals.topLevelApplication.decrementEventStack();
 			FlexGlobals.topLevelApplication.failedSyncDetails += " \nSecurity Error when uploading attachment";
 			gtArray.shift();
-			uploadAttachments();
-			
+			uploadAttachments(gtArray, layerID, ObjectID);
 		}
 		
 		private function extractMaxIDFromServiceResult(obj:Object, idField:String):Number
