@@ -109,6 +109,7 @@ package com.transcendss.mavric.managers.ddot
 			sign['SIGNSTATUS'] = null;
 			sign['ARROWDIRECTION'] = null;
 			sign['COMMENTS'] = null;
+			sign['ISLOADINGZONE'] = null;
 			
 			sign['MEASURE'] = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
 			
@@ -449,9 +450,12 @@ package com.transcendss.mavric.managers.ddot
 					var oldLinkID:String = link[key]['OLD'];
 					if (oldLinkID != null)
 						_mdbm.deleteOldLinkByLinkID(oldLinkID);
-					var allSignIDs:Array = newLinkID.split('_');
-					for each (var signID:String in allSignIDs)
-					_mdbm.addLink(newLinkID, parseInt(signID), oldLinkID);
+					if (!_mdbm.isLinkExist(newLinkID))
+					{
+						var allSignIDs:Array = newLinkID.split('_');
+						for each (var signID:String in allSignIDs)
+							_mdbm.addLink(newLinkID, parseInt(signID), oldLinkID);
+					}
 				}
 			}
 		}

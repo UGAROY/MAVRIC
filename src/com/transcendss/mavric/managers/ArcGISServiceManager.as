@@ -60,6 +60,10 @@ package com.transcendss.mavric.managers
 			return  FlexGlobals.topLevelApplication.agsMapService.getAttachmentByIDUrl(layerID,featureID,attachID);
 		}
 		
+		public function getCustomEventUrl(layerID:Number, whereClause:String)
+		{
+			return  FlexGlobals.topLevelApplication.agsMapService.getCustomEventUrl(layerID,whereClause);
+		}
 		
 		public function onRouteListResult(obj:Object,event:Event):ArrayCollection
 		{
@@ -149,9 +153,6 @@ package com.transcendss.mavric.managers
 				//in this case, the JSON data is an Object.
 				var obj:Object = JSON.parse(rawData);
 				return obj;
-				
-				
-				
 			}
 			return null;
 		}

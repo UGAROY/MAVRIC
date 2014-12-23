@@ -231,26 +231,6 @@
 				dispatchEvent(supportEvent);
 			}
 			
-//			public function saveOtherRecords(event:DdotRecordEvent):void
-//			{
-//				// This function is called after the support has been saved
-//				updateSupportID(event.support.id);
-//				
-//				// Save the signs
-//				recordManager.saveSigns(currSigns);
-//				
-//				// Save the inspections
-//				recordManager.saveInspections(currInspections);
-//				
-//				// Save the links
-//				recordManager.saveLink(currLinkDict);
-//				
-//				// Save the time restrictions
-//				recordManager.saveTimeRestriction(currLinkTrDict);
-//				
-//				PopUpManager.removePopUp(this);
-//			}
-			
 			public function updateSupportID(supportID:Number):void
 			{
 				// update the newly assigned support id based on the return asset

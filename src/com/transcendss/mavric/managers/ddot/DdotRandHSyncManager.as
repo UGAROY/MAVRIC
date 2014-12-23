@@ -21,6 +21,7 @@ package com.transcendss.mavric.managers.ddot
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
+	import mx.utils.StringUtil;
 	
 	import spark.formatters.DateTimeFormatter;
 	
@@ -53,6 +54,8 @@ package com.transcendss.mavric.managers.ddot
 		private var supportGtArray:Array = new Array();
 		private var signGtArray:Array = new Array();
 		private var inspectionGtArray:Array = new Array();
+		
+		private var links:Array;
 		
 		public function DdotRandHSyncManager()
 		{
@@ -125,8 +128,8 @@ package com.transcendss.mavric.managers.ddot
 				return;
 			}
 			
-			// temporary codes
-//			dbManager.getDdotLocalGeoTags(-2, -999, false, "SUPPORT");
+//			// temporary codes
+//			syncLink();
 //			return;
 			
 			// Fire off find max support id event
@@ -157,7 +160,6 @@ package com.transcendss.mavric.managers.ddot
 				syncSupport();
 				// fire off events to find the max sign id
 				fireMaxIDRequest("SIGNID", this._signEventLayerID)
-				
 			}
 			else if (evt.eventLayerID == this._signEventLayerID)
 			{
@@ -165,6 +167,9 @@ package com.transcendss.mavric.managers.ddot
 				syncSign();
 				// fire off events to find the max inspection id
 				fireMaxIDRequest("INSPECTIONID", this._inspectionEventLayerID);
+				
+				// sync link
+				syncLink();
 			}
 			else if (evt.eventLayerID == this._inspectionEventLayerID)
 			{
@@ -227,6 +232,105 @@ package com.transcendss.mavric.managers.ddot
 				}
 				applyEdits(inspectionData);
 			}	
+		}
+		
+		private function syncLink():void
+		{
+			links = dbManager.exportDdotRecords("LINKEDSIGN", ["LINKID", "ZONEID", "SIGNID"]);
+			if (!links || links.length <= 0)
+				return;
+			var signIDs:Array = new Array();
+			for each (var link:Object in links)
+			{
+				if (link['SIGNID'] < 0)
+					link['SIGNID'] = maxSignIDOnServer - link['SIGNID'];
+				var linkIDArray:Array = String(link['LINKID']).split('_');
+				for (var i:int = 0; i < linkIDArray.length; i++)
+				{
+					var linkID:Number = parseInt(linkIDArray[i]);
+					if (linkID < 0)
+						linkIDArray[i] = (maxSignIDOnServer - linkID).toString();
+				}
+				link['LINKID'] = linkIDArray.join('_');
+				signIDs.push(link['SIGNID']);
+			}
+		
+			var getLinkIDsEvent:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.LINK_ID_REQUEST);
+			var whereClause:String = StringUtil.substitute("SIGNID in ({0})", signIDs.join(','));
+			getLinkIDsEvent.serviceURL = agsManager.getCustomEventUrl(this._linkEventLayerID, whereClause);
+			dispatcher.dispatchEvent(getLinkIDsEvent);
+		}
+		
+		public function onLinkIDsResult(obj:Object, evt:DdotSyncEvent):void
+		{
+			if (obj != null && obj.features && obj.features.length > 0)
+			{
+				// the linkID to be deleted
+				var linkIDs:Array = new Array();
+				
+				for each (var feature:Object in obj.features)
+				{
+					linkIDs.push(feature.attributes['LINKID']);
+				}
+				
+				var getLinkObjectIDsEvent:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.LINK_OBJECTID_REQUEST);
+				var whereClause:String = StringUtil.substitute("LINKID in ({0})", "'" + linkIDs.join("','") + "'");
+				getLinkObjectIDsEvent.serviceURL = agsManager.getCustomEventUrl(this._linkEventLayerID, whereClause);
+				dispatcher.dispatchEvent(getLinkObjectIDsEvent);
+			}
+			else
+			{
+				uploadLinks();
+			}
+		}
+		
+		public function onLinkObjectIDsResult(obj:Object, evt:DdotSyncEvent):void
+		{
+			if (obj != null && obj.features && obj.features.length > 0)
+			{
+				var objectIDs:Array = new Array();
+				
+				for each (var feature:Object in obj.features)
+				{
+					objectIDs.push(feature.attributes['OBJECTID']);
+				}
+				
+				uploadLinks(objectIDs);
+			}
+		}
+		
+		private function uploadLinks(deleteOIDs:Array=null):void
+		{
+			var editsArr:Array = new Array(); 
+			
+			var applyEditsObj:Object = new Object();
+			applyEditsObj.id= this._linkEventLayerID;
+			if (deleteOIDs != null)
+				applyEditsObj.deletes = deleteOIDs;
+			applyEditsObj.adds = new Array();
+			
+			for(var j:int =0;j< links.length;j++)
+			{
+				var attrObj:Object = new Object();
+				var asset:Object  = links[j];
+				attrObj.attributes = asset;
+				applyEditsObj.adds.push(attrObj);
+			}
+			editsArr.push(applyEditsObj);
+			
+			var sync:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.APPLY_EDITS);
+			sync.assetTy = "LINK";
+			sync.assetPK = "ID";
+			sync.assetID = "";
+			sync.serviceURL = agsManager.getURL("edits");
+			sync.editsJson = JSON.stringify(editsArr, function (k,v):* { 
+				if(this[k] is Date)
+					return Date.parse(this[k]); 
+				else
+					return this[k];
+			});
+			FlexGlobals.topLevelApplication.incrementEventStack();
+			dispatcher.dispatchEvent(sync);
 		}
 		
 		private function applyEdits(assetTypeObj:Object):void
@@ -327,6 +431,11 @@ package com.transcendss.mavric.managers.ddot
 				localAssetID = localAssetID > maxInspectionIDOnServer ? maxInspectionIDOnServer - localAssetID: localAssetID;
 				inspectionGtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "INSPECTION");
 				uploadAttachments(inspectionGtArray, layer, objID);
+			}
+			else if (assetTy == "LINK")
+			{
+				dbManager.clearLinks();
+				return;
 			}
 			
 			dbManager.deleteDdotLocalRecord(assetDesc, localAssetID.toString(), assetPK);

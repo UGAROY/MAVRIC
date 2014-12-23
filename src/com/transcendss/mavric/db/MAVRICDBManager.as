@@ -2112,14 +2112,14 @@ package com.transcendss.mavric.db
 		
 		public function addDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("OBJECTID", "SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS")
+			var signColumns:Array = new Array("OBJECTID", "SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE")
 			sStat.text = "INSERT INTO SIGNS " + buildDdotInsertKeyValueStr(sign, signColumns); 
 			sStat.execute();
 		}
 		
 		public function updateDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS");
+			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE");
 			sStat.text = StringUtil.substitute("UPDATE SIGNS SET {0} WHERE SIGNID={1}", [buildDdotUpdateKeyValueStr(sign, signColumns), sign['SIGNID'].toString()]);
 			sStat.execute();
 		}
@@ -2255,6 +2255,19 @@ package com.transcendss.mavric.db
 			}
 		}
 		
+		public function isLinkExist(linkID:String):Boolean
+		{
+			sStat.text = "SELECT * from LINKEDSIGN where LINKID ='" + linkID + "'";
+			sStat.execute();
+			var data:Array = sStat.getResult().data;
+			if (data == null)
+				return false;
+			else if (data.length > 0)
+				return true;
+			else
+				return false;
+		}
+		
 		public function addLink(linkID:String, signID:Number, oldLinkID:String):void
 		{
 			sStat.text = "INSERT INTO LINKEDSIGN (LINKID, SIGNID, OLDLINKEDID) VALUES ('@linkID', @signID, '@oldLinkID')"
@@ -2338,12 +2351,15 @@ package com.transcendss.mavric.db
 			return gtArray;
 		}
 		
-		public function exportDdotRecords(tableName:String):Array
+		public function exportDdotRecords(tableName:String, fields:Array=null):Array
 		{
 			var data2:Array = new Array();
 			try
 			{
-				sStat.text = "SELECT *  from " + tableName;
+				if (fields != null)
+					sStat.text = StringUtil.substitute("SELECT {0} from {1}", [fields.join(','), tableName]);
+				else
+					sStat.text = "SELECT *  from " + tableName;
 				sStat.execute();
 				data2 = sStat.getResult().data;
 				return data2;
@@ -2414,6 +2430,12 @@ package com.transcendss.mavric.db
 				}
 			}
 			return gtArray;
+		}
+		
+		public function clearLinks():void
+		{
+			sStat.text = "DELETE FROM LINKEDSIGN";
+			sStat.execute();
 		}
 	}
 }

@@ -45,8 +45,6 @@
 			public var linkTimeRestrictions:ArrayCollection;
 			
 			[Bindable]
-			private var isLoadingZone:Boolean = false;
-			[Bindable]
 			private var trEnable:Boolean = false; 
 			
 			private function init():void
@@ -204,7 +202,7 @@
 				signSizeDDView.domainID = sign['SIGNSIZE'];
 				signStatusDDView.domainID = sign['SIGNSTATUS'];
 				signComments.text = sign['COMMENTS'];
-				isLoadingZone = sign['ISLOADINGZONE'];
+				isLZchkbox.selected = sign['ISLOADINGZONE'];
 				setSignImage();
 			}
 			
@@ -216,7 +214,7 @@
 				sign['SIGNSIZE'] = signSizeDDView.domainID;
 				sign['SIGNSTATUS'] = signStatusDDView.domainID;
 				sign['COMMENTS'] = signComments.text;
-				sign['ISLOADINGZONE'] = isLoadingZone;
+				sign['ISLOADINGZONE'] = isLZchkbox.selected;
 			}
 			
 		]]>
@@ -278,7 +276,7 @@
 									 skinClass="spark.skins.mobile.TextInputSkin"/>
 					</s:HGroup>-->
 					<s:Spacer height="10"/>
-					<s:CheckBox id="isLZchkbox" selected="{isLoadingZone}" label="Is Loading Zone"/>
+					<s:CheckBox id="isLZchkbox" label="Is Loading Zone"/>
 					<s:Spacer height="10"/>
 					<s:HGroup width="100%" verticalAlign="middle" visible="{isLZchkbox.selected}">
 						<s:Button id="linkedSignBtn" width="45%" label="Linked Sign"
