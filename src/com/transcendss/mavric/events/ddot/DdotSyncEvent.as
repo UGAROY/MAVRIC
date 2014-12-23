@@ -11,8 +11,9 @@ package com.transcendss.mavric.events.ddot
 		public static const APPLY_EDITS:String="syncEvent_applyEdits";
 		public static const ADD_ATTACHMENTS:String="syncEvent_addAttachments";
 		public static const SET_PROCESS_STATUS_ON_SYNC_ERROR:String="set_proc_status_on_error_event";
-		public static const LINK_ID_REQUEST="getLivelinkIDs_event";
-		public static const LINK_OBJECTID_REQUEST="getLiveLinkIDs_objectID_event";
+		public static const LINK_ID_REQUEST:String ="getLivelinkIDs_event";
+		public static const LINK_OBJECTID_REQUEST:String ="getLiveLinkIDs_objectID_event";
+		public static const TR_OBJECTID_REQUEST:String ="timeRestrictionIDs_objectID_event";
 		
 		public var serviceURL:String;
 		public var fileUploads:Number=0;

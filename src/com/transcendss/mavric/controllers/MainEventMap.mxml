@@ -256,6 +256,19 @@
 			</mate:HTTPServiceInvoker>
 		</mate:EventHandlers>
 		
+		<mate:EventHandlers type="{DdotSyncEvent.TR_OBJECTID_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ArcGISServiceManager}" method="onServiceObjResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:MethodInvoker generator="{DdotRandHSyncManager}" method="onTRObjectIDsResult" arguments="{[lastReturn, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
 		<mate:EventHandlers type="{com.transcendss.mavric.events.ddot.DdotSyncEvent.APPLY_EDITS}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}"  resultFormat="text" debug="{debugFlag}" useProxy="false" method="POST" contentType="application/x-www-form-urlencoded">
 				

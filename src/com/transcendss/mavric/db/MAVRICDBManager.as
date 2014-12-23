@@ -2437,5 +2437,11 @@ package com.transcendss.mavric.db
 			sStat.text = "DELETE FROM LINKEDSIGN";
 			sStat.execute();
 		}
+		
+		public function clearTimeRestrictions():void
+		{
+			sStat.text = "DELETE FROM TIMERESTRICTIONS";
+			sStat.execute();
+		}
 	}
 }

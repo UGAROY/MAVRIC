@@ -56,6 +56,7 @@ package com.transcendss.mavric.managers.ddot
 		private var inspectionGtArray:Array = new Array();
 		
 		private var links:Array;
+		private var timeRestrictions:Array;
 		
 		public function DdotRandHSyncManager()
 		{
@@ -170,6 +171,9 @@ package com.transcendss.mavric.managers.ddot
 				
 				// sync link
 				syncLink();
+				
+				// sync time restriction
+				syncTimeRestriction();
 			}
 			else if (evt.eventLayerID == this._inspectionEventLayerID)
 			{
@@ -266,15 +270,16 @@ package com.transcendss.mavric.managers.ddot
 			if (obj != null && obj.features && obj.features.length > 0)
 			{
 				// the linkID to be deleted
-				var linkIDs:Array = new Array();
+				var tbdLinkIDs:Array = new Array();
 				
 				for each (var feature:Object in obj.features)
 				{
-					linkIDs.push(feature.attributes['LINKID']);
+					tbdLinkIDs.push(feature.attributes['LINKID']);
 				}
 				
+				// Get the object ids of the link id records to be deleted
 				var getLinkObjectIDsEvent:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.LINK_OBJECTID_REQUEST);
-				var whereClause:String = StringUtil.substitute("LINKID in ({0})", "'" + linkIDs.join("','") + "'");
+				var whereClause:String = StringUtil.substitute("LINKID in ({0})", "'" + tbdLinkIDs.join("','") + "'");
 				getLinkObjectIDsEvent.serviceURL = agsManager.getCustomEventUrl(this._linkEventLayerID, whereClause);
 				dispatcher.dispatchEvent(getLinkObjectIDsEvent);
 			}
@@ -320,6 +325,85 @@ package com.transcendss.mavric.managers.ddot
 			
 			var sync:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.APPLY_EDITS);
 			sync.assetTy = "LINK";
+			sync.assetPK = "ID";
+			sync.assetID = "";
+			sync.serviceURL = agsManager.getURL("edits");
+			sync.editsJson = JSON.stringify(editsArr, function (k,v):* { 
+				if(this[k] is Date)
+					return Date.parse(this[k]); 
+				else
+					return this[k];
+			});
+			FlexGlobals.topLevelApplication.incrementEventStack();
+			dispatcher.dispatchEvent(sync);
+		}
+		
+		private function syncTimeRestriction():void
+		{
+			timeRestrictions = dbManager.exportDdotRecords("TIMERESTRICTIONS");
+			if (!timeRestrictions || timeRestrictions.length <= 0)
+				return;
+			var tbdLinkIDs:Array = new Array();
+			for each (var timeRestriction:Object in timeRestrictions)
+			{
+				var linkIDArray:Array = String(timeRestriction['LINKID']).split('_');
+				for (var i:int = 0; i < linkIDArray.length; i++)
+				{
+					var linkID:Number = parseInt(linkIDArray[i]);
+					if (linkID < 0)
+						linkIDArray[i] = (maxSignIDOnServer - linkID).toString();
+				}
+				timeRestriction['LINKID'] = linkIDArray.join('_');
+				tbdLinkIDs.push(timeRestriction['LINKID']);
+			}
+			
+			// Get the object ids of the link id records to be deleted
+			var getTRObjectIDsEvent:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.TR_OBJECTID_REQUEST);
+			var whereClause:String = StringUtil.substitute("LINKID in ({0})", "'" + tbdLinkIDs.join("','") + "'");
+			getTRObjectIDsEvent.serviceURL = agsManager.getCustomEventUrl(this._trEventLayerID, whereClause);
+			dispatcher.dispatchEvent(getTRObjectIDsEvent);
+		}
+		
+		public function onTRObjectIDsResult(obj:Object, evt:DdotSyncEvent):void
+		{
+			if (obj != null && obj.features && obj.features.length > 0)
+			{
+				var objectIDs:Array = new Array();
+				
+				for each (var feature:Object in obj.features)
+				{
+					objectIDs.push(feature.attributes['OBJECTID']);
+				}
+				
+				uploadTRs(objectIDs);
+			} 
+			else
+			{
+				uploadTRs();
+			}
+		}
+		
+		private function uploadTRs(deleteOIDs:Array=null):void
+		{
+			var editsArr:Array = new Array(); 
+			
+			var applyEditsObj:Object = new Object();
+			applyEditsObj.id= this._trEventLayerID;
+			if (deleteOIDs != null)
+				applyEditsObj.deletes = deleteOIDs;
+			applyEditsObj.adds = new Array();
+			
+			for(var j:int =0;j< timeRestrictions.length;j++)
+			{
+				var attrObj:Object = new Object();
+				var asset:Object  = timeRestrictions[j];
+				attrObj.attributes = asset;
+				applyEditsObj.adds.push(attrObj);
+			}
+			editsArr.push(applyEditsObj);
+			
+			var sync:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.APPLY_EDITS);
+			sync.assetTy = "TIMERESTRICTION";
 			sync.assetPK = "ID";
 			sync.assetID = "";
 			sync.serviceURL = agsManager.getURL("edits");
@@ -435,6 +519,11 @@ package com.transcendss.mavric.managers.ddot
 			else if (assetTy == "LINK")
 			{
 				dbManager.clearLinks();
+				return;
+			}
+			else if (assetTy == "TIMERESTRICTION")
+			{
+				dbManager.clearTimeRestrictions();
 				return;
 			}
 			
