@@ -28,6 +28,7 @@ package com.transcendss.mavric.managers.ddot
 	{
 		public var dispatcher:GlobalDispatcher = new GlobalDispatcher();
 		private var dbManager:MAVRICDBManager = MAVRICDBManager.newInstance();
+		private var recordManager:DdotRecordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;
 		
 		[Bindable]
 		private var useAgsService:Boolean = FlexGlobals.topLevelApplication.useAgsService;
@@ -328,11 +329,6 @@ package com.transcendss.mavric.managers.ddot
 				uploadAttachments(inspectionGtArray, layer, objID);
 			}
 			
-//			layerID = layer;
-//			objectID = objID;
-//			
-////			gtArray = dbManager.getLocalGeoTags(new Number(assetID),assetTy);
-//			uploadAttachments();
 			dbManager.deleteDdotLocalRecord(assetDesc, localAssetID.toString(), assetPK);
 		}
 		
@@ -344,9 +340,12 @@ package com.transcendss.mavric.managers.ddot
 		
 		private function displaySyncResult():void
 		{
-			
 			if(FlexGlobals.topLevelApplication.runningEvents==0 && FlexGlobals.topLevelApplication.failedSyncDetails=="")
+			{
 				FlexGlobals.topLevelApplication.TSSAlert("Assets Synced Successfully.");
+				recordManager.updateSupportIDs(maxSupportIDOnServer);
+				recordManager.resetNewSignInspectionID();
+			}
 			else if(FlexGlobals.topLevelApplication.runningEvents==0 &&  FlexGlobals.topLevelApplication.failedSyncDetails!="")
 				FlexGlobals.topLevelApplication.TSSAlert("Error occured when syncing asset: " + FlexGlobals.topLevelApplication.failedSyncDetails);
 		}

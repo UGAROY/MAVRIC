@@ -58,6 +58,24 @@ package com.transcendss.mavric.managers.ddot
 			_newInspectionID = _mdbm.assignNewInspectionID();
 		}
 		
+		// Update the support ids already drawn on sld with the id on server that we can retreive the inspections and signs correctly
+		public function updateSupportIDs(maxSupportIDOnServer:Number):void
+		{
+			var supports:ArrayCollection = this.getAllSupports();
+			for each(var support:BaseAsset in supports)
+			{
+				if (support.id < 0)
+					support.id = maxSupportIDOnServer - support.id - 1;
+			}
+		}
+		
+		// reset the new sign inspection starting id after syncing
+		public function resetNewSignInspectionID():void
+		{
+			_newSignID = _mdbm.assignNewSignID();
+			_newInspectionID = _mdbm.assignNewInspectionID();
+		}
+		
 		public function getAllSupports():ArrayCollection
 		{
 			return _stkDiagram.spriteLists['SUPPORT'];
@@ -185,7 +203,7 @@ package com.transcendss.mavric.managers.ddot
 		public function getInspections(supportID:Number, signIDs:Array, responder:IResponder):void
 		{
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.INSPECTION_REQUEST);
-			var whereClause:String =  "POLEID = @poleId and SIGNID in (@signIds)"
+			var whereClause:String =  "POLEID = @poleId or SIGNID in (@signIds)"
 				.replace("@poleId", supportID.toString())
 				.replace('@signIds', signIDs.join(","));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._inspectionEventLayerID, whereClause);
@@ -276,13 +294,13 @@ package com.transcendss.mavric.managers.ddot
 			
 			// Get existing inspectionIDs
 			var inspectionIDs:Array = new Array();
-			for each(var item:Object in liveInspections)
+			for each(var item:Object in inspections)
 				inspectionIDs.push(item['INSPECTIONID']);
 				
 			// Add live inspections to the inspection if the inspection id is different from the existing ones
 			for each (var liveInspection:Object in liveInspections)
-			if (inspectionIDs.indexOf(liveInspection['INSPECTIONID']) == -1)
-				inspections.addItem(liveInspection);
+				if (inspectionIDs.indexOf(liveInspection['INSPECTIONID']) == -1)
+					inspections.addItem(liveInspection);
 			
 			// Have to do a bit pre-processing on each inspection to make sure they can communicate with flex components
 			buildSupportDict();

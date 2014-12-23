@@ -403,7 +403,6 @@
 				}
 				else if(clickPool.length==0)//just in case
 				{
-					
 					symbol = event.asset.symbol;
 					symbol.selectAsset();
 					FlexGlobals.topLevelApplication.editAsset(symbol.baseAsset, symbol.baseAsset.useCustomForm);
