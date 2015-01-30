@@ -1,3 +1,0 @@
-1. Remove GPS native extension
-2. Configure the packaging settings. Deselect the .swf files in the "Package Content" tab.
-3. Run convert2ios.py (the script is intended to automate the workflow of commenting out the GPS native extension related codes and replacing the .swf animation with the Gif). The script is not robust yet, you might want to backup the project or check in the changes before running the script.

@@ -5,6 +5,7 @@ package com.transcendss.mavric.events.ddot
 	
 	import flash.events.Event;
 	
+	import mx.collections.ArrayCollection;
 	import mx.rpc.IResponder;
 	
 	public class DdotRecordEvent extends Event
@@ -19,6 +20,9 @@ package com.transcendss.mavric.events.ddot
 		private var _serviceURL:String;
 		private var _responder:IResponder;
 		private var _idField:String;
+		private var _supports:ArrayCollection;
+		private var _signs:ArrayCollection;
+		private var _mainResponder:IResponder;
 		
 		public static const SIGN_REQUEST:String="relatedSign_event";
 		public static const INSPECTION_REQUEST:String="relatedInspection_event";
@@ -33,6 +37,23 @@ package com.transcendss.mavric.events.ddot
 			super(type, bubbles, cancelable);
 		}
 
+		public function get supports():ArrayCollection
+		{
+			return _supports;
+		}
+		public function set supports(sups:ArrayCollection):void
+		{
+			 _supports=sups;
+		}
+		
+		public function get signs():ArrayCollection
+		{
+			return _signs;
+		}
+		public function set signs(s:ArrayCollection):void
+		{
+			_signs=s;
+		}
 
 		public function get idField():String
 		{
@@ -114,6 +135,16 @@ package com.transcendss.mavric.events.ddot
 			_responder = value;
 		}
 
+		
+		public function get mainResponder():IResponder
+		{
+			return _mainResponder;
+		}
+		
+		public function set mainResponder(value:IResponder):void
+		{
+			_mainResponder = value;
+		}
 		public function get eventLayerID():Number
 		{
 			return _eventLayerID;

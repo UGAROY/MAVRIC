@@ -10,41 +10,51 @@
 	<fx:Script>
 		<![CDATA[
 			import com.transcendss.mavric.events.AssetEvent;
-			import com.transcendss.mavric.events.ddot.DdotRecordEvent;
-			import com.transcendss.mavric.managers.ddot.DdotRandHSyncManager;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
-			import com.transcendss.mavric.util.DropDownViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewVert;
+			import com.transcendss.mavric.util.MeasureSprite;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
-			import com.transcendss.mavric.views.ddot.Inspections;
-			import com.transcendss.mavric.views.ddot.SignInventory;
 			import com.transcendss.transcore.events.CameraEvent;
 			import com.transcendss.transcore.events.VoiceEvent;
 			import com.transcendss.transcore.events.videoEvent;
-			import com.transcendss.transcore.sld.models.StickDiagram;
 			import com.transcendss.transcore.sld.models.components.BaseAsset;
 			import com.transcendss.transcore.sld.models.components.GeoTag;
 			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
+			import com.transcendss.transcore.util.AssetSymbol;
+			import com.transcendss.transcore.util.Converter;
 			import com.transcendss.transcore.util.TSSAudio;
 			import com.transcendss.transcore.util.TSSPicture;
 			import com.transcendss.transcore.util.TSSVideo;
+			import com.transcendss.transcore.util.Units;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.core.UIComponent;
 			import mx.managers.PopUpManager;
-			import mx.rpc.Responder;
-			
-			import spark.components.Button;
-			import spark.events.GridEvent;
-			import spark.events.IndexChangeEvent;
-			import spark.skins.mobile.TextAreaSkin;
-			import spark.skins.mobile.TextInputSkin;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
 			
 			import skins.HeaderlessPanelSkin;
 			import skins.TSSSkinnablePopUpContainerSkin;
 			
+			import spark.components.Button;
+			import spark.core.SpriteVisualElement;
+			import spark.events.GridEvent;
+			import spark.skins.mobile.TextAreaSkin;
+			import spark.skins.mobile.TextInputSkin;
+			
+			//private var counter:int = 0;
+			private var sdlftx:int;
+			private var sdrtx: int;
+			private var culvx:int;
+			private var sdlfty:int;
+			private var sdrty:int;
+			private var culvy:int;
+			private var leftSprite:AssetSymbol;
+			private var rightSprite:AssetSymbol;
+			private var bottomSprite:AssetSymbol;
 			
 			[Bindable]
 			private var textInputWidth:Number = 300;
@@ -102,7 +112,7 @@
 					recordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;
 					// Build a support POLEID --- ROUTEID/MEASURE dictionary
 					// TODO: place it somewhere else
-					recordManager.buildSupportDict();
+					//recordManager.buildSupportDict();
 					
 					locDDView.domainTableIDColName =  "LOCATION";
 					locDDView.fetchDomainValues();
@@ -277,9 +287,11 @@
 				if (currSupportID != -1)
 				{
 					// Get the Signs
-					var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
-					recordManager.getSigns(currSupportID, signResp);
-					
+					//var signResp:mx.rpc.Responder = new mx.rpc.Responder(signReqReponse,  failReqHandler);
+					//recordManager.getSigns(currSupportID, signResp);
+					var signObj:Object = recordManager.getSignsByPoleID(currSupportID);
+					currSigns = signObj.signs;
+					currInspections = recordManager.getInspectionsForAsset(currSupportID, signObj.signIDs);
 					var gtArray:Array = recordManager.getGeotags(currSupportID);
 					
 					for (var gti:int=0;gti<gtArray.length;gti++)
@@ -310,6 +322,10 @@
 						tmpMedia.geoTag = tmpGT;
 						tmpMedia.geoLocalId = tmpGT.id;
 					}
+					
+					getGeotags(String(currSupport.invProperties["OBJECTID"].value),InvAttachments, FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerID(baseAsst.description),
+						Number(baseAsst.invProperties[baseAsst.fromMeasureColName].value));
+					dataRetrieved = true;
 				}
 				else 
 				{
@@ -322,29 +338,275 @@
 					this.retireChk.selected = true;
 					this.retireOkay(true);					
 				}
+				setMilePostDiagram(currSupport.invProperties[currSupport.fromMeasureColName].value?Number(currSupport.invProperties[currSupport.fromMeasureColName].value):FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP());
+				
 			}
 			
-			private function signReqReponse(result:Object):void
+			private function setMilePostDiagram(cmp:Number):void
 			{
-				currSigns = result as ArrayCollection;
+				//var cmp:Number =!(milepost==-1)?milepost:FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+				var mileposts:Object = binarySearch(cmp);
+				var culvertSprite:AssetSymbol;
 				
-				var currSignIDs:Array = new Array();
-				for each(var item:Object in currSigns)
+				var mpSprite:SpriteVisualElement = new SpriteVisualElement();
+				var llabel:TextField = new TextField();
+				var dummy:BaseAsset =  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.createAsset(currSupport.description, -1, ""+1);
+				dummy.invProperties[dummy.typeKey].value = 'NS';
+				var ratio:Number;
+				var diff:Number;
+				var lmp:Number;
+				var rmp:Number;
+				var leftMS:MeasureSprite;
+				var rightMS:MeasureSprite;
+				
+				var lintname:String="";
+				var rintname:String="";
+				
+				//create a dummy culvert as a means of creating the symbol
+				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assignAssetSymbol(dummy, dummy.description);
+				culvertSprite = dummy.symbol;
+				culvertSprite.scaleStd(0.75);
+				culvertSprite.selectRect = null;
+				if(mileposts.leftPost != null && mileposts.rightPost != null)
 				{
-					currSignIDs.push(item['SIGNID']);
+					leftSprite = AssetSymbol.clone(mileposts.leftPost.symbol);
+					rightSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
+					bottomSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
+					lmp = mileposts.leftPost.invProperties[mileposts.leftPost.fromMeasureColName].value;
+					rmp =  mileposts.rightPost.invProperties[mileposts.rightPost.fromMeasureColName].value;
+					
+					
+					lintname  = mileposts.leftPost.invProperties["INTERSECTIONNAME"].value;
+					rintname =  mileposts.rightPost.invProperties["INTERSECTIONNAME"].value;
+					
+					
+					
+					diff = rmp - lmp;
+					ratio = milepostDiagram.width/(5280 * diff); // pixels per foot
+					culvertSprite.x = (cmp - lmp) * 5280  * ratio + culvertSprite.stdWidth/2;
+					
+					sdlftx = leftSprite.x;
+					sdlfty = leftSprite.y;
+					leftSprite.x = -5;
+					leftSprite.y = 40;
+					leftSprite.addText(lintname);
+					mpSprite.addChild(leftSprite);
+					
+					culvertSprite.y = 30;
+					mpSprite.addChild(culvertSprite);
+					
+					sdrtx = rightSprite.x;
+					sdrty = rightSprite.y;
+					rightSprite.x = milepostDiagram.width - 5;
+					rightSprite.y = 40;
+					rightSprite.addText(rintname);
+					mpSprite.addChild(rightSprite);
+					
+					bottomSprite.x = milepostDiagram.width + 5;
+					bottomSprite.y = 105;
+					bottomSprite.height = milepostDiagram.width+10;
+					bottomSprite.rotation = 90;
+					mpSprite.addChild(bottomSprite);
+					
+					// measure bars
+					leftMS = new MeasureSprite(lmp, cmp, ratio,Units.FEET);
+					leftMS.x = 0;
+					leftMS.y = 0;
+					
+					rightMS = new MeasureSprite(cmp, rmp, ratio,Units.FEET);											
+					rightMS.x = (cmp - lmp)*5280 * ratio;
+					rightMS.y =0;
+					mpSprite.addChild(leftMS);
+					mpSprite.addChild(rightMS);
+				}
+				else if(mileposts.leftPost != null)
+				{
+					lmp = mileposts.leftPost.invProperties[mileposts.leftPost.fromMeasureColName].value;
+					leftSprite = AssetSymbol.clone(mileposts.leftPost.symbol);
+					bottomSprite = AssetSymbol.clone(mileposts.leftPost.symbol);
+					lintname  = mileposts.leftPost.invProperties["INTERSECTIONNAME"].value;
+					sdlftx = leftSprite.x;
+					sdlfty = leftSprite.y;
+					leftSprite.x = 0 - 5;
+					leftSprite.y = 40;
+					leftSprite.addText(lintname);
+					mpSprite.addChild(leftSprite);
+					
+					diff = cmp - lmp;
+					ratio = milepostDiagram.width/(5280 * diff); // pixels per foot;
+					culvertSprite.x += culvertSprite.stdWidth/2;
+					culvertSprite.x += milepostDiagram.width - culvertSprite.stdWidth;
+					culvertSprite.y = 30;
+					mpSprite.addChild(culvertSprite);
+					
+					bottomSprite.x = milepostDiagram.width + 5;
+					bottomSprite.y = 105;
+					bottomSprite.height = milepostDiagram.width+10;
+					bottomSprite.rotation = 90;
+					mpSprite.addChild(bottomSprite);
+					
+					leftMS = new MeasureSprite(lmp, cmp, ratio,Units.FEET);
+					leftMS.x = 0;
+					leftMS.y = 0;
+					mpSprite.addChild(leftMS);
+				}
+				else if(mileposts.rightPost != null)
+				{
+					rmp =  mileposts.rightPost.invProperties[mileposts.rightPost.fromMeasureColName].value;
+					bottomSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
+					lintname  = mileposts.rightPost.invProperties["INTERSECTIONNAME"].value;
+					diff = rmp - cmp;
+					ratio = milepostDiagram.width/ Converter.mileToFeet(diff);
+					culvertSprite.x += culvertSprite.stdWidth/2;
+					culvertSprite.y = 30;
+					mpSprite.addChild(culvertSprite);
+					
+					rightSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
+					sdrtx = rightSprite.x;
+					sdrty = rightSprite.y;
+					rightSprite.x = (rmp - cmp) * 5280 * ratio-6;
+					rightSprite.y = 40;
+					rightSprite.addText(lintname);
+					mpSprite.addChild(rightSprite);
+					
+					bottomSprite.x = milepostDiagram.width + 5;
+					bottomSprite.y = 105;
+					bottomSprite.height = milepostDiagram.width+10;
+					bottomSprite.rotation = 90;
+					mpSprite.addChild(bottomSprite);
+					
+					rightMS = new MeasureSprite(cmp, rmp, ratio,Units.FEET);											
+					rightMS.x = 0;
+					rightMS.y =0;
+					mpSprite.addChild(rightMS);
+				}
+				else
+				{
+					trace("You have no nearby reference points");
+				}
+				milepostDiagram.addElement(mpSprite);
+			}
+			
+			private function binarySearch(target:Number):Object
+			{
+				var array:ArrayCollection = recordManager.allIntersections;
+				array.source.sortOn("milePost");
+				var left:int = 0;
+				var right:int = array.length - 1;
+				var middle:int;
+				if(array == null || array.length == 0)
+					return {leftPost:null, rightPost:null};
+				if(target <  new Number(array[left].invProperties[array[left].fromMeasureColName].value))
+					return {leftPost:null, rightPost:array[left]};
+				if(target >  new Number(array[right].invProperties[array[right].fromMeasureColName].value))
+					return {leftPost:array[right], rightPost:null};
+				while(left < right - 1)
+				{
+					middle = (left + right)/2;
+					if(target == new Number(array[middle].invProperties[array[middle].fromMeasureColName].value))
+						return {leftPost:array[left], rightPost:array[right]};
+					else if(target < new Number(array[middle].invProperties[array[middle].fromMeasureColName].value))
+						right  = middle;
+					else
+						left = middle;
 				}
 				
-				var inspectionResp:mx.rpc.Responder = new mx.rpc.Responder(inspectionReqResponse, failReqHandler);
-				recordManager.getInspections(currSupportID, currSignIDs, inspectionResp);
+				return {leftPost:array[left], rightPost:array[right]};
 			}
 			
-			private function inspectionReqResponse(result:Object):void
+			private function getGeotags( assetID:String, attachmentGroup:Group, layer:Number, fromMeasure:Number):void
 			{
-				currInspections = result as ArrayCollection;
-				
-				// Finished loading all the data
-				dataRetrieved = true;
+				if(FlexGlobals.topLevelApplication.connected)
+					{
+						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						var httpServ:HTTPService = new HTTPService();
+						httpServ.method = "GET";
+						httpServ.resultFormat = "text";
+						httpServ.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+						
+						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(layer) ,assetID);
+						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							var attachments:Object = JSON.parse(event.result as String);
+							
+							
+							gtManager.setGeotags(
+								attachmentGroup,
+								attachments.attachmentInfos as Array,
+								currSupport.assetType,
+								assetID,
+								currSupport.routeName,
+								fromMeasure,
+								"",
+								0,String(layer));
+						});
+						
+						
+						httpServ.send();
+						
+						//get signs for this support
+						
+						var signEventLayer:int = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.signEventLayerID;
+						//get attachments for this sign
+						for each(var sign:Object in this.currSigns)
+						{
+							
+							FlexGlobals.topLevelApplication.incrementEventStack();
+							var httpServ2:HTTPService = new HTTPService();
+							httpServ2.method = "GET";
+							httpServ2.resultFormat = "text";
+							httpServ2.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+							
+							httpServ2.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(signEventLayer) ,String(sign['OBJECTID']));
+							httpServ2.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+								event.stopPropagation();
+								var attachments:Object = JSON.parse(event.result as String);
+								
+								gtManager.setGeotags(
+									attachmentGroup,
+									attachments.attachmentInfos as Array,
+									'SIGN',
+									sign['OBJECTID'],
+									currSupport.routeName,
+									fromMeasure,
+									"",
+									0,String(signEventLayer));
+							});
+							
+							httpServ2.send();
+						}
+						
+						var inspEventLayer:int = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.inspectionEventLayerID;
+						//get attachments for this sign
+						for each(var inspection:Object in this.currInspections)
+						{
+							
+							FlexGlobals.topLevelApplication.incrementEventStack();
+							var httpServ3:HTTPService = new HTTPService();
+							httpServ3.method = "GET";
+							httpServ3.resultFormat = "text";
+							httpServ3.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+							
+							httpServ3.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(inspEventLayer) ,String(inspection['OBJECTID']));
+							httpServ3.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+								event.stopPropagation();
+								var attachments:Object = JSON.parse(event.result as String);
+								
+								gtManager.setGeotags(
+									attachmentGroup,
+									attachments.attachmentInfos as Array,
+									currSupport.assetType,
+									inspection['OBJECTID'],
+									currSupport.routeName,
+									fromMeasure,
+									"",
+									0,String(inspEventLayer), InspAttachments);
+							});
+							
+							httpServ3.send();
+						}
+					}
 			}
+			
 			
 			private function failReqHandler():void
 			{
@@ -361,7 +623,7 @@
 			{
 				if(this.retireChk.selected)
 				{	
-					var _retireResp:mx.rpc.Responder = new mx.rpc.Responder(retireOkay, fault);
+					var _retireResp:Responder = new Responder(retireOkay, fault);
 					
 					FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to retire this record? All the local changes made to the asset will be discarded on retirement.", "Retire Asset Confirmation", _retireResp);
 					
@@ -949,11 +1211,17 @@
 					<s:Spacer height="10"/>
 					<s:Group id="MsEndDateGroup"></s:Group>
 				</s:VGroup>
+				
 			</s:HGroup>
 			
 			<s:Spacer height="20"/>
 			
-			<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="100%" />
+			<s:HGroup gap="100">
+				<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="50%" />
+				<s:HGroup id="milepostDiagram" width="200" paddingTop="-20">
+					
+				</s:HGroup>
+			</s:HGroup>
 		</s:VGroup>
 		
 		

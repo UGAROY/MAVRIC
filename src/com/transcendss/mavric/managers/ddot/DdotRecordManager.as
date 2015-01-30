@@ -19,6 +19,7 @@ package com.transcendss.mavric.managers.ddot
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
 	import mx.rpc.IResponder;
+	import mx.rpc.Responder;
 	
 	
 	public class DdotRecordManager extends CoreAssetManager
@@ -36,12 +37,74 @@ package com.transcendss.mavric.managers.ddot
 		
 		private var _supportDict:Object;
 		
-		private var _signEventLayerID:Number = 18;
-		private var _inspectionEventLayerID:Number = 14;
-		private var _linkEventLayerID:Number = 15;
+		private var _signEventLayerID:Number = 19;
+		private var _inspectionEventLayerID:Number = 15;
+		private var _linkEventLayerID:Number = 16;
 		private var _trEventLayerID:Number = 17;
 		
 		public var dispatcher:IEventDispatcher;
+		
+		private var _allSigns:ArrayCollection = new ArrayCollection();
+		public var _allSupportsObj:Object = new Object;
+		private var _allInspections:ArrayCollection = new ArrayCollection();
+		private var _allLinks:ArrayCollection = new ArrayCollection();
+		private var _allTimeRestrictions:ArrayCollection = new ArrayCollection();
+		private var _intersectionList:ArrayCollection= new ArrayCollection();
+		
+		public function get signEventLayerID():Number
+		{
+			return _signEventLayerID;
+		}
+		public function get inspectionEventLayerID():Number
+		{
+			return _inspectionEventLayerID;
+		}
+		
+		public function get allIntersections():ArrayCollection
+		{
+			return _intersectionList;
+		}
+		
+		
+		public function get allSigns():ArrayCollection
+		{
+			return _allSigns;
+		}
+		
+		public function get allInspections():ArrayCollection
+		{
+			return _allInspections;
+		}
+		
+		public function get allLinks():ArrayCollection
+		{
+			return _allLinks;
+		}
+		
+		public function get allTimeRestrictions():ArrayCollection
+		{
+			return _allTimeRestrictions;
+		}
+		
+		public function set allSigns(a:ArrayCollection):void
+		{
+			 _allSigns = a;
+		}
+		
+		public function set allInspections(a:ArrayCollection):void
+		{
+			 _allInspections=a;
+		}
+		
+		public function set allLinks(a:ArrayCollection):void
+		{
+		  _allLinks=a;
+		}
+		
+		public function set allTimeRestrictions(a:ArrayCollection):void
+		{
+		 _allTimeRestrictions=a;
+		}
 		
 		/**
 		 * Creates tables for an list of different types of assets.
@@ -49,6 +112,12 @@ package com.transcendss.mavric.managers.ddot
 		public function DdotRecordManager()
 		{
 			_mdbm = MAVRICDBManager.newInstance();
+			_assetDefs = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs;
+			_assetDescriptions= FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDescriptions;
+			_barElementDefs= FlexGlobals.topLevelApplication.GlobalComponents.assetManager.barElementDefs;
+			_barElementDescriptions= FlexGlobals.topLevelApplication.GlobalComponents.assetManager.barElementDescriptions;
+			
+			
 			_agsMapService = FlexGlobals.topLevelApplication.agsMapService;
 			_stkDiagram = FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram;
 			_dispatcher = new Dispatcher(); 
@@ -56,6 +125,7 @@ package com.transcendss.mavric.managers.ddot
 			// Get the mininum and <0  signID and InspectionID
 			_newSignID = _mdbm.assignNewSignID();
 			_newInspectionID = _mdbm.assignNewInspectionID();
+			
 		}
 		
 		// Update the support ids already drawn on sld with the id on server that we can retreive the inspections and signs correctly
@@ -78,7 +148,8 @@ package com.transcendss.mavric.managers.ddot
 		
 		public function getAllSupports():ArrayCollection
 		{
-			return _stkDiagram.spriteLists['SUPPORT'];
+			//return _stkDiagram.spriteLists['SUPPORT'];
+			return toArrayCollection(this._allSupportsObj.assets);
 		}
 		
 		// Build a support dictionary. supportid as key and (measure, routeid) as value
@@ -94,7 +165,7 @@ package com.transcendss.mavric.managers.ddot
 				this._supportDict[parseInt(support['invProperties'].POLEID.value)] = supportProperties;
 			}
 		}
-			
+		
 		
 		public function createNewSign(poleID:Number):Object
 		{
@@ -156,61 +227,131 @@ package com.transcendss.mavric.managers.ddot
 			return sign;
 		}
 		
-		public function getSigns(supportID:Number, responder:IResponder):void
+		public override function onDBRetrievalComplete(arr:ArrayCollection, type:String, resp:IResponder):void
 		{
+			this.route =  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.route;
+			var assetCollection:Vector.<BaseAsset> = new Vector.<BaseAsset>();
+			
+			
+			if(type=="MILEMARKER")
+			{
+				origMileMarkers= arr;
+				arr = this.filteredMileMarkers;
+				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.origMileMarkers = arr;
+			}
+			
+			
+			var supportIDList:Array =new Array();
+			
+			for each(var asset:Object in arr)
+			{
+				var temp:BaseAsset = mapDataToBaseAsset(asset, type);
+				
+				
+				if(type=="SUPPORT")//store supports and id list
+				{
+					supportIDList.push(temp.id);
+					if(temp.invProperties[temp.typeKey].value=='null')
+						temp.invProperties[temp.typeKey].value='NS'; //set it to N by default
+				}
+				else if(type=="INT")
+				{
+					_intersectionList.addItem(temp);
+				}
+				assetCollection.push(temp)
+			}
+			
+			
+			if(type=="SUPPORT")
+			{
+				this._allSupportsObj = {assets: assetCollection, type: type};
+				
+				getSignsForAllSupports(supportIDList,resp);
+			}
+			else
+				resp.result({assets: assetCollection, type: type});
+		}
+		
+		private function toArrayCollection(iterable:*):ArrayCollection {
+			var ret:Array = [];
+			for each (var elem:BaseAsset in iterable) ret.push(elem);
+			return new ArrayCollection(ret);
+		}
+
+		
+		public function getSignsForAllSupports(supportIDList:Array,  responder:IResponder):void
+		{
+			FlexGlobals.topLevelApplication.incrementEventStack();
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.SIGN_REQUEST);
-			var whereClause:String =  StringUtil.replace("POLEID = '@poleId'", "@poleId", supportID.toString());
+			var whereClause:String =  "POLEID in (@poleIds)"
+				.replace("@poleIds", supportIDList.join(','));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._signEventLayerID, whereClause);
-			_requestEvent.supportID = supportID;
-			_requestEvent.responder = responder;
+			_requestEvent.supportIDs = supportIDList;
+			_requestEvent.responder =  responder;
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
 		}
-
-		public function onSignServiceResult(obj:Object,event:DdotRecordEvent):void
+		
+		public function onAllSignServiceResult(obj:Object,event:DdotRecordEvent):void
 		{
 			event.stopPropagation();
 			
-			var resp:IResponder = event.responder;
-			var supportID:Number = event.supportID;
+			
+			var supportIDList:Array = event.supportIDs;
+			
 			var arrayColl:ArrayCollection = new ArrayCollection();
 			var arr:Array = parseJsonObj(obj);
 			var dataArr:Array = new Array();
+			
 			for each(var arrItem:Object in arr)
-				dataArr.push(arrItem.attributes);
+			dataArr.push(arrItem.attributes);
+			
 			var liveSigns:ArrayCollection = new ArrayCollection(dataArr);
-				
-			// Get Local signs 
-			var signs:ArrayCollection = _mdbm.getDdotSignByPoleID(supportID);
-			
-			// Get existing signIds
+			var signs:ArrayCollection = new ArrayCollection();
 			var signIDs:Array = new Array();
-			for each(var item:Object in signs)
+			// Get Local signs 
+			for each(var supportID in supportIDList)
+			{
+				signs.addAll( _mdbm.getDdotSignByPoleID(supportID));
+				
+				// Get existing signIds
+				
+				for each(var item:Object in signs)
 				signIDs.push(item['SIGNID']);
-			
+				
+				
+			}
 			// Add live signs to the signs if the sign id is different from the existing ones
 			for each (var liveSign:Object in liveSigns)
-				if (signIDs.indexOf(liveSign['SIGNID']) == -1)
-					signs.addItem(liveSign);
-				
+			if (signIDs.indexOf(liveSign['SIGNID']) == -1)
+			{
+				signs.addItem(liveSign);
+				signIDs.push(liveSign['SIGNID']);
+			}
+			
 			// Have to do a bit pre-processing on each sign to make sure they can communicate with flex components
 			buildSupportDict();
 			for each (var sign:Object in signs)
-				prepareSignBeforeLoad(sign);
+			prepareSignBeforeLoad(sign);
 			
-			resp.result(signs);
+			event.signIDs = signIDs;
+			this._allSigns= signs;
+			getAllInspections(event);
+			FlexGlobals.topLevelApplication.decrementEventStack();
+			
 		}
 		
-		public function getInspections(supportID:Number, signIDs:Array, responder:IResponder):void
+		public function getAllInspections(ddotEvent:DdotRecordEvent):void
 		{
+			FlexGlobals.topLevelApplication.incrementEventStack();
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.INSPECTION_REQUEST);
-			var whereClause:String =  "POLEID = @poleId or SIGNID in (@signIds)"
-				.replace("@poleId", supportID.toString())
-				.replace('@signIds', signIDs.join(","));
+			var whereClause:String =  "POLEID in (@poleId) or SIGNID in (@signIds)"
+				.replace("@poleId", ddotEvent.supportIDs.join(','))
+				.replace('@signIds', ddotEvent.signIDs.join(","));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._inspectionEventLayerID, whereClause);
-			_requestEvent.supportID = supportID;
-			_requestEvent.signIDs = signIDs;
-			_requestEvent.responder = responder;
+			_requestEvent.supportIDs = ddotEvent.supportIDs;
+			_requestEvent.signIDs = ddotEvent.signIDs;
+			_requestEvent.responder = ddotEvent.responder;
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
 		}
@@ -275,89 +416,85 @@ package com.transcendss.mavric.managers.ddot
 			
 			return inspection;
 		}
-
-		public function onInspectionServiceResult(obj:Object,event:DdotRecordEvent):void
+		
+		public function onAllInspectionServiceResult(obj:Object,event:DdotRecordEvent):void
 		{
 			event.stopPropagation();
 			
 			var resp:IResponder = event.responder;
-			var supportID:Number = event.supportID;
+			var supportIDList:Array = event.supportIDs;
 			var signIDs:Array = event.signIDs;
 			var arrayColl:ArrayCollection = new ArrayCollection();
 			var arr:Array = parseJsonObj(obj);
 			var dataArr:Array = new Array();
 			for each(var arrItem:Object in arr)
-				dataArr.push( arrItem.attributes);
+			dataArr.push( arrItem.attributes);
 			var liveInspections:ArrayCollection = new ArrayCollection(dataArr);
-			
-			// Get local inspections
-			var inspections:ArrayCollection = _mdbm.getDdotInspectionByPoleSignID(supportID, signIDs);
-			
-			// Get existing inspectionIDs
+			var inspections:ArrayCollection = new ArrayCollection();
 			var inspectionIDs:Array = new Array();
-			for each(var item:Object in inspections)
-				inspectionIDs.push(item['INSPECTIONID']);
+			
+			for each(var supportID in supportIDList)
+			{
+				// Get local inspections
+				inspections.addAll(_mdbm.getDdotInspectionByPoleSignID(supportID, signIDs));
 				
+				
+				for each(var item:Object in inspections)
+				inspectionIDs.push(item['INSPECTIONID']);
+			}
 			// Add live inspections to the inspection if the inspection id is different from the existing ones
 			for each (var liveInspection:Object in liveInspections)
-				if (inspectionIDs.indexOf(liveInspection['INSPECTIONID']) == -1)
-					inspections.addItem(liveInspection);
+			if (inspectionIDs.indexOf(liveInspection['INSPECTIONID']) == -1)
+				inspections.addItem(liveInspection);
 			
 			// Have to do a bit pre-processing on each inspection to make sure they can communicate with flex components
 			buildSupportDict();
 			for each (var inspection:Object in inspections)
-				prepareInspectionBeforeLoad(inspection);
+			prepareInspectionBeforeLoad(inspection);
 			
-			resp.result(inspections);
+			this._allInspections = inspections;
+			
+			getLinkBySignIDList(signIDs);
+			FlexGlobals.topLevelApplication.decrementEventStack();
+			//resp.result(inspections);
+			resp.result(this._allSupportsObj);
 		}
 		
-		public function getOtherSignsOnRoute(poleIDs:Array, responder:IResponder):void
-		{
-			_requestEvent = new DdotRecordEvent(DdotRecordEvent.OTHER_SIGN_REQUEST);
-			var whereClause:String =  "POLEID in (@poleIds)".replace("@poleIds", poleIDs.join(","));
-			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(_signEventLayerID, whereClause);
-			_requestEvent.supportIDs = poleIDs;
-			_requestEvent.responder = responder;
-			_dispatcher.dispatchEvent(_requestEvent);
-			_requestEvent = null;
-		}
-		
-		public function onOtherSignsServiceResult(obj:Object,event:DdotRecordEvent):void
-		{
-			event.stopPropagation();
+		public function getSignsByPoleID(poleID:Number):Object {
 			
-			var resp:IResponder = event.responder;
-			var supportIDs:Array = event.supportIDs;
-			var arrayColl:ArrayCollection = new ArrayCollection();
-			var arr:Array = parseJsonObj(obj);
-			var dataArr:Array = new Array();
-			for each(var arrItem:Object in arr)
-				dataArr.push(arrItem.attributes);
-			var liveSigns:ArrayCollection = new ArrayCollection(dataArr);
-			
-			// Get Local signs 
-			var signs:ArrayCollection = _mdbm.getDdotSignByPoleIDs(supportIDs);
-			
-			// Get existing signIds
-			var signIDs:Array = new Array();
-			for each(var item:Object in signs)
-				signIDs.push(item['SIGNID']);
-			
-			// Add live signs to the signs if the sign id is different from the existing ones
-			for each (var liveSign:Object in liveSigns)
+			var curSignList:ArrayCollection = new ArrayCollection();
+			var curSignIDList:Array= new Array();
+			for each(var sign in _allSigns)
 			{
-				if (signIDs.indexOf(liveSign['SIGNID']) == -1)
-					signs.addItem(liveSign);
+				if(sign.POLEID == poleID)
+				{
+					curSignList.addItem(sign);
+					curSignIDList.push(sign.SIGNID);
+				}
+			}
+			return {signs:curSignList, signIDs:curSignIDList};
+		}
+		
+		public function getInspectionsForAsset(poleID:Number,signIDs:Array):ArrayCollection {
+			
+			var filterFunction:Function = function(element:*, index:int, arr:Array):Boolean {
+				return (element.POLEID == poleID || signIDs.indexOf(element.SIGNID) != -1);
 			}
 			
-			// Have to do a bit pre-processing on each sign to make sure they can communicate with flex components
-			buildSupportDict();
-			for each (var sign:Object in signs)
-				prepareSignBeforeLoad(sign);
-			
-			resp.result(signs);
+			return new ArrayCollection(_allInspections.source.filter(filterFunction));
 		}
+		
+		public function getOtherSigns(signID:Number):ArrayCollection{
+			var otherSigns:ArrayCollection = new ArrayCollection();
 			
+			for each (var sign:Object in _allSigns)
+			{
+				if (sign['SIGNID'] != signID)
+					otherSigns.addItem(sign);
+			}
+			return otherSigns;
+		}
+		
 		public function parseJsonObj(obj:Object):Array
 		{
 			if(!obj)
@@ -407,37 +544,52 @@ package com.transcendss.mavric.managers.ddot
 			}
 		}
 		
-		public function getLinkBySignID(signID:Number, responder:IResponder):void
+		public function getLinkBySignID(signID:Number):String
 		{
+
+			var link:String ="";
+			
+			for each(var links:Object in this._allLinks)
+				if(links.signID == signID)
+					link=links.linkID;
+			
+			var localLink:String = _mdbm.getLinkBySignID(signID);
+			
+			if (localLink != null)
+				 return localLink;
+			else
+				return link;
+		}
+		
+		public function getLinkBySignIDList(signIDs:Array):void
+		{
+			FlexGlobals.topLevelApplication.incrementEventStack();
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.LINK_REQUEST);
-			var whereClause:String =  "SIGNID = @signId".replace("@signId", signID.toString());
+			var whereClause:String =  "SIGNID IN (@signIds)".replace("@signIds", signIDs.join(','));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._linkEventLayerID, whereClause);
-			_requestEvent.responder = responder;
-			_requestEvent.signID = signID;
+			_requestEvent.signIDs = signIDs;
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
 		}
 		
-		public function onLinkServiceResult(obj:Object,event:DdotRecordEvent):void
+		public function onLinkResult(obj:Object,event:DdotRecordEvent):void
 		{
 			event.stopPropagation();
 			
-			var link:String = "";
+			FlexGlobals.topLevelApplication.decrementEventStack();
 			
 			var resp:IResponder = event.responder;
-			var signID:Number = event.signID;
+			var linkIDs:Array = new Array();
 			var arr:Array = parseJsonObj(obj);
-			if (arr.length > 1)
-				FlexGlobals.topLevelApplication.TSSAlert("More than one links found for this sign. Check the database");
-			else if (arr.length == 1)
-				link = arr[0].attributes.LINKID;
-
-			var localLink:String = _mdbm.getLinkBySignID(signID);
 			
-			if (localLink != null)
-				resp.result(localLink);
-			else
-				resp.result(link);
+				for each (var linkObj in arr)
+				{
+					_allLinks.addItem({linkID:linkObj.attributes.LINKID, signID:linkObj.attributes.SIGNID});
+					linkIDs.push(linkObj.attributes.LINKID);
+				}
+			
+				if(linkIDs.length>0)
+					getTimeRestrictions(linkIDs);
 		}
 		
 		public function saveLink(link:Object):void
@@ -454,24 +606,35 @@ package com.transcendss.mavric.managers.ddot
 					{
 						var allSignIDs:Array = newLinkID.split('_');
 						for each (var signID:String in allSignIDs)
-							_mdbm.addLink(newLinkID, parseInt(signID), oldLinkID);
+						_mdbm.addLink(newLinkID, parseInt(signID), oldLinkID);
 					}
 				}
 			}
 		}
 		
-		public function getTimeRestrictionByLinkID(linkID:String, responder:IResponder):void
+		public function getTimeRestrictionByLinkID(linkID:String):ArrayCollection
 		{
+			var tres:ArrayCollection = new ArrayCollection();
+			for each(var restriction in this._allTimeRestrictions)
+			{
+				if(restriction.LINKID ==linkID)
+					tres.addItem(restriction);
+			}
+			
+			return tres;
+		}
+		
+		public function getTimeRestrictions(linkIDs:Array):void
+		{
+			FlexGlobals.topLevelApplication.incrementEventStack();
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.TIME_RESTRICTION_REQUEST);
-			var whereClause:String =  "LINKID = '@linkId'".replace("@linkId", linkID);
+			var whereClause:String =  "LINKID IN ('@linkIds')".replace("@linkIds", linkIDs.join('\',\''));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._trEventLayerID, whereClause);
-			_requestEvent.responder = responder;
-			_requestEvent.linkID = linkID;
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
 		}
 		
-		public function onTimeRestrictionServiceResult(obj:Object,event:DdotRecordEvent):void
+		public function onTimeRestrictionsResult(obj:Object,event:DdotRecordEvent):void
 		{
 			event.stopPropagation();
 			
@@ -480,15 +643,10 @@ package com.transcendss.mavric.managers.ddot
 			var arr:Array = parseJsonObj(obj);
 			var dataArr:Array = new Array();
 			for each(var arrItem:Object in arr)
-				dataArr.push(arrItem.attributes);
-			var liveTrs:ArrayCollection = new ArrayCollection(dataArr);
+			dataArr.push(arrItem.attributes);
+			_allTimeRestrictions = new ArrayCollection(dataArr);
+			FlexGlobals.topLevelApplication.decrementEventStack();
 			
-			var localTrs:ArrayCollection = _mdbm.getTimeRestrictionByLinkID(linkID);
-			
-			if (localTrs != null && localTrs.length > 0)
-				resp.result(localTrs);
-			else
-				resp.result(liveTrs);
 		}
 		
 		public function saveTimeRestriction(linkTrDict:Object):void
@@ -497,7 +655,7 @@ package com.transcendss.mavric.managers.ddot
 			{
 				_mdbm.deleteOldTrByLinkID(key);
 				for each(var tr:Object in linkTrDict[key])
-					_mdbm.addTimeRestriction(key, tr);
+				_mdbm.addTimeRestriction(key, tr);
 			}
 		}
 		

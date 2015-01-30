@@ -139,16 +139,32 @@
           "DESCRIPTION": "NWC"
         },
         {
-          "ID": "SEC",
-          "DESCRIPTION": "SEC"
+            "ID": "SEC",
+            "DESCRIPTION": "SEC"
+        },
+        {
+          "ID": "NEC",
+          "DESCRIPTION": "NEC"
+        },
+        {
+          "ID": "SWC",
+          "DESCRIPTION": "SWC"
         },
         {
           "ID": "SS",
           "DESCRIPTION": "SS"
         },
         {
-          "ID": "NS",
-          "DESCRIPTION": "NS"
+            "ID": "NS",
+            "DESCRIPTION": "NS"
+        },
+         {
+          "ID": "ES",
+          "DESCRIPTION": "ES"
+        },
+        {
+          "ID": "WS",
+          "DESCRIPTION": "WS"
         },
         {
           "ID": "ALLEY",

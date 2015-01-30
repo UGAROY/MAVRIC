@@ -80,8 +80,8 @@
 					attchView.init("SignInventory",true,true,true);
 					addAttchmentsHolder.addElement(attchView);
 					
-					var linkResp:mx.rpc.Responder = new mx.rpc.Responder(linkRetrieved,  failReqHandler);
-					recordManager.getLinkBySignID(sign['SIGNID'], linkResp);
+					//var linkResp:mx.rpc.Responder = new mx.rpc.Responder(linkRetrieved,  failReqHandler);
+					linkRetrieved(recordManager.getLinkBySignID(sign['SIGNID']));
 				}
 				catch (err:Error)
 				{
@@ -106,17 +106,19 @@
 			
 			protected function linkedSignBtn_clickHandler(event:MouseEvent):void
 			{
-				var supports:ArrayCollection = recordManager.getAllSupports();
-				
-				var otherSupportIDs:Array = new Array();
-				for each (var support:Object in supports)
-				{
-					if (support['invProperties'].POLEID.value != currSupportID)
-						otherSupportIDs.push(support['invProperties'].POLEID.value);
-				}
-				
-				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
-				recordManager.getOtherSignsOnRoute(otherSupportIDs, routeSignsResp);
+				openLinkedSignEditor(recordManager.getOtherSigns(sign.SIGNID));
+//				
+//				var supports:ArrayCollection = recordManager.getAllSupports();
+//				
+//				var otherSupportIDs:Array = new Array();
+//				for each (var support:Object in supports)
+//				{
+//					if (support['invProperties'].POLEID.value != currSupportID)
+//						otherSupportIDs.push(support['invProperties'].POLEID.value);
+//				}
+//				
+//				var routeSignsResp:mx.rpc.Responder = new mx.rpc.Responder(openLinkedSignEditor,  failReqHandler);
+//				recordManager.getOtherSignsOnRoute(otherSupportIDs, routeSignsResp);
 			}
 			
 			private function openLinkedSignEditor(data:ArrayCollection):void
@@ -140,8 +142,8 @@
 				} 
 				else
 				{
-					var TimeRestrictionResp:mx.rpc.Responder = new mx.rpc.Responder(openTimeRestrictionForm,  failReqHandler);
-					recordManager.getTimeRestrictionByLinkID(this.linkSignPair['NEW'], TimeRestrictionResp); 
+					//var TimeRestrictionResp:mx.rpc.Responder = new mx.rpc.Responder(openTimeRestrictionForm,  failReqHandler);
+					openTimeRestrictionForm(recordManager.getTimeRestrictionByLinkID(this.linkSignPair['NEW'])); 
 				}
 			}
 			

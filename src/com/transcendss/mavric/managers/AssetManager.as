@@ -1124,6 +1124,112 @@ package com.transcendss.mavric.managers
 				downloadGeotag(new GeotagsManager().ConvertGeotags(tempGTArr[i].gtag,tempGTArr[i].url,"server",false),i, tempGTArr.length-1, showAlert);
 			}
 		}
+		
+		public function cacheDDOTGeotags(gtags:Array,asset:Object,layerID:String, parentObject:BaseAsset=null, assetType:String=""):void
+		{
+			
+			var tempAsset:BaseAsset =null;
+			
+			
+			if (gtags != null) //make sure the object is not null before using the length
+			{
+				if(asset is BaseAsset)
+					tempAsset = asset as BaseAsset;
+				
+				for( var i:int =0; i<gtags.length;i++)
+				{
+					FlexGlobals.topLevelApplication.incrementEventStack();	
+					var begM:Number = 0;
+					var endM:Number = 0;
+					var assetBaseID:String = "";
+					var localAssetID:String = "";
+					var assetTypeID:String = "";
+					var assetLabelText:String = "";
+					var isInsp:int = 0;
+					var routeName:String ="";
+					var mileP:Number =0;
+					var image_fileName:String = "";
+					var video_fileName:String = "";
+					var voice_fileName:String = "";
+					var objID:String = "";
+					var attachID:String = gtags[i]["id"];
+					if(tempAsset)
+					{
+						assetBaseID = "" + tempAsset.id;
+						localAssetID = "" + tempAsset.id;
+						assetTypeID = tempAsset.assetType;
+						assetLabelText = "Support -- " + localAssetID;
+					    isInsp = 0;
+						routeName = tempAsset.routeName;
+						objID =String(tempAsset.invProperties["OBJECTID"].value);
+						mileP= tempAsset.invProperties[tempAsset.fromMeasureColName].value;
+					}
+					else if (assetType=='SIGN')
+					{
+						assetBaseID = "" + parentObject.id;
+						localAssetID = "" + asset['SIGNID'];
+						assetTypeID = "SIGN";
+						assetLabelText = "Sign -- " + localAssetID;
+						isInsp = 0;
+						routeName = parentObject.routeName;
+						objID =String(asset["OBJECTID"]);
+						mileP= parentObject.invProperties[parentObject.fromMeasureColName].value;
+					} 
+					else if (assetType=='INSP')
+					{
+						assetBaseID = "" +  parentObject.id;
+						routeName = parentObject.routeName;
+						objID =String(asset["OBJECTID"]);
+						mileP= parentObject.invProperties[parentObject.fromMeasureColName].value;
+						if (asset['POLEID'] != null)
+						{
+							localAssetID = "" + asset['POLEID'];
+							assetLabelText = "Support -- " + localAssetID;
+							assetTypeID = parentObject.assetType;
+						}
+						else
+						{
+							localAssetID = "" + asset['SIGNID'];
+							assetLabelText = "Sign -- " + localAssetID;
+							assetTypeID = "SIGN";
+						}
+						
+						
+						isInsp = 1;
+					}
+					
+					
+					
+				//	var fileName:String = new Date().time + ".3gp";
+					
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = routeName ;
+					tmpGT.begin_mile_point = mileP;
+					tmpGT.end_mile_point = 0;
+					
+					
+					
+					
+					tmpGT.image_file_name = String(gtags[i].contentType).toLowerCase().indexOf("image")!=-1 ? String(gtags[i].name):"";
+					tmpGT.video_file_name = String(gtags[i].contentType).toLowerCase().indexOf("video")!=-1 ? String(gtags[i].name):"";
+					tmpGT.voice_file_name = String(gtags[i].contentType).toLowerCase().indexOf("audio")!=-1 ? String(gtags[i].name):"";
+					
+					tmpGT.asset_base_id = assetBaseID;
+					tmpGT.local_asset_id = localAssetID;
+					tmpGT.is_insp = isInsp;
+					tmpGT.asset_ty_id = assetTypeID;;
+					
+					//geoTagsArr.addItem(tmpGT);
+					//add gt info to local DB			
+					mdbm.addGeoTag(tmpGT, true);
+					
+					var url:String = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentByIDUrl(layerID, objID, attachID);
+					downloadGeotag(new GeotagsManager().ConvertGeotags(tmpGT,url,"server",false), i, gtags.length-1, true);
+				}
+			}
+			FlexGlobals.topLevelApplication.decrementEventStack();
+			
+		}
 
 		/**
 		 * Download the file realted to the TSSPicture/TSSVoice/TSSVideo that is passed in, to the local geotags folder 
@@ -1153,6 +1259,7 @@ package com.transcendss.mavric.managers
 			
 			if (sourceURL.substring(0, 4) == "http") 
 			{
+				
 				var URLLdr:URLLoader = new URLLoader();
 				URLLdr.dataFormat = URLLoaderDataFormat.BINARY;
 				
@@ -1166,31 +1273,109 @@ package com.transcendss.mavric.managers
 						var fileData:ByteArray =URLLdr.data;
 						fsTemp.writeBytes(fileData, 0, 0);
 						fsTemp.close();
-						if(currentDwldIndex==maxDwnldLength && showAlert && FlexGlobals.topLevelApplication.attachmentDownloadError)
-						{
-							FlexGlobals.topLevelApplication.setBusyStatus(false);
-							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
-						}
-						else if(currentDwldIndex==maxDwnldLength && showAlert && !FlexGlobals.topLevelApplication.attachmentDownloadError)
-						{
-							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
-							FlexGlobals.topLevelApplication.setBusyStatus(false);
-						}
-											
+//						if(currentDwldIndex==maxDwnldLength && showAlert && FlexGlobals.topLevelApplication.attachmentDownloadError)
+//						{
+//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
+//						}
+//						else if(currentDwldIndex==maxDwnldLength && showAlert && !FlexGlobals.topLevelApplication.attachmentDownloadError)
+//						{
+//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
+//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+//						}
+						FlexGlobals.topLevelApplication.decrementEventStack();				
 //						
 							
 					});
 				URLLdr.addEventListener(IOErrorEvent.IO_ERROR, 
 					function(e:Event):void { 
 						
-						if(currentDwldIndex==maxDwnldLength && showAlert)
-						{
-							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
-							FlexGlobals.topLevelApplication.setBusyStatus(false);
-						}
-						else
-							FlexGlobals.topLevelApplication.attachmentDownloadError = true;
-
+//						if(currentDwldIndex==maxDwnldLength && showAlert)
+//						{
+//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
+//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+//						}
+//						else
+//							FlexGlobals.topLevelApplication.attachmentDownloadError = true;
+						FlexGlobals.topLevelApplication.decrementEventStack();
+					});
+				URLLdr.load(new URLRequest(sourceURL));
+			}
+			
+			//return BaseConfigUtility.get("geotags_folder") + fileName;
+		}
+		
+		
+		/**
+		 * Download the file realted to the TSSPicture/TSSVoice/TSSVideo that is passed in, to the local geotags folder 
+		 * @param TSSObj - Type TSSPicture, TSSVoice or TSSVideo
+		 * 
+		 */
+		public static function downloadDDOTGeotag(TSSObj:*,currentDwldIndex:int,maxDwnldLength:int, showAlert:Boolean):void
+		{
+			var sourceURL:String ="";
+			var fileName:String ="";
+			
+			if (TSSObj is TSSPicture)
+			{
+				sourceURL = (TSSObj as TSSPicture).sourceURL;
+				fileName =  (TSSObj as TSSPicture).label;
+			}
+			else if (TSSObj is TSSVideo)
+			{
+				sourceURL = (TSSObj as TSSVideo).filePath;
+				fileName =  (TSSObj as TSSVideo).label;
+			}
+			else if (TSSObj is TSSAudio)
+			{
+				sourceURL = (TSSObj as TSSAudio).sourceURL;
+				fileName =  (TSSObj as TSSAudio).label;
+			}
+			
+			if (sourceURL.substring(0, 4) == "http") 
+			{
+				var URLLdr:URLLoader = new URLLoader();
+				URLLdr.dataFormat = URLLoaderDataFormat.BINARY;
+				
+				URLLdr.addEventListener(Event.COMPLETE, 
+					function(e:Event):void { 
+						var fTemp:File = new File(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + fileName);
+						//						var fTemp:File = new File(BaseConfigUtility.get("geotags_folder") + fileName);
+						var fsTemp:FileStream = new FileStream();
+						fsTemp.open(fTemp, FileMode.WRITE);
+						
+						var fileData:ByteArray =URLLdr.data;
+						fsTemp.writeBytes(fileData, 0, 0);
+						fsTemp.close();
+//						if(currentDwldIndex==maxDwnldLength && showAlert && FlexGlobals.topLevelApplication.attachmentDownloadError)
+//						{
+//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
+//						}
+//						else if(currentDwldIndex==maxDwnldLength && showAlert && !FlexGlobals.topLevelApplication.attachmentDownloadError)
+//						{
+//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
+//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+//						}
+						
+						FlexGlobals.topLevelApplication.decrementEventStack();
+						
+						//						
+						
+					});
+				URLLdr.addEventListener(IOErrorEvent.IO_ERROR, 
+					function(e:Event):void { 
+						
+//						if(currentDwldIndex==maxDwnldLength && showAlert)
+//						{
+//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
+//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+//						}
+//						else
+//							FlexGlobals.topLevelApplication.attachmentDownloadError = true;
+						
+						FlexGlobals.topLevelApplication.decrementEventStack();
+						
 					});
 				URLLdr.load(new URLRequest(sourceURL));
 			}

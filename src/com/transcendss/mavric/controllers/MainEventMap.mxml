@@ -102,7 +102,40 @@
 			public function updateAssetManager(arr:ArrayCollection, event:FeatureEvent):void
 			{
 				event.stopPropagation();
-				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.onDBRetrievalComplete(arr, event.featureName, event.responder);
+				//Only for DDOT
+				FlexGlobals.topLevelApplication.GlobalComponents.recordManager.onDBRetrievalComplete(arr, event.featureName, event.responder);
+				
+			}
+			
+			public function onSignServiceResult(obj:Object, event:DdotRecordEvent):void
+			{
+				event.stopPropagation();
+				//Only for DDOT
+				FlexGlobals.topLevelApplication.GlobalComponents.recordManager.onAllSignServiceResult(obj, event);
+				
+			}
+			
+			public function onInspectionResult(obj:Object, event:DdotRecordEvent):void
+			{
+				event.stopPropagation();
+				//Only for DDOT
+				FlexGlobals.topLevelApplication.GlobalComponents.recordManager.onAllInspectionServiceResult(obj, event);
+				
+			}
+			
+			public function onLinkResult(obj:Object, event:DdotRecordEvent):void
+			{
+				event.stopPropagation();
+				//Only for DDOT
+				FlexGlobals.topLevelApplication.GlobalComponents.recordManager.onLinkResult(obj, event);
+				
+			}
+			
+			public function onTimeRestrictionResult(obj:Object, event:DdotRecordEvent):void
+			{
+				event.stopPropagation();
+				//Only for DDOT
+				FlexGlobals.topLevelApplication.GlobalComponents.recordManager.onTimeRestrictionsResult(obj, event);
 				
 			}
 			
@@ -486,9 +519,10 @@
 		<mate:EventHandlers type="{DdotRecordEvent.SIGN_REQUEST}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
 				<mate:resultHandlers>
-					<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onSignServiceResult'}" arguments="{[resultObject, event]}">
+					<!--<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onSignServiceResult'}" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
-					</mate:MethodInvoker>
+					</mate:MethodInvoker>-->
+					<mate:InlineInvoker method="{onSignServiceResult}" arguments="{[resultObject, event]} "/>
 				</mate:resultHandlers>
 				<mate:faultHandlers>
 					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
@@ -512,9 +546,10 @@
 		<mate:EventHandlers type="{DdotRecordEvent.INSPECTION_REQUEST}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
 				<mate:resultHandlers>
-					<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onInspectionServiceResult'}" arguments="{[resultObject, event]}">
+					<!--<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onInspectionServiceResult'}" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
-					</mate:MethodInvoker>
+					</mate:MethodInvoker>-->
+					<mate:InlineInvoker method="onInspectionResult" arguments="{[resultObject, event]} "/>
 				</mate:resultHandlers>
 				<mate:faultHandlers>
 					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
@@ -525,9 +560,7 @@
 		<mate:EventHandlers type="{DdotRecordEvent.LINK_REQUEST}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
 				<mate:resultHandlers>
-					<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onLinkServiceResult'}" arguments="{[resultObject, event]}">
-						<mate:Properties dispatcher="{scope.dispatcher}"/>
-					</mate:MethodInvoker>
+					<mate:InlineInvoker  method="onLinkResult" arguments="{[resultObject, event]} "/>
 				</mate:resultHandlers>
 				<mate:faultHandlers>
 					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
@@ -538,9 +571,10 @@
 		<mate:EventHandlers type="{DdotRecordEvent.TIME_RESTRICTION_REQUEST}" debug="{debugFlag}">
 			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
 				<mate:resultHandlers>
-					<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onTimeRestrictionServiceResult'}" arguments="{[resultObject, event]}">
+					<!--<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onTimeRestrictionServiceResult'}" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
-					</mate:MethodInvoker>
+					</mate:MethodInvoker>-->
+					<mate:InlineInvoker  method="onTimeRestrictionResult" arguments="{[resultObject, event]} "/>
 				</mate:resultHandlers>
 				<mate:faultHandlers>
 					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>

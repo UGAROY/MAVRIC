@@ -1,120 +1,120 @@
 [
-  {
-    "ASSET_DATA_TEMPLATE": {
-      "ASSET_TYPE": "1",
-      "DESCRIPTION": "SUPPORT",
-      "PRIMARY_KEY": "POLEID",
-      "VALUE_KEY": "MEASURE",
-      "LENGTH_COLUMN": "",
-      "ROUTE_ID_COLUMN": "ROUTEID",
-      "FROM_MEASURE_COLUMN": "MEASURE",
-      "TO_MEASURE_COLUMN": "",
-      "BASE_ID": "",
-      "INV_COLUMNS": [
-        {
-          "NAME": "OBJECTID",
-          "Nullable": "False",
-          "TYPE": "INTEGER"
-        },
-        {
-          "NAME": "POLEID",
-          "TYPE": "INTEGER",
-          "Nullable": "FALSE"
-        },
-        {
-          "NAME": "ROUTEID",
-          "TYPE": "TEXT",
-          "Nullable": "FALSE"
-        },
-        {
-          "NAME": "MEASURE",
-          "TYPE": "REAL",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "POLEMATERIAL",
-          "TYPE": "INTEGER",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "BASETYPE",
-          "TYPE": "INTEGER",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "POLESTATUS",
-          "TYPE": "INTEGER",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "LOCATION",
-          "TYPE": "TEXT",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "NOOFHEADS",
-          "TYPE": "INTEGER",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "POLEHEIGHT",
-          "TYPE": "REAL",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "SUBBASE",
-          "TYPE": "TEXT",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "COMMENTS",
-          "TYPE": "TEXT",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "MSUTILITYID",
-          "TYPE": "ID",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "MSSTARTDATE",
-          "TYPE": "TEXT",
-          "Nullable": "TRUE"
-        },
-        {
-          "NAME": "MSENDDATE",
-          "TYPE": "TEXT",
-          "Nullable": "TRUE"
-        },
-        {
-          "Nullable": "True",
-          "NAME": "LATITUDE",
-          "TYPE": "TEXT"
-        },
-        {
-          "NAME": "LONGITUDE",
-          "TYPE": "TEXT",
-          "Nullable": "True"
-        },
-        {
-          "NAME": "PRECISION",
-          "TYPE": "TEXT",
-          "Nullable": "True"
-        },
-        {
-          "NAME": "PDOP",
-          "TYPE": "TEXT",
-          "Nullable": "True"
-        },
-        {
-          "NAME": "RETIRED",
-          "TYPE": "INTEGER",
-          "Nullable": "TRUE"
+    {
+        "ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "1",
+            "DESCRIPTION": "SUPPORT",
+            "PRIMARY_KEY": "POLEID",
+            "VALUE_KEY": "MEASURE",
+            "LENGTH_COLUMN": "",
+            "ROUTE_ID_COLUMN": "ROUTEID",
+            "FROM_MEASURE_COLUMN": "MEASURE",
+            "TO_MEASURE_COLUMN": "",
+            "BASE_ID": "",
+            "INV_COLUMNS": [
+                {
+                    "NAME": "OBJECTID",
+                    "Nullable": "False",
+                    "TYPE": "INTEGER"
+                },
+                {
+                    "NAME": "POLEID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "FALSE"
+                },
+                {
+                    "NAME": "ROUTEID",
+                    "TYPE": "TEXT",
+                    "Nullable": "FALSE"
+                },
+                {
+                    "NAME": "MEASURE",
+                    "TYPE": "REAL",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "POLEMATERIAL",
+                    "TYPE": "INTEGER",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "BASETYPE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "POLESTATUS",
+                    "TYPE": "INTEGER",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "LOCATION",
+                    "TYPE": "TEXT",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "NOOFHEADS",
+                    "TYPE": "INTEGER",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "POLEHEIGHT",
+                    "TYPE": "REAL",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "SUBBASE",
+                    "TYPE": "TEXT",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "COMMENTS",
+                    "TYPE": "TEXT",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "MSUTILITYID",
+                    "TYPE": "ID",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "MSSTARTDATE",
+                    "TYPE": "TEXT",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "MSENDDATE",
+                    "TYPE": "TEXT",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "Nullable": "True",
+                    "NAME": "LATITUDE",
+                    "TYPE": "TEXT"
+                },
+                {
+                    "NAME": "LONGITUDE",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PRECISION",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "PDOP",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "RETIRED",
+                    "TYPE": "INTEGER",
+                    "Nullable": "TRUE"
+                }
+            ],
+            "INSP_COLUMNS": [ ]
         }
-      ],
-      "INSP_COLUMNS": []
-    }
-  },
+    },
   {
     "ASSET_DATA_TEMPLATE": {
       "ASSET_TYPE": "2",
@@ -251,5 +251,40 @@
         }
       ]
     }
-  }
+  },
+  {
+    	"ASSET_DATA_TEMPLATE": {
+            "ASSET_TYPE": "3",
+            "DESCRIPTION": "INT",
+            "PRIMARY_KEY": "OBJECTID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTEID",
+	      	"FROM_MEASURE_COLUMN" : "MEASURE",
+	      	"TO_MEASURE_COLUMN" : "",
+            "INV_COLUMNS": [
+	            {
+	            	"NAME": "OBJECTID",
+	            	"TYPE": "INTEGER",
+	            	"Nullable":"FALSE"
+	            },
+				{
+	            	"NAME": "INTERSECTIONNAME",
+	            	"TYPE": "TEXT",
+	            	"Nullable":"FALSE"
+	            },
+				{
+	            	"NAME": "ROUTEID",
+	            	"TYPE": "TEXT",
+	            	"Nullable":"FALSE"
+	            },
+				{
+	            	"NAME": "MEASURE",
+	            	"TYPE": "REAL",
+	            	"Nullable":"FALSE"
+	            }
+            ],
+            "INSP_COLUMNS": [
+            ]
+    	}
+    }
 ]

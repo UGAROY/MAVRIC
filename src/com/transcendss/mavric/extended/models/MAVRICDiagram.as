@@ -1735,14 +1735,58 @@ package com.transcendss.mavric.extended.models
 			cInvElement.description = "inventory elements";
 			cInvElement.content = invElements;
 			
+			
 			// store route data
 			var sID:Number = dbManager.addCachedRoute(cRoute);
 			// store stick and inv data
 			dbManager.addElement(sID,cStickElement);
 			dbManager.addElement(sID,cInvElement);
 			
+			storeDDOTassets(sID);
 			//store geotags
-			storeGeotags();
+			storeDDOTGeotags();
+		}
+		
+		private function storeDDOTassets(sID:Number):void{
+			var signElement:CachedElement = new CachedElement();
+			signElement.type = 3;
+			signElement.description = "signs";
+			signElement.content = JSON.stringify(FlexGlobals.topLevelApplication.GlobalComponents.recordManager.allSigns.source);
+			
+			var timeRes:CachedElement = new CachedElement();
+			timeRes.type = 4;
+			timeRes.description = "time restrictions";
+			timeRes.content = JSON.stringify(FlexGlobals.topLevelApplication.GlobalComponents.recordManager.allTimeRestrictions.source);
+			
+			var supp:CachedElement = new CachedElement();
+			supp.type = 5;
+			supp.description = "support inspections";
+			supp.content = JSON.stringify(FlexGlobals.topLevelApplication.GlobalComponents.recordManager.allInspections.source);
+			
+			var links:CachedElement = new CachedElement();
+			links.type = 6;
+			links.description = "links";
+			links.content = JSON.stringify(FlexGlobals.topLevelApplication.GlobalComponents.recordManager.allLinks.source);
+			
+			dbManager.addElement(sID,signElement);
+			dbManager.addElement(sID,timeRes);
+			dbManager.addElement(sID,supp);
+			dbManager.addElement(sID,links);
+		}
+		
+		private function loadDDOTassets(sID:Number):void{
+			
+			var signElement:CachedElement =dbManager.getElement(sID,3);
+			var timeRes:CachedElement = dbManager.getElement(sID,4);
+			var supp:CachedElement =dbManager.getElement(sID,5);
+			var links:CachedElement = dbManager.getElement(sID,6);
+				
+			 FlexGlobals.topLevelApplication.GlobalComponents.recordManager.allSigns = new ArrayCollection(JSON.parse(signElement.content) as Array);
+			FlexGlobals.topLevelApplication.GlobalComponents.recordManager.allTimeRestrictions = new ArrayCollection(JSON.parse(timeRes.content) as Array);
+			FlexGlobals.topLevelApplication.GlobalComponents.recordManager.allInspections= new ArrayCollection(JSON.parse(supp.content) as Array);
+			FlexGlobals.topLevelApplication.GlobalComponents.recordManager.allLinks= new ArrayCollection(JSON.parse(links.content) as Array);
+			
+			
 		}
 		
 		
@@ -1767,9 +1811,111 @@ package com.transcendss.mavric.extended.models
 			}
 		}
 		
+		/**
+		 * Save the all (attached and unattached geotags on current route )
+		 * 
+		 */
+		private function storeDDOTGeotags():void
+		{
+			
+			
+			try
+			{
+				var allSupports:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.getAllSupports();
+				var supportEventLayer:int = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerID('SUPPORT');
+				for each(var support:BaseAsset in allSupports)
+				{
+					
+					FlexGlobals.topLevelApplication.incrementEventStack();
+					var httpServ:HTTPService = new HTTPService();
+					httpServ.method = "GET";
+					httpServ.resultFormat = "text";
+					httpServ.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+					
+					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(supportEventLayer) ,String(support.invProperties['OBJECTID'].value));
+					httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+						event.stopPropagation();
+						var attachments:Object = JSON.parse(event.result as String);
+						
+						FlexGlobals.topLevelApplication.GlobalComponents.assetManager.cacheDDOTGeotags(attachments.attachmentInfos as Array,support,String(supportEventLayer));
+							
+					});
+					
+					httpServ.send();
+					
+					//get signs for this support
+					var signObj:Object = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.getSignsByPoleID(support.id);
+					var signs:ArrayCollection = signObj.signs;
+					var signEventLayer:int = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.signEventLayerID;
+					//get attachments for this sign
+					for each(var sign:Object in signs)
+					{
+						
+						FlexGlobals.topLevelApplication.incrementEventStack();
+						var httpServ2:HTTPService = new HTTPService();
+						httpServ2.method = "GET";
+						httpServ2.resultFormat = "text";
+						httpServ2.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+						
+						httpServ2.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(signEventLayer) ,String(sign['OBJECTID']));
+						httpServ2.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							event.stopPropagation();
+							var attachments:Object = JSON.parse(event.result as String);
+							
+							FlexGlobals.topLevelApplication.GlobalComponents.assetManager.cacheDDOTGeotags(attachments.attachmentInfos as Array,sign,String(signEventLayer), support, 'SIGN');
+							
+						});
+						
+						httpServ2.send();
+					}
+					var inspections:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.getInspectionsForAsset(support.id, signObj.signIDs);
+					
+					var inspEventLayer:int = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.inspectionEventLayerID;
+					//get attachments for this sign
+					for each(var inspection:Object in inspections)
+					{
+						
+						FlexGlobals.topLevelApplication.incrementEventStack();
+						var httpServ3:HTTPService = new HTTPService();
+						httpServ3.method = "GET";
+						httpServ3.resultFormat = "text";
+						httpServ3.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+						
+						httpServ3.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(inspEventLayer) ,String(inspection['OBJECTID']));
+						httpServ3.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+							event.stopPropagation();
+							var attachments:Object = JSON.parse(event.result as String);
+							
+							FlexGlobals.topLevelApplication.GlobalComponents.assetManager.cacheDDOTGeotags(attachments.attachmentInfos as Array,inspection,String(inspEventLayer), support,'INSP');
+							
+						});
+						
+						httpServ3.send();
+					}
+				}
+				
+			
+				
+				
+				
+				
+			}
+			catch (e:Error)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert("Error saving attachments to local database :" + String(e.message));
+			}
+		}
+		
+		protected function assetGTFaultHandler(event:Event=null):void{
+			FlexGlobals.topLevelApplication.decrementEventStack();
+		}
+			
 		private function allGeotagsonFail(ev:FaultEvent):void
 		{
-			FlexGlobals.topLevelApplication.TSSAlert("Error saving attachments to local database :" + String(ev.message.toString() ));
+			FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database. Error saving attachments to local database. ");
+			
+			FlexGlobals.topLevelApplication.setBusyStatus(false);
+			
 		}
 		
 		protected function allGeotagsResponse(ev:ResultEvent):void{
@@ -1975,6 +2121,8 @@ package com.transcendss.mavric.extended.models
 			var cRoute:CachedRoute = dbManager.getCachedRoute(rtePkId);
 			var cStickElement:CachedElement = dbManager.getElement(rtePkId,1);
 			var cInvElement:CachedElement = dbManager.getElement(rtePkId,2);
+			loadDDOTassets(rtePkId);
+			
 			
 			fsm = new FeatureSetManager(null);
 			var rtArray:Array = JSON.parse(cRoute.path) as Array;

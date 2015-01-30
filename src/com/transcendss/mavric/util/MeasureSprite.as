@@ -3,7 +3,7 @@ package com.transcendss.mavric.util
 	import flash.display.Sprite;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
-	
+	import com.transcendss.transcore.util.Units;
 	public class MeasureSprite extends Sprite
 	{
 		private var _distance:Number;
@@ -11,10 +11,11 @@ package com.transcendss.mavric.util
 		private var label:TextField;
 		private static const BAR_LEN:int = 10; 
 		
-		public function MeasureSprite(start:Number, end:Number, ratio:Number)
+		public function MeasureSprite(start:Number, end:Number, ratio:Number, measureUnit:int=Units.MILE)
 		{
 			super();
 			var starty:int = 15;
+			
 			_distance = Math.abs(end - start) * 5280;
 			pixelDist = _distance * ratio;
 			
@@ -22,7 +23,10 @@ package com.transcendss.mavric.util
 			format.align = "center";
 			label = new TextField();
 			label.defaultTextFormat = format;
-			label.text = ""+Math.round(_distance)+"\'";
+			if(measureUnit==Units.FEET)
+				label.text = ""+Math.round(_distance/5280)+"\'";
+			else
+				label.text = ""+Math.round(_distance)+"\'";
 			label.x = pixelDist/2 - label.width/2;
 			addChild(label);
 			this.graphics.lineStyle(1, 0x000000);

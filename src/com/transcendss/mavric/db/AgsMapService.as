@@ -132,6 +132,11 @@ package com.transcendss.mavric.db
 				{
 					_allLayerInfo[layer2.id] = layer2;	
 				}
+				layerArr = JSON.parse(evt.target.data).intersectionLayers as Array;
+				for each (var layer3:Object in layerArr)
+				{
+					_allLayerInfo[layer3.id] = layer3;	
+				}
 			});
 			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, handleAgsError);
 			urlLoader.load(urlRequest);
@@ -233,7 +238,7 @@ package com.transcendss.mavric.db
 					.replace(/@toMeasure\b/gi, routeToMeasure)
 					.replace(/@routeId\b/gi, routeName);
 			}
-			else  if( this._allLayerInfo[layerID].type=="esriLRSCalibrationPointLayer")
+			else  if( this._allLayerInfo[layerID].type=="esriLRSCalibrationPointLayer" || this._allLayerInfo[layerID].type=="esriLRSIntersectionLayer")
 			{
 				whereClause= _query.pointEventWhereClause
 					.replace(/@routeIdFieldName\b/gi, this._allLayerInfo[layerID].routeIdFieldName)

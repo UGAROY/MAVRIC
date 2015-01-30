@@ -84,7 +84,7 @@
 				conditionDDView.domainID = inspection['OVERALLCONDITION'];
 				actionTakenDDView.domainID = inspection['ACTIONTAKEN'];
 				additionActionDDView.domainID = inspection['ADDITIONALACTIONNEEDED'];
-				inspectDateView.value = inspection['DATEINSPECTED'];
+				inspectDateView.value =  new Date(Date.parse(inspection['DATEINSPECTED'] as String));
 				isBent.selected = inspection['BENT'];
 				isTwisted.selected = inspection['TWISTED'];
 				isLoose.selected = inspection['LOOSE'];

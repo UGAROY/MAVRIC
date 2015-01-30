@@ -237,9 +237,14 @@
 				
 				GlobalComponents.assetManager = new AssetManager();
 				
+				GlobalComponents.recordManager = new DdotRecordManager();
+				
+				
+				
+				
 				GlobalComponents.ConfigManager.loadSettings();
 				
-				GlobalComponents.recordManager = new DdotRecordManager();
+				
 				
 				//GlobalComponents.assetManager.getAssetDomains();
 				// menuBar.menuCreationComplete();
