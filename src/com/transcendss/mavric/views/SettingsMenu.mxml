@@ -92,7 +92,10 @@
 //					setMan.requestDistricts(new mx.rpc.Responder(onDistricts, onFail));
 //				else
 //				{
-					boundsDP = app.GlobalComponents.assetManager.getDomain("DISTRICTS");					
+				var boundryTy:String = ConfigUtility.get("main_boundry_ty");
+				
+				boundsDP = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain(boundryTy.toUpperCase());
+				
 					var item:String = setMan.getSetting("DEFAULT_BOUNDRY");
 					boundsIndex =  item ? parseInt(item) : ConfigUtility.getInt("default_boundry");
 					defDistrictVal.text = boundsDP.getItemAt(boundsIndex).DESCRIPTION;
