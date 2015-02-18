@@ -42,10 +42,10 @@ package com.transcendss.mavric.managers.ddot
 		private var objectID:String="";
 		
 		private var _supportEventLayerID:Number = 10;
-		private var _signEventLayerID:Number = 18;
-		private var _inspectionEventLayerID:Number = 14;
-		private var _linkEventLayerID:Number = 15;
-		private var _trEventLayerID:Number = 17;
+		private var _signEventLayerID:Number = 19;
+		private var _inspectionEventLayerID:Number = 15;
+		private var _linkEventLayerID:Number = 16;
+		private var _trEventLayerID:Number = 18;
 		
 		private var maxSupportIDOnServer:Number;
 		private var maxSignIDOnServer:Number;
