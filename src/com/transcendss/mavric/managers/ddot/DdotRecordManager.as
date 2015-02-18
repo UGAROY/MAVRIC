@@ -464,7 +464,10 @@ package com.transcendss.mavric.managers.ddot
 			
 			var curSignList:ArrayCollection = new ArrayCollection();
 			var curSignIDList:Array= new Array();
-			for each(var sign in _allSigns)
+			var tempSigns:ArrayCollection = new ArrayCollection();
+			tempSigns.addAll(_allSigns);
+			tempSigns.addAll( _mdbm.getDdotSignByPoleID(poleID));
+			for each(var sign in tempSigns)
 			{
 				if(sign.POLEID == poleID)
 				{
@@ -481,7 +484,10 @@ package com.transcendss.mavric.managers.ddot
 				return (element.POLEID == poleID || signIDs.indexOf(element.SIGNID) != -1);
 			}
 			
-			return new ArrayCollection(_allInspections.source.filter(filterFunction));
+				var inspections:ArrayCollection = new ArrayCollection(_allInspections.source.filter(filterFunction));
+				inspections.addAll(_mdbm.getDdotInspectionByPoleSignID(poleID, signIDs));
+			return inspections;
+			
 		}
 		
 		public function getOtherSigns(signID:Number):ArrayCollection{

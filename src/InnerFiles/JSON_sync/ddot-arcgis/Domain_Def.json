@@ -366,12 +366,8 @@
       "TYPE": "GDB_VERSION",
       "LIST": [
         {
-          "ID": "VDOT_LRS.DEFAULT",
-          "DESCRIPTION": "VDOT_LRS.DEFAULT"
-        },
-        {
-          "ID": "VDOT_LRS.TEST_EDITS",
-          "DESCRIPTION": "VDOT_LRS.TEST_EDITS"
+          "ID": "DDOT.MAVRIC",
+          "DESCRIPTION": "DDOT.MAVRIC"
         }
       ]
     }
