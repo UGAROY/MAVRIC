@@ -40,7 +40,8 @@ package com.transcendss.mavric.managers.ddot
 		private var _signEventLayerID:Number = 19;
 		private var _inspectionEventLayerID:Number = 15;
 		private var _linkEventLayerID:Number = 16;
-		private var _trEventLayerID:Number = 17;
+		private var _trEventLayerID:Number = 18;
+		private var _wardEventLayerID:Number = 20;
 		
 		public var dispatcher:IEventDispatcher;
 		
@@ -465,27 +466,48 @@ package com.transcendss.mavric.managers.ddot
 			var curSignList:ArrayCollection = new ArrayCollection();
 			var curSignIDList:Array= new Array();
 			var tempSigns:ArrayCollection = new ArrayCollection();
-			tempSigns.addAll(_allSigns);
+			//tempSigns.addAll(_allSigns);
 			tempSigns.addAll( _mdbm.getDdotSignByPoleID(poleID));
-			for each(var sign in tempSigns)
+			
+			for each(var sign:Object in tempSigns)
 			{
-				if(sign.POLEID == poleID)
-				{
-					curSignList.addItem(sign);
-					curSignIDList.push(sign.SIGNID);
-				}
+				curSignList.addItem(sign);
+				curSignIDList.push(sign.SIGNID);
 			}
+			
+			
+			for each (var liveSign:Object in _allSigns)
+			{
+				if (curSignIDList.indexOf(liveSign['SIGNID']) == -1 && liveSign.POLEID == poleID)
+				{
+					tempSigns.addItem(liveSign);
+					curSignList.addItem(liveSign);
+					curSignIDList.push(liveSign.SIGNID);
+				}
+				
+			}
+				
+			
+			
+			
+			
 			return {signs:curSignList, signIDs:curSignIDList};
 		}
 		
 		public function getInspectionsForAsset(poleID:Number,signIDs:Array):ArrayCollection {
+			var inspID:Array = new Array();
+			var localInsp:ArrayCollection = _mdbm.getDdotInspectionByPoleSignID(poleID, signIDs);
+			
+			for each (var localI:Object in localInsp)
+				inspID.push(localI['INSPECTIONID'])
+			
 			
 			var filterFunction:Function = function(element:*, index:int, arr:Array):Boolean {
-				return (element.POLEID == poleID || signIDs.indexOf(element.SIGNID) != -1);
+				return (element.POLEID == poleID || signIDs.indexOf(element.SIGNID) != -1) && (inspID.indexOf(element.INSPECTIONID)==-1);
 			}
 			
 				var inspections:ArrayCollection = new ArrayCollection(_allInspections.source.filter(filterFunction));
-				inspections.addAll(_mdbm.getDdotInspectionByPoleSignID(poleID, signIDs));
+				inspections.addAll(localInsp);
 			return inspections;
 			
 		}
