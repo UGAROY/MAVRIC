@@ -456,7 +456,7 @@
 				var file:FZipFile = event.file;
 				var newfl:File;
 				if (FlexGlobals.topLevelApplication.platform == "IOS") {
-					newfl = File.applicationDirectory.resolvePath(path+file.filename);
+					newfl = File.applicationStorageDirectory.resolvePath(path+file.filename);
 					
 				} else {
 					newfl = new File(path+file.filename);

@@ -278,7 +278,7 @@ package com.transcendss.mavric.managers
 			var path:String = baseDir + extension;
 			var meFile:File;
 			if (FlexGlobals.topLevelApplication.platform == "IOS") {
-				meFile = File.applicationDirectory.resolvePath(path);
+				meFile = File.applicationStorageDirectory.resolvePath(path);
 				if (!meFile.exists) {
 					meFile = File.applicationDirectory.resolvePath(baseDir + 'Missing.png');
 				}
