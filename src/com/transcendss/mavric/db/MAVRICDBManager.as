@@ -248,7 +248,7 @@ package com.transcendss.mavric.db
 		
 		public function getInspectorsByBoundry(boundry:String):ArrayCollection
 		{
-			sStat.text = "SELECT * from INSPECTORS where BOUNDRY ='"+boundry+"' or BOUNDRY ='All Divisions' order by USER_NAME";
+			sStat.text = "SELECT * from INSPECTORS where BOUNDRY ='"+boundry+"' or BOUNDRY ='All Boundries' order by USER_NAME";
 			sStat.execute();
 			
 			return new ArrayCollection(sStat.getResult().data);
@@ -2336,7 +2336,7 @@ package com.transcendss.mavric.db
 					tmpgt.id = data[i].id;
 					tmpgt.cached_route_id = data[i].cached_route_id;
 					tmpgt.asset_base_id = data[i].asset_base_id;
-					tmpgt.asset_ty_id = data[i].asset_type == "1" ? "SUPPORT" : data[i].asset_type;
+					tmpgt.asset_ty_id = data[i].asset_type ;
 					tmpgt.local_asset_id = data[i].local_asset_id;
 					tmpgt.is_insp = data[i].is_insp_tag;
 					tmpgt.begin_mile_point = data[i].begin_mile;

@@ -314,7 +314,7 @@ package com.transcendss.mavric.managers
 			var userDom:Array=new Array();
 			for each (var obj:Object in dom)
 			{
-				if(String(obj.BUSINESS_UNIT) == boundry || String(obj.BUSINESS_UNIT) == "All Divisions")
+				if(String(obj.BUSINESS_UNIT) == boundry || String(obj.BUSINESS_UNIT) == "All Boundries")
 					userDom.push({USER_NAME: obj.DESCRIPTION});	
 			}
 			return new ArrayCollection(userDom);

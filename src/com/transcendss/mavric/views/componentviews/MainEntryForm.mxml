@@ -55,7 +55,7 @@
 				
 				var boundryTy:String = ConfigUtility.get("main_boundry_ty");
 
-				boundsDP = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain(boundryTy.toUpperCase());
+				boundsDP = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("BOUNDRY");
 				var item:String = setMan.getSetting("DEFAULT_BOUNDRY");
 				boundsIndex =  item ? parseInt(item) : ConfigUtility.getInt("default_boundry");
 				defBoundryVal.text = boundsDP.getItemAt(boundsIndex).DESCRIPTION;

@@ -18,6 +18,7 @@
 			import com.transcendss.mavric.events.SignInvEvent;
 			import com.transcendss.mavric.events.ddot.DdotRecordEvent;
 			import com.transcendss.mavric.events.ddot.DdotSyncEvent;
+			import com.transcendss.mavric.events.ddot.GeotagEvent;
 			import com.transcendss.mavric.extended.models.MAVRICDiagram;
 			import com.transcendss.mavric.managers.ArcGISServiceManager;
 			import com.transcendss.mavric.managers.ExternalFileManager;
@@ -91,6 +92,13 @@
 			public function geotagRequestCallBack(ac:ArrayCollection):void
 			{
 				FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.geotagRequestCallBack(ac);
+			}
+			
+			
+			public function geotagRequestCallBackDDOT(event:GeotagEvent,result:Object):void
+			{
+				event.result= result;
+				event.irespond.result(event);
 			}
 			
 			public function symblFileRequestCallBack(respos:Object, event:ExternalFileEvent):void
@@ -272,6 +280,18 @@
 					<mate:MethodInvoker generator="{DdotRandHSyncManager}" method="onLinkIDsResult" arguments="{[lastReturn, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
 					</mate:MethodInvoker>
+				</mate:resultHandlers>
+			</mate:HTTPServiceInvoker>
+		</mate:EventHandlers>
+		
+		
+		<mate:EventHandlers type="{ GeotagEvent.GEOTAG_REQUEST}" debug="{debugFlag}">
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+				<mate:resultHandlers>
+					<mate:MethodInvoker generator="{ArcGISServiceManager}" method="onServiceObjResult" arguments="{[resultObject, event]}">
+						<mate:Properties dispatcher="{scope.dispatcher}"/>
+					</mate:MethodInvoker>
+					<mate:EventAnnouncer generator="{GeotagEvent}" type="{GeotagEvent.GEOTAG_INFO_READY}" constructorArguments="{[GeotagEvent.GEOTAG_INFO_READY,event.assetType,event.assetId,event.isInsp,event.layerId,event.fromMeasure, lastReturn]}" bubbles="true"  />
 				</mate:resultHandlers>
 			</mate:HTTPServiceInvoker>
 		</mate:EventHandlers>
@@ -765,6 +785,10 @@
 -->
 		</mate:Injectors>
 	
+		<mate:Injectors target="{ SupportInventory}" debug ="{debugFlag}">
+			
+			<mate:ListenerInjector eventType="{GeotagEvent.GEOTAG_INFO_READY}" method="setGeotag" />
+		</mate:Injectors>
 		
 		<mate:Injectors target="{RouteSelector}" debug="{debugFlag}">
 			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTOR_POPULATE}" method="rteSelectorPopulate" />

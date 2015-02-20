@@ -1,7 +1,7 @@
 ﻿[
   {
     "DOMAIN_DEF": {
-      "TYPE": "WARD",
+      "TYPE": "BOUNDRY",
       "LIST": [
         {
           "ID": "1",
@@ -607,18 +607,13 @@
       "LIST": [
        {
           "ID": "1",
-          "DESCRIPTION": "USER 1",
-          "BUSINESS_UNIT":"Ward 1"
+          "DESCRIPTION": "Data Collector",
+          "BUSINESS_UNIT":"All Boundries"
         },
         {
           "ID": "2",
-          "DESCRIPTION": "USER 2",
-          "BUSINESS_UNIT":"Ward 1"
-        },
-        {
-          "ID": "3",
-          "DESCRIPTION": "USER 3",
-          "BUSINESS_UNIT":"Ward 1"
+          "DESCRIPTION": "Administrator",
+          "BUSINESS_UNIT":"All Boundries"
         }
       ]
     }
@@ -2068,6 +2063,10 @@
         {
           "ID": "2",
           "DESCRIPTION": "Warning Signs"
+        },
+        {
+          "ID": "7",
+          "DESCRIPTION": "Other Signs"
         }
       ]
     }
@@ -2350,6 +2349,11 @@
           "SIGN_MAJOR_CAT_ID": 1,
           "ID": 13,
           "DESCRIPTION": "Weight and Weigh Station (R12 & R13)"
+        },
+        {
+          "SIGN_MAJOR_CAT_ID": 7,
+          "ID": 60,
+          "DESCRIPTION": "No Subcategory"
         }
       ]
     }

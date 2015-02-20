@@ -540,7 +540,7 @@
 				<s:Spacer width="150"/>
 				<!--<mx:Spacer width="100%"/>-->
 				<!--<s:Image id="Sync" buttonMode="true" width="40" height="40" click="{verifySyncChanges(event)}"/>-->
-				<s:Image id="Exit" buttonMode="true" width="40" height="40" click="quitApp(event)"/>
+				<s:Image id="Exit" buttonMode="true" width="40" height="40" visible="{!FlexGlobals.topLevelApplication._platform=='IOS'}" click="quitApp(event)"/>
 				
 			</s:HGroup><!--
 			<mx:Spacer width="100%"/>-->

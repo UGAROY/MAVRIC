@@ -10,6 +10,7 @@
 	<fx:Script>
 		<![CDATA[
 			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.events.ddot.GeotagEvent;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewVert;
@@ -32,6 +33,8 @@
 			import mx.core.FlexGlobals;
 			import mx.core.UIComponent;
 			import mx.managers.PopUpManager;
+			import mx.rpc.IResponder;
+			import mx.rpc.Responder;
 			import mx.rpc.events.FaultEvent;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.http.HTTPService;
@@ -305,7 +308,8 @@
 							var vContainer:VGroup = new VGroup();
 							vContainer.horizontalAlign = "center";
 							var assetLabel:Label = new Label();
-							assetLabel.text = tmpGT.local_asset_id == "" ? tmpGT.asset_ty_id : tmpGT.asset_ty_id + " -- " + tmpGT.local_asset_id;
+							assetLabel.text = (tmpGT.asset_ty_id =="SIGN")?"Sign":(tmpGT.asset_ty_id =="POLE")? FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getAssetUINameByType("1"): FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getAssetUINameByType(tmpGT.asset_ty_id);
+							assetLabel.text +=	tmpGT.local_asset_id == "" ? " -- "+  tmpGT.local_asset_id : "";
 							vContainer.addElement(viE);
 							vContainer.addElement(assetLabel);
 //							if(viE is TSSPicture)
@@ -519,29 +523,36 @@
 				if(FlexGlobals.topLevelApplication.connected)
 					{
 						FlexGlobals.topLevelApplication.setBusyStatus(true);
-						var httpServ:HTTPService = new HTTPService();
-						httpServ.method = "GET";
-						httpServ.resultFormat = "text";
-						httpServ.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+//						var httpServ:HTTPService = new HTTPService();
+//						httpServ.method = "GET";
+//						httpServ.resultFormat = "text";
+//						httpServ.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+//						
+//						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(layer) ,assetID);
+//						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
+//							var attachments:Object = JSON.parse(event.result as String);
+//							
+//							
+//							gtManager.setGeotags(
+//								attachmentGroup,
+//								attachments.attachmentInfos as Array,
+//								currSupport.assetType,
+//								assetID,
+//								currSupport.routeName,
+//								fromMeasure,
+//								"",
+//								0,String(layer));
+//						});
+//						
+//						
+//						httpServ.send();
 						
-						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(layer) ,assetID);
-						httpServ.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
-							var attachments:Object = JSON.parse(event.result as String);
-							
-							
-							gtManager.setGeotags(
-								attachmentGroup,
-								attachments.attachmentInfos as Array,
-								currSupport.assetType,
-								assetID,
-								currSupport.routeName,
-								fromMeasure,
-								"",
-								0,String(layer));
-						});
 						
+						var gtReq:GeotagEvent = new GeotagEvent(GeotagEvent.GEOTAG_REQUEST,currSupport.assetType,String(currSupport.id),false, String(layer), fromMeasure);
 						
-						httpServ.send();
+						gtReq.serviceURL = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(layer) ,assetID);
+						dispatchEvent(gtReq);
+						
 						
 						//get signs for this support
 						
@@ -551,28 +562,11 @@
 						{
 							
 							FlexGlobals.topLevelApplication.incrementEventStack();
-							var httpServ2:HTTPService = new HTTPService();
-							httpServ2.method = "GET";
-							httpServ2.resultFormat = "text";
-							httpServ2.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+
+							var gtReq:GeotagEvent = new GeotagEvent(GeotagEvent.GEOTAG_REQUEST,'SIGN',String(sign['SIGNID']),false, String(signEventLayer), fromMeasure);
 							
-							httpServ2.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(signEventLayer) ,String(sign['OBJECTID']));
-							httpServ2.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
-								event.stopPropagation();
-								var attachments:Object = JSON.parse(event.result as String);
-								
-								gtManager.setGeotags(
-									attachmentGroup,
-									attachments.attachmentInfos as Array,
-									'SIGN',
-									sign['OBJECTID'],
-									currSupport.routeName,
-									fromMeasure,
-									"",
-									0,String(signEventLayer));
-							});
-							
-							httpServ2.send();
+							gtReq.serviceURL = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(signEventLayer) ,String(sign['OBJECTID']));
+							dispatchEvent(gtReq);
 						}
 						
 						var inspEventLayer:int = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.inspectionEventLayerID;
@@ -581,33 +575,52 @@
 						{
 							
 							FlexGlobals.topLevelApplication.incrementEventStack();
-							var httpServ3:HTTPService = new HTTPService();
-							httpServ3.method = "GET";
-							httpServ3.resultFormat = "text";
-							httpServ3.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+//							var httpServ3:HTTPService = new HTTPService();
+//							httpServ3.method = "GET";
+//							httpServ3.resultFormat = "text";
+//							httpServ3.addEventListener( FaultEvent.FAULT, assetGTFaultHandler);
+//							
+//							httpServ3.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(inspEventLayer) ,String(inspection['OBJECTID']));
+//							httpServ3.addEventListener( ResultEvent.RESULT, function(event:ResultEvent ):void{
+//								event.stopPropagation();
+//								var attachments:Object = JSON.parse(event.result as String);
+//								
+//								gtManager.setGeotags(
+//									attachmentGroup,
+//									attachments.attachmentInfos as Array,
+//									inspection.SIGNID!=null? "SIGN":currSupport.assetType,
+//									inspection.SIGNID!=null?inspection.SIGNID:inspection.POLEID,
+//									currSupport.routeName,
+//									fromMeasure,
+//									"",
+//									0,String(inspEventLayer), InspAttachments);
+//							});
+//							
+//							httpServ3.send();
 							
-							httpServ3.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(inspEventLayer) ,String(inspection['OBJECTID']));
-							httpServ3.addEventListener( ResultEvent.RESULT, function(event:ResultEvent):void{
-								event.stopPropagation();
-								var attachments:Object = JSON.parse(event.result as String);
-								
-								gtManager.setGeotags(
-									attachmentGroup,
-									attachments.attachmentInfos as Array,
-									currSupport.assetType,
-									inspection['OBJECTID'],
-									currSupport.routeName,
-									fromMeasure,
-									"",
-									0,String(inspEventLayer), InspAttachments);
-							});
 							
-							httpServ3.send();
+							var gtReq:GeotagEvent = new GeotagEvent(GeotagEvent.GEOTAG_REQUEST,inspection.SIGNID!=null? "SIGN":currSupport.assetType,inspection.SIGNID!=null?inspection.SIGNID:inspection.POLEID,true, String(inspEventLayer), fromMeasure);
+							
+							gtReq.serviceURL = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(inspEventLayer) ,String(inspection['OBJECTID']));
+							dispatchEvent(gtReq);
 						}
 					}
 			}
 			
-			
+			public  function setGeotag( event:GeotagEvent):void{
+				//event.stopPropagation();
+				var attachments:Object = event.result;
+				
+				gtManager.setGeotags(
+					event.isInsp?InspAttachments:InvAttachments,
+					attachments.attachmentInfos as Array,
+					event.assetType,
+					event.assetId,
+					currSupport.routeName,
+					event.fromMeasure,
+					"",
+					0,event.layerId);
+			}
 			private function failReqHandler():void
 			{
 				FlexGlobals.topLevelApplication.setBusyStatus(false);
@@ -623,7 +636,7 @@
 			{
 				if(this.retireChk.selected)
 				{	
-					var _retireResp:Responder = new Responder(retireOkay, fault);
+					var _retireResp:mx.rpc.Responder = new mx.rpc.Responder(retireOkay, fault);
 					
 					FlexGlobals.topLevelApplication.YesNoPrompt("Are you sure you want to retire this record? All the local changes made to the asset will be discarded on retirement.", "Retire Asset Confirmation", _retireResp);
 					
@@ -1037,7 +1050,7 @@
 				if(captureSource == "SupportInventory")
 				{
 					assetBaseID = "" + this.currSupportID;
-					localAssetID = ""; // "" + this.currSupportID;
+					localAssetID = ""+ this.currSupportID;
 					assetTypeID = currSupport!=null ? currSupport.assetType:"1";
 					assetLabelText = "Support";
 					attachContainer = InvAttachments;
@@ -1057,7 +1070,7 @@
 					assetBaseID = "" + this.currSupportID;
 					if (this.currInspectionAsset['POLEID'] != null)
 					{
-						localAssetID = ""; //"" + currInspectionAsset['POLEID'];
+						localAssetID = ""+ currInspectionAsset['POLEID'];
 						assetLabelText = "Support";
 						assetTypeID = "1";
 					}

@@ -133,7 +133,7 @@
 				}
 				if (keywordText.text != initialKeyword && keywordText.text != "")
 				{
-					flag = flag && item.ID.indexOf(keywordText.text) >= 0
+					flag = flag && item.DESCRIPTION.indexOf(keywordText.text) >= 0
 				}
 				return flag;
 			}
