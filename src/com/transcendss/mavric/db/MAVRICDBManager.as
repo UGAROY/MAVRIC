@@ -2014,6 +2014,8 @@ package com.transcendss.mavric.db
 				"SIGNSTATUS INTEGER,"+
 				"ARROWDIRECTION TEXT," +
 				"ISLOADINGZONE INTEGER," +
+				"SIGN_ORDER INTEGER," +
+				"SIGNSIZE TEXT, " +
 				"COMMENTS TEXT);";
 			sStat.execute();
 			
@@ -2058,7 +2060,8 @@ package com.transcendss.mavric.db
 				"STARTTIME INTEGER, " + 
 				"ENDTIME INTEGER, " +
 				"HOURLIMIT REAL, " +
-				"RESTRICTIONORDER INTEGER);";
+				"RESTRICTIONORDER INTEGER," +
+				"EXCEPTION TEXT);";
 			sStat.execute();
 			
 //			// MS Utility Table
@@ -2071,6 +2074,7 @@ package com.transcendss.mavric.db
 		
 		private function formatColumnValue(value:Object):String
 		{
+			
 			// The AIR api for sqlite is extremely strict
 			if (value is Number)
 				return value.toString();
@@ -2112,14 +2116,14 @@ package com.transcendss.mavric.db
 		
 		public function addDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("OBJECTID", "SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE")
+			var signColumns:Array = new Array("OBJECTID", "SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE")
 			sStat.text = "INSERT INTO SIGNS " + buildDdotInsertKeyValueStr(sign, signColumns); 
 			sStat.execute();
 		}
 		
 		public function updateDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE");
+			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE");
 			sStat.text = StringUtil.substitute("UPDATE SIGNS SET {0} WHERE SIGNID={1}", [buildDdotUpdateKeyValueStr(sign, signColumns), sign['SIGNID'].toString()]);
 			sStat.execute();
 		}
@@ -2311,14 +2315,15 @@ package com.transcendss.mavric.db
 		
 		public function addTimeRestriction(linkID:String, tr:Object):void
 		{
-			sStat.text = "INSERT INTO TIMERESTRICTIONS (LINKID, STARTDAY, ENDDAY, STARTTIME, ENDTIME, HOURLIMIT, RESTRICTIONORDER) VALUES ('@linkID', @startDay, @endDay, @startTime, @endTime, @hourLimit, @restrictionOrder)"
+			sStat.text = "INSERT INTO TIMERESTRICTIONS (LINKID, STARTDAY, ENDDAY, STARTTIME, ENDTIME, HOURLIMIT, RESTRICTIONORDER, EXCEPTION) VALUES ('@linkID', @startDay, @endDay, @startTime, @endTime, @hourLimit, @restrictionOrder, @exception)"
 				.replace("@linkID", linkID)
-				.replace("@startDay", tr['STARTDAY'])
-				.replace("@endDay", tr['ENDDAY'])
-				.replace("@startTime", tr['STARTTIME'])
-				.replace("@endTime", tr['ENDTIME'])
-				.replace("@hourLimit", tr['HOURLIMIT'])
-				.replace("@restrictionOrder", tr['RESTRICTIONORDER']);
+				.replace("@startDay", tr['STARTDAY']||null)
+				.replace("@endDay", tr['ENDDAY']||null)
+				.replace("@startTime", tr['STARTTIME']||null)
+				.replace("@endTime", tr['ENDTIME']||null)
+				.replace("@hourLimit", tr['HOURLIMIT']||null)
+				.replace("@restrictionOrder", tr['RESTRICTIONORDER']||null)
+				.replace("@exception", tr['EXCEPTION']);
 			sStat.execute();
 		}
 		

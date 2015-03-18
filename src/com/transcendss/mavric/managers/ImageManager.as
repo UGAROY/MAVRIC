@@ -42,12 +42,14 @@ package com.transcendss.mavric.managers
 		//var curDir:String = "app:///InnerFiles/sign_inv/";
 		private var curDir:String;
 		private var baseDir:String;
-		private var db:String;
+		//private var db:String;
+		
+		//Change this, and when you do, call setupDB(db) once to populate your database.
+		private var db:String = "app:///InnerFiles/signs.db";
 		
 		public function ImageManager()
 		{
-			//Change this, and when you do, call setupDB(db) once to populate your database.
-			db = "app:///InnerFiles/signs.db";
+			
 			sConn.open(new File(db));
 			sStat.sqlConnection = sConn;
 			//var folder:File = File.userDirectory.resolvePath(BaseConfigUtility.get("sign_images_SD_folder"));
@@ -57,14 +59,18 @@ package com.transcendss.mavric.managers
 			//setupDB(db);
 		}
 		
-		//For testing purposes
-		public function setupTable():void
+		//public function setupTable():void
+		//		{
+		//			setupDB("mavric.db");
+		//		}
+		
+		public function signDB():String
 		{
-			setupDB("mavric.db");
+			return db;
 		}
 		
 		// Open the database and make the table for the first time. Must provide databse location as a string.
-		public function setupDB(db:String):void
+		public function setupDB():void
 		{
 			//sConn.close();
 			//sConn.open(File.applicationStorageDirectory.resolvePath(db));
@@ -87,12 +93,14 @@ package com.transcendss.mavric.managers
 			sStat.text = "CREATE TABLE " + catMap + " (catNum INTEGER, catString TEXT)";
 			sStat.execute();
 			
-			var dir:File = new File(curDir);
+			var dir:File = new File(baseDir);
 			var folders:Array = dir.getDirectoryListing();
 			var category:int = 1;
 			var id:int = 1;
 			for each (var folder:File in folders)
 			{
+				if(!folder.isDirectory)
+					continue;
 				var signs:Array = folder.getDirectoryListing();
 				var folderPath:String = dir.getRelativePath(folder);
 				sStat.text = "INSERT INTO " + catMap + " (catNum, catString)" +

@@ -1,0 +1,374 @@
+{
+  "BarAssets" : [
+    {
+      "AssetLayerID" : "1",
+      "Order" : "0",
+      "DESCRIPTION" : "FUNCTIONAL_CLASS",
+      "UseElement" : "true",
+      "AssetName" : "Functional Class",
+      "EventLayerID":3,
+      "EventIdFieldName":"OBJECTID",
+      "RouteIDColumn" : "ROUTEID",
+      "FromMeasureColumn" : "FROMMEASURE",
+      "ToMeasureColumn" : "TOMEASURE",
+      "ValueColumn" : "FUNTIONALCLASS",
+      "isRange" : "false",
+      "Labels" : [
+        {
+          "Label" : "Functional Class",
+          "LabelColumn" : "FUNTIONALCLASS"
+        },
+        {
+          "Label" : "From Measure",
+          "LabelColumn" : "FROMMEASURE"
+        },
+        {
+          "Label" : "To Measure",
+          "LabelColumn" : "TOMEASURE"
+        }
+      ],
+      "Domain" : [
+        {
+          "Value" : "11",
+          "Range" : "",
+          "Color" : "0xB200FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID1"
+        },
+        {
+          "Value" : "12",
+          "Range" : "",
+          "Color" : "0x4800FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID2"
+        },
+        {
+          "Value" : "14",
+          "Range" : "",
+          "Color" : "0x0026FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID3"
+        },
+        {
+          "Value" : "16",
+          "Range" : "553001-554000",
+          "Color" : "0x0045FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID4"
+        },
+        {
+          "Value" : "17",
+          "Range" : "",
+          "Color" : "0x0094FF",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID5"
+        },
+        {
+          "Value" : "19",
+          "Range" : "",
+          "Color" : "0x00FFFF",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID6"
+        }
+      ]
+    },
+    {
+      "AssetLayerID" : "2",
+      "Order" : "1",
+      "DESCRIPTION": "OWNERSHIP",
+      "UseElement" : "true",
+      "AssetName" : "Ownership",
+      "EventLayerID":4,
+      "EventIdFieldName":"OBJECTID",
+      "RouteIDColumn" : "ROUTEID",
+      "FromMeasureColumn" : "FROMMEASURE",
+      "ToMeasureColumn" : "TOMEASURE",
+      "ValueColumn" : "OWNERSHIP",
+      "isRange" : "false",
+      "Labels" : [
+        {
+          "Label" : "District",
+          "LabelColumn" : "OWNERSHIP"
+        },
+        {
+          "Label" : "From Measure",
+          "LabelColumn" : "FROMMEASURE"
+        },
+        {
+          "Label" : "To Measure",
+          "LabelColumn" : "TOMEASURE"
+        }
+      ],
+      "Domain" : [
+        {
+          "Value" : "0",
+          "Color" : "0x78F0FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID19"
+        },
+        {
+          "Value" : "1",
+          "Color" : "0x8888FF",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID19"
+        },
+        {
+          "Value" : "2",
+          "Color" : "0x0026FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID20"
+        },
+        {
+          "Value" : "3",
+          "Color" : "0x4CFF00",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID21"
+        },
+        {
+          "Value" : "4",
+          "Color" : "0xBFD2FF",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID22"
+        },
+        {
+          "Value" : "5",
+          "Color" : "0xFF00FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID23"
+        },
+        {
+          "Value" : "6",
+          "Color" : "0xFFFF00",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID24"
+        },
+        {
+          "Value" : "7",
+          "Color" : "0xF33F00",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID24"
+        },
+        {
+          "Value" : "8",
+          "Color" : "0xFF4400",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID24"
+        },
+        {
+          "Value" : "9",
+          "Color" : "0x66FF00",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID24"
+        },
+        {
+          "Value" : "10",
+          "Color" : "0xF44F00",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID24"
+        },
+        {
+          "Value" : "11",
+          "Color" : "0x555F00",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID24"
+        }
+      ]
+    },
+    {
+      "AssetLayerID" : "3",
+      "Order" : "2",
+      "DESCRIPTION": "HPMS",
+      "UseElement" : "true",
+      "AssetName" : "HPMS Section",
+      "EventLayerID":5,
+      "EventIdFieldName":"OBJECTID",
+      "RouteIDColumn" : "ROUTEID",
+      "FromMeasureColumn" : "FROMMEASURE",
+      "ToMeasureColumn" : "TOMEASURE",
+      "ValueColumn" : "SECTIONTYPE",
+      "isRange" : "true",
+      "Labels" : [
+        {
+          "Label" : "HPMS",
+          "LabelColumn" : "SECTIONTYPE"
+        },
+        {
+          "Label" : "From Measure",
+          "LabelColumn" : "FROMMEASURE"
+        },
+        {
+          "Label" : "To Measure",
+          "LabelColumn" : "TOMEASURE"
+        }
+      ],
+      "Domain" : [
+        {
+          "Value" : "0",
+          "Range" : "",
+          "Color" : "0xB200FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID8"
+        },
+        {
+          "Value" : "1",
+          "Range" : "",
+          "Color" : "0x00FF90",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID9"
+        },
+        {
+          "Value" : "2",
+          "Range" : "",
+          "Color" : "0x4CFF00",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID10"
+        },
+        {
+          "Value" : "3",
+          "Range" : "",
+          "Color" : "0xB6FF00",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID11"
+        }
+      ]
+    },
+    {
+      "AssetLayerID" : "4",
+      "Order" : "3",
+      "DESCRIPTION": "NHS",
+      "UseElement" : "true",
+      "AssetName" : "NHS",
+      "EventLayerID":6,
+      "EventIdFieldName":"OBJECTID",
+      "RouteIDColumn" : "ROUTEID",
+      "FromMeasureColumn" : "FROMMEASURE",
+      "ToMeasureColumn" : "TOMEASURE",
+      "ValueColumn" : "NHSTYPE",
+      "isRange" : "true",
+      "Labels" : [
+        {
+          "Label" : "NHS",
+          "LabelColumn" : "NHSTYPE"
+        },
+        {
+          "Label" : "From Measure",
+          "LabelColumn" : "FROMMEASURE"
+        },
+        {
+          "Label" : "To Measure",
+          "LabelColumn" : "TOMEASURE"
+        }
+      ],
+      "Domain" : [
+        {
+          "Value" : "NHS Interstate",
+          "Range" : "",
+          "Color" : "0xB200FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID8"
+        },
+        {
+          "Value" : "NHS Non-Interstate",
+          "Range" : "",
+          "Color" : "0x00FF90",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID9"
+        }
+      ]
+    },
+    {
+      "AssetLayerID" : "5",
+      "Order" : "4",
+      "DESCRIPTION": "NUMBER_OF_LANES",
+      "UseElement" : "true",
+      "AssetName" : "Number of Lanes",
+      "EventLayerID":0,
+      "EventIdFieldName":"ID",
+      "RouteIDColumn" : "ROUTE",
+      "FromMeasureColumn" : "REFPT",
+      "ToMeasureColumn" : "ENDREFPT",
+      "ValueColumn" : "ELEM_VALUE",
+      "isRange" : "false",
+      "Labels" : [
+        {
+          "Label" : "Number of Lanes",
+          "LabelColumn" : "ELEM_VALUE"
+        },
+        {
+          "Label" : "From Measure",
+          "LabelColumn" : "REFPT"
+        },
+        {
+          "Label" : "To Measure",
+          "LabelColumn" : "ENDREFPT"
+        },
+        {
+          "Label" : "Peak Lanes",
+          "LabelColumn" : "Peak_Lanes"
+        }
+      ],
+      "Domain" : [
+        {
+          "Value" : "0",
+          "Color" : "0xBB0FFF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID95"
+        },
+        {
+          "Value" : "1",
+          "Color" : "0xBB0005",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID96"
+        },
+        {
+          "Value" : "2",
+          "Color" : "0x00AA10",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID97"
+        },
+        {
+          "Value" : "3",
+          "Color" : "0x990100",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID98"
+        },
+        {
+          "Value" : "4",
+          "Color" : "0x0010FF",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID99"
+        },
+        {
+          "Value" : "5",
+          "Color" : "0x010FE0",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID100"
+        },
+        {
+          "Value" : "6",
+          "Color" : "0x1BC00A",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID101"
+        },
+        {
+          "Value" : "7",
+          "Color" : "0x11A0DD",
+          "TextColor" : "0xFFFFFF",
+          "UniqueID" : "UID102"
+        },
+        {
+          "Value" : "8",
+          "Color" : "0xD1DFE0",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID103"
+        },
+        {
+          "Value" : "9",
+          "Color" : "0x1BCDDA",
+          "TextColor" : "0x000000",
+          "UniqueID" : "UID104"
+        }
+      ]
+    }
+  ]
+}

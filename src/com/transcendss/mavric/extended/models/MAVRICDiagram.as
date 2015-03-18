@@ -12,13 +12,11 @@ package com.transcendss.mavric.extended.models
 	import com.transcendss.mavric.events.GPSEvent;
 	import com.transcendss.mavric.events.LocalRouteEvent;
 	import com.transcendss.mavric.events.SignInvEvent;
-	import com.transcendss.mavric.events.ddot.DdotRecordEvent;
 	import com.transcendss.mavric.extended.models.Components.AccessPoint;
 	import com.transcendss.mavric.managers.AssetManager;
 	import com.transcendss.mavric.managers.CSVExportManager;
 	import com.transcendss.mavric.managers.FeatureSetManager;
 	import com.transcendss.mavric.managers.MavricConfiguredSyncManager;
-	import com.transcendss.mavric.managers.RandHSyncManager;
 	import com.transcendss.mavric.managers.ddot.DdotRandHSyncManager;
 	import com.transcendss.mavric.util.FileUtility;
 	import com.transcendss.mavric.util.TSSRectangle;
@@ -171,6 +169,7 @@ package com.transcendss.mavric.extended.models
 			this.mavicConfiguredSyncMgr = new MavricConfiguredSyncManager();
 			initCaptureBar();
 			//addGestureSupport();
+			
 		}
 		
 		/**
@@ -1947,7 +1946,7 @@ package com.transcendss.mavric.extended.models
 			var dx:Number;
 			var dy:Number;
 			
-			if (mapSR == "4623" || mapSR == "4327")
+			if (mapSR == "4623" || mapSR == "4327" || mapSR == "102113")
 			{
 				baseX = parseFloat(path[0].X);
 				baseY = parseFloat(path[0].Y);
@@ -1983,7 +1982,7 @@ package com.transcendss.mavric.extended.models
 			{
 				var x:Number;
 				var y:Number;
-				if (mapSR == "4623")
+				if (mapSR == "4623" || mapSR == "4327" || mapSR == "102113")
 				{
 					x = parseFloat(path[i].X) - baseX;
 					y = parseFloat(path[i].Y) - baseY;

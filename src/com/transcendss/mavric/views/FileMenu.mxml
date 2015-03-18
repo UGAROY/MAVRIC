@@ -14,10 +14,11 @@
 	<fx:Script>
 		<![CDATA[
 			import com.transcendss.mavric.util.PopUpUtils;
-			import com.transcendss.mavric.views.componentviews.*;
-			import com.transcendss.transcore.events.*;
+			import com.transcendss.mavric.views.componentviews.LocalRoutesForm;
+			import com.transcendss.mavric.views.componentviews.RouteSelector;
+			import com.transcendss.mavric.views.ddot.AgsDownloadRoutesForm;
+			import com.transcendss.transcore.events.MenuBarEvent;
 			
-			import mx.core.Application;
 			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
@@ -109,7 +110,7 @@
 					FlexGlobals.topLevelApplication.TSSAlert("WiFi is off. Please turn on WiFi, connect to a network, and try again.");
 				} else
 				{
-					PopUpManager.centerPopUp(PopUpManager.createPopUp(this, DownloadRoutesForm, false));
+					PopUpManager.centerPopUp(PopUpManager.createPopUp(this, AgsDownloadRoutesForm, false));
 				}
 				//PopUpManager.centerPopUp(PopUpManager.createPopUp(DisplayObject(Application.application), DownloadRoutesForm, false));
 			}

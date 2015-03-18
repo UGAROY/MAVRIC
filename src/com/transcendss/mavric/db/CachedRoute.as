@@ -1,15 +1,9 @@
 package com.transcendss.mavric.db
 {
-	import com.google.maps.services.Route;
 	import com.transcendss.mavric.extended.models.MAVRICDiagram;
 	import com.transcendss.mavric.managers.AssetManager;
 	import com.transcendss.mavric.util.TSSRectangle;
 	import com.transcendss.transcore.sld.models.InventoryDiagram;
-	import com.transcendss.transcore.sld.models.StickDiagram;
-	import com.transcendss.transcore.sld.models.components.GeoTag;
-	import com.transcendss.transcore.sld.models.managers.GeotagsManager;
-	
-	import flash.geom.Rectangle;
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
@@ -101,6 +95,127 @@ package com.transcendss.mavric.db
 			}
 			return cRoute;
 		}
+		
+		public static function generateFromAgsServices(route:Object, xing:Object, coords:Object, feats:Object, boundary:String = null, gtagsC:ArrayCollection = null, subObjs:Object=null):CachedRoute
+		{
+			var compatRouteObj:Object = {route: {routeName: route.routeName, beginMi: route.beginMi, endMi: route.endMi, routeNumber: route.routeName}}; 
+			var compatRouteJSON:String = JSON.stringify(compatRouteObj);
+			
+			var mastarr:Array = new Array();
+			//xing = xing.replace("\\", "/");
+			var assetMan:AssetManager = FlexGlobals.topLevelApplication.GlobalComponents.assetManager;
+			
+//			if(xing != "")
+//			{
+				
+				for (var type:String in assetMan.assetDescriptions)
+				{
+					try
+					{
+						var mastobj:Object = new Object();
+						var features:Array
+						if(xing[assetMan.assetDescriptions[type]])
+							features = JSON.parse(xing[assetMan.assetDescriptions[type]]).features;
+						else
+							features = new Array();
+						mastobj.ArrayColl = new Array();
+						for each(var asset:Object in features)
+						mastobj.ArrayColl.push(asset.attributes);
+						mastobj.Name = type;
+						mastarr.push(mastobj);
+					}
+					catch (er:Error)
+					{
+						trace("WARNING: JSON XING Data for route: " + route.routeName + "is invalid! The service needs to be fixed.");
+						return null;	
+					}
+				}
+//			}
+			
+			var xingFeatsJSON:String = JSON.stringify(mastarr);
+			
+			var invMenu:InventoryDiagram = new InventoryDiagram();
+			var featsArc:ArrayCollection = new ArrayCollection();
+			
+			
+			
+			var elemDesc:Object =assetMan.barElementDescriptions;
+			for each (var elemType in elemDesc)
+			{
+				if(!feats[elemType])
+					continue;
+				var temp:Array = new Array();
+				var arrayColl:ArrayCollection = new ArrayCollection();
+				var elems:Array= feats[elemType].features;
+				for each(var feature:Object in elems)
+					temp.push(feature.attributes);
+				//var atName = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.getBarElemLabel(event["elementType"]);
+				arrayColl.addItem({"ID":elemType, "ATT_NAME": FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.getBarElemLabel(elemType), "DATA" : temp});	
+					
+				invMenu.drawElemsFrmSrvceRes(arrayColl, true);
+			}
+			
+			var invElemsJSON:String = invMenu.invElementsToJSON();
+			
+			
+			var cRoute:CachedRoute = new CachedRoute();
+			cRoute.routeid = route.routeName;
+			cRoute.beginmile = route.beginMi;
+			cRoute.endmile = route.endMi;
+			
+			cRoute.content = compatRouteJSON;
+			cRoute.path = JSON.stringify(coords);
+			cRoute.boundary = boundary;
+			
+			var bbox:TSSRectangle = MAVRICDiagram.getBoundingBox(new ArrayCollection(coords as Array));
+			cRoute.bbox = JSON.stringify(bbox);
+			
+			var cStickElement:CachedElement = new CachedElement();
+			cStickElement.type = 1;
+			cStickElement.description = "stick elements";
+			cStickElement.content = xingFeatsJSON;
+			
+			var cInvElement:CachedElement = new CachedElement();
+			cInvElement.type = 2;
+			cInvElement.description = "inventory elements";
+			cInvElement.content = invElemsJSON;
+			
+			var signElement:CachedElement = new CachedElement();
+			var timeRes:CachedElement = new CachedElement();
+			var supp:CachedElement = new CachedElement();
+			var links:CachedElement = new CachedElement();
+			
+			if(subObjs)
+			{
+				
+				signElement.type = 3;
+				signElement.description = "signs";
+				signElement.content = JSON.stringify(subObjs.signs);
+				
+				
+				timeRes.type = 4;
+				timeRes.description = "time restrictions";
+				timeRes.content = JSON.stringify(subObjs.timeRes);
+				
+				
+				supp.type = 5;
+				supp.description = "support inspections";
+				supp.content = JSON.stringify(subObjs.insp);
+				
+				
+				links.type = 6;
+				links.description = "links";
+				links.content = JSON.stringify(subObjs.links);
+				
+				
+			}
+			
+			assetMan.cacheDDOTRoute(cRoute, cStickElement, cInvElement, signElement, timeRes,supp, links);
+			assetMan.cacheDDOTGeotags2(gtagsC.source);
+			
+			return cRoute;
+		}
+		
 		
 		public function CachedRoute()
 		{

@@ -18,14 +18,11 @@
 		<![CDATA[
 			import com.transcendss.mavric.db.MAVRICDBManager;
 			import com.transcendss.mavric.managers.ConfigurationManager;
+			import com.transcendss.mavric.managers.ImageManager;
 			import com.transcendss.mavric.managers.SettingsManager;
 			import com.transcendss.mavric.util.FileUtility;
 			import com.transcendss.mavric.util.PopUpUtils;
 			import com.transcendss.transcore.util.Units;
-			
-			import deng.fzip.FZip;
-			import deng.fzip.FZipEvent;
-			import deng.fzip.FZipFile;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
@@ -34,6 +31,10 @@
 			
 			import spark.components.Group;
 			import spark.events.PopUpEvent;
+			
+			import deng.fzip.FZip;
+			import deng.fzip.FZipEvent;
+			import deng.fzip.FZipFile;
 			
 			private var fileName:String;
 			//private var setting_key:String;
@@ -138,7 +139,7 @@
 				linearEditFormEnabled.selected = app.GlobalComponents.ConfigManager.linearEditFormSwitch;
 				setMan.getSetting("DEFAULT_BP_CONTENT")=="bars"?this.barRadio.selected=true:mapRadio.selected=true;
 				dataUnitRadioSelect.selectedValue = int(setMan.getSetting("UNITS"));
-				measureBarRadioSelect.selectedValue = int(setMan.getSetting("TYPE_MEASURE"));
+				measureBarRadioSelect.selectedValue = int(setMan.getSetting("MEASUREBAR_UNITS"));
 				inspDays.text = setMan.getSetting("INSP_DAYS");
 				var tmpSync:String = setMan.getSetting("SYNC_ACTIVITY");
 				app.GlobalComponents.ConfigManager.syncActivity = parseInt(tmpSync);
@@ -151,8 +152,7 @@
 				
 				this.elemBarHeightTxt.text = String(app.GlobalComponents.ConfigManager.elementBarHeight);
 				defScale.text = String(app.GlobalComponents.ConfigManager.defaultScale);
-				defLanesFieldVal.text = String(app.GlobalComponents.ConfigManager.defaultLanesField);
-
+				
 				serviceUrl.text = app.GlobalComponents.ConfigManager.serviceURL;
 				geotagUrl.text= app.GlobalComponents.ConfigManager.geotagUrl;
 				cachedMapUrl.text=app.GlobalComponents.ConfigManager.cachedMapUrl;
@@ -193,7 +193,7 @@
 				this.defScale.text = ConfigUtility.get("default_scale");
 				 ConfigUtility.get("default_bp_content")=="bars"?this.barRadio.selected=true:mapRadio.selected=true;
 			 	dataUnitRadioSelect.selectedValue = ConfigUtility.getInt("units");
-				measureBarRadioSelect.selectedValue = ConfigUtility.getInt("type_measure");
+				measureBarRadioSelect.selectedValue = ConfigUtility.getInt("measurebar_units");
 				inspDays.text = ConfigUtility.get("inspect_days");
 				geotagUrl.text=	BaseConfigUtility.get('geotags_folder');
 				cachedMapUrl.text=	BaseConfigUtility.get('cached_map_folder');
@@ -312,8 +312,11 @@
 				setMan.saveSetting("INSP_DAYS", inspDays.text);
 				
 				// roadway lanes
-				app.GlobalComponents.ConfigManager.roadwayLanesSwitch = roadwayLanesOnCheck.selected;
-
+				setMan.saveSetting("ROADWAY_LANES_ELEMENT_TYPE", barNamesDP.getItemAt(lanesFieldIndex).id);
+				if (measureBarRadioSelect.selectedValue)
+					setMan.saveSetting("MEASUREBAR_UNITS", measureBarRadioSelect.selectedValue.toString());
+				else
+					setMan.saveSetting("MEASUREBAR_UNITS", ConfigUtility.get("measurebar_units"));
 				//sync type
 				if(oldSync.selected)
 					app.GlobalComponents.ConfigManager.syncActivity = ConfigurationManager.MC_SYNC;
@@ -350,11 +353,6 @@
 				setMan.saveSetting("GDB_VERSION", this.gdbVersionVal.text);
 				setMan.saveSetting("DEFAULT_BP_CONTENT",this.barRadio.selected?"bars":"map");
 				setMan.saveSetting("DEFAULT_SCALE",defScale.text);
-				if (measureBarRadioSelect.selectedValue)
-					setMan.saveSetting("TYPE_MEASURE", measureBarRadioSelect.selectedValue.toString());
-				else
-					setMan.saveSetting("TYPE_MEASURE", ConfigUtility.get("type_measure"));
-				
 				if (dataUnitRadioSelect.selectedValue)
 					setMan.saveSetting("UNITS", dataUnitRadioSelect.selectedValue.toString());
 				else
@@ -376,10 +374,10 @@
 
 			private function closeLanesField():void
 			{
-				defLanesFieldVal.text = barNamesDP.getItemAt(barNamesList.selectedIndex).DESCRIPTION as String;
+				defLanesFieldVal.text = barNamesDP.getItemAt(barNamesList.selectedIndex).name as String;
 				lanesFieldPopUp.close(true, barNamesList.selectedIndex);
 				lanesFieldIndex = barNamesList.selectedIndex;
-				FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.lanesFieldValue = defLanesFieldVal.text;
+				//FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.roadwayLanesEventType = barNamesDP.getItemAt(barNamesList.selectedIndex).id;
 			}
 
 			private function closeScale():void
@@ -402,17 +400,22 @@
 			{
 				if(barNamesDP == null || barNamesDP.length == 0)
 				{
-					var barArr:Array =configManager.getBarElemNames();
-					barNamesDP = new ArrayCollection();
-					for(var i:int=0; i<barArr.length; i++)
+					//var barArr:Array =;
+					barNamesDP = new ArrayCollection(configManager.getBarElemNames());
+					
+					
+					for(var i:int=0; i<barNamesDP.length; i++)
 					{
-						barNamesDP.addItem({ID:i, DESCRIPTION: barArr[i]});
-						if(barArr[i] == defLanesFieldVal.text)
-							lanesFieldIndex = i;
+						
+						if(barNamesDP[i].id ==FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.roadwayLanesEventType)
+						{
+							defLanesFieldVal.text =barNamesDP[i].name;
+							this.lanesFieldIndex = i;
+						}
+						
 					}
 				}
 			}
-			
 			public function hideExtras():void
 			{
 				viewStack.selectedChild =viewGroup;
@@ -441,6 +444,9 @@
 			
 			private function onZipDownloadComplete(event:Event):void
 			{
+				var imgManager:ImageManager = new ImageManager();
+				imgManager.setupDB();
+						
 				FlexGlobals.topLevelApplication.setBusyStatus(false);
 				FlexGlobals.topLevelApplication.TSSAlert("Sign image download complete.");
 			}
@@ -508,7 +514,7 @@
 					if (measureBarRadioSelect.selectedValue != null)	
 						app.GlobalComponents.ConfigManager.measureBarUnit = measureBarRadioSelect.selectedValue as Number;
 					else
-						app.GlobalComponents.ConfigManager.measureBarUnit = int(setMan.getSetting("TYPE_MEASURE"));
+						app.GlobalComponents.ConfigManager.measureBarUnit = int(setMan.getSetting("MEASUREBAR_UNITS"));
 				}
 			}
 			
@@ -762,23 +768,28 @@
 			</s:Panel>
 		</s:SkinnablePopUpContainer>
 
-		<s:SkinnablePopUpContainer id="lanesFieldPopUp" width="300" height="400" name="Select Lanes Field"
+		<s:SkinnablePopUpContainer id="lanesFieldPopUp" width="300" height="400"
+								   name="Select Lanes Field"
 								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 				<s:VGroup width="100%" height="100%" horizontalAlign="center">
-					<s:List id="barNamesList" width="100%" height="100%" allowMultipleSelection="false"
-							change="{closeLanesField()}" dataProvider="{barNamesDP}" fontSize="18"
-							labelField="DESCRIPTION" selectedIndex="{lanesFieldIndex}"/>
+					<s:List id="barNamesList" width="100%" height="100%"
+							allowMultipleSelection="false" change="{closeLanesField()}"
+							dataProvider="{barNamesDP}" fontSize="18" labelField="DESCRIPTION"
+							selectedIndex="{lanesFieldIndex}"/>
 				</s:VGroup>
 			</s:Panel>
 		</s:SkinnablePopUpContainer>
 
-		<s:SkinnablePopUpContainer id="scalePopUp" width="300" height="400" name="Select Default Scale"
+		<s:SkinnablePopUpContainer id="scalePopUp" width="300" height="400"
+								   name="Select Default Scale"
 								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 				<s:VGroup width="100%" height="100%" horizontalAlign="center">
 					<s:List id="scaleList" width="100%" height="100%" allowMultipleSelection="false"
-							change="{closeScale()}" dataProvider="{app.GlobalComponents.ConfigManager.scaleValues}" labelField="scaleLabel"  fontSize="18"
+							change="{closeScale()}"
+							dataProvider="{app.GlobalComponents.ConfigManager.scaleValues}"
+							fontSize="18" labelField="scaleLabel"
 							selectedIndex="{app.GlobalComponents.ConfigManager.getDefScaleIndex()}"/>
 				</s:VGroup>
 			</s:Panel>
@@ -788,15 +799,16 @@
 								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 				<s:VGroup width="100%" height="100%" horizontalAlign="center">
-					<s:List id="gdbVersionList" width="100%" height="100%" allowMultipleSelection="false"
-							change="{closegdb()}" dataProvider="{app.GlobalComponents.ConfigManager.gdbValues}" labelField="DESCRIPTION"  fontSize="18"
-							/>
+					<s:List id="gdbVersionList" width="100%" height="100%"
+							allowMultipleSelection="false" change="{closegdb()}"
+							dataProvider="{app.GlobalComponents.ConfigManager.gdbValues}"
+							fontSize="18" labelField="DESCRIPTION"/>
 				</s:VGroup>
 			</s:Panel>
 		</s:SkinnablePopUpContainer>
 		
-		<s:RadioButtonGroup id="btmPanelRadioSelect"  />
-		<s:RadioButtonGroup id="dataUnitRadioSelect" 
+		<s:RadioButtonGroup id="btmPanelRadioSelect"/>
+		<s:RadioButtonGroup id="dataUnitRadioSelect"
 							selectedValue="{app.GlobalComponents.ConfigManager.dataUnits}"/>
 		<s:RadioButtonGroup id="measureBarRadioSelect"
 							selectedValue="{app.GlobalComponents.ConfigManager.measureBarUnit}"/>
@@ -810,11 +822,13 @@
 				  enabled="{viewStack.selectedChild != appGroup}"/>
 		<s:Button id="viewBtn" width="25%" label="View" click="{viewStack.selectedChild = viewGroup}"
 				  enabled="{viewStack.selectedChild != viewGroup}"/>
-		<s:Button id = "urlBtn" label="File Locations" enabled="{viewStack.selectedChild != urlGroup}" 
-				  click="{viewStack.selectedChild = urlGroup}" width="25%"/>
+		<s:Button id="urlBtn" width="25%" label="File Locations"
+				  click="{viewStack.selectedChild = urlGroup}"
+				  enabled="{viewStack.selectedChild != urlGroup}"/>
 		
-		<s:Button id = "agsBtn" label="ArcGIS Settings" enabled="{viewStack.selectedChild != agsGroup}" 
-				  click="{viewStack.selectedChild = agsGroup}" width="25%"/>
+		<s:Button id="agsBtn" width="25%" label="ArcGIS Settings"
+				  click="{viewStack.selectedChild = agsGroup}"
+				  enabled="{viewStack.selectedChild != agsGroup}"/>
 	</s:HGroup>
 	<views:CBViewStack id="viewStack" width="100%" height="100%" backgroundColor="0xFFFFCC"
 					   skinClass="skins.CBScrollableSkin"
@@ -839,22 +853,18 @@
 									 skinClass="spark.skins.spark.TextInputSkin" text=""/>
 					</s:VGroup>
 					
-					<s:Button label="Clear Asset Data"
-							  click="{clearAssets();}" width="250"/>
+					<s:Button width="250" label="Clear Asset Data" click="{clearAssets();}"/>
 					<!--<s:Spacer height="1"/>
 					<s:Button label="Clear Domains"
 							  click="{clearDomains();}" width="250"/>-->
 					<s:Spacer height="1"/>
-					<s:Button label="Clear Map Images"
-							  click="{clearMapImages();}" width="250"/>
+					<s:Button width="250" label="Clear Map Images" click="{clearMapImages();}"/>
 					<s:Spacer height="1"/>
-					<s:Button label="Clear Geotags"
-							  click="{clearGeotags();}" width="250"/>
+					<s:Button width="250" label="Clear Geotags" click="{clearGeotags();}"/>
 					<s:Spacer height="1"/>
-					<s:Button label="Clear Cached Routes"
-							  click="{clearCachedRoutes();}" width="250"/>
+					<s:Button width="250" label="Clear Cached Routes" click="{clearCachedRoutes();}"/>
 					<s:Spacer height="1"/>
-					<s:Button label="Delete Database File" click="{this.testDeleteDB();}" width="250"/>
+					<s:Button width="250" label="Delete Database File" click="{this.testDeleteDB();}"/>
 					
 					
 					
@@ -862,14 +872,19 @@
 				<s:VGroup>
 					<s:Spacer height="40"/>
 					<s:Label id="syncSetting" fontWeight="bold" text="Select Sync Activity:"/>
-					<s:RadioButton id="oldSync" label="MAVRIC Configured Sync" selected="false" change="{setSync(event)}"/>
-					<s:RadioButton id="newSync" label="R&amp;H Sync" selected="false" change="{setSync(event)}"/>
-					<s:RadioButton id="exportChanges" label="CSV Export" selected="false" change="{setSync(event)}"/>
+					<s:RadioButton id="oldSync" label="MAVRIC Configured Sync"
+								   change="{setSync(event)}" selected="false"/>
+					<s:RadioButton id="newSync" label="R&amp;H Sync" change="{setSync(event)}"
+								   selected="false"/>
+					<s:RadioButton id="exportChanges" label="CSV Export" change="{setSync(event)}"
+								   selected="false"/>
 					
 					<s:Spacer height="3"/>
-					<s:Button label="Download Sign Images" click="{this.downloadSigns();}" width="250"/>
+					<s:Button width="250" label="Download Sign Images"
+							  click="{this.downloadSigns();}"/>
 					<s:Spacer height="1"/>
-					<s:Button label="Download All Json Settings Files" click="{this.updateAllJsonFilesBtn_clickHandler(event);}" width="250"/>
+					<s:Button width="250" label="Download All Json Settings Files"
+							  click="{this.updateAllJsonFilesBtn_clickHandler(event);}"/>
 					
 				</s:VGroup>
 				
@@ -877,58 +892,67 @@
 			</s:HGroup>
 		</s:VGroup>
 		
-		<s:VGroup id="viewGroup" gap="15" height="100%" width="100%" paddingTop="3" paddingBottom="3" paddingLeft="3" paddingRight="3">
-			<s:HGroup  verticalAlign="middle">
+		<s:VGroup id="viewGroup" width="100%" height="100%" gap="15" paddingBottom="3"
+				  paddingLeft="3" paddingRight="3" paddingTop="3">
+			<s:HGroup verticalAlign="middle">
 				<!--<s:Spacer width="50"/>-->
 				<s:Label text="Days Since Last Inspection: "/>
 				<s:TextInput id="inspDays" width="60" skinClass="spark.skins.mobile.TextInputSkin"/>
 			</s:HGroup>
-			<s:HGroup  verticalAlign="middle">
+			<s:HGroup verticalAlign="middle">
 				
 				<s:Label text="Default Inventory Bar Height: "/>
-				<s:TextInput id="elemBarHeightTxt" width="60" skinClass="spark.skins.mobile.TextInputSkin" text="{app.GlobalComponents.ConfigManager.elementBarHeight}"/>
+				<s:TextInput id="elemBarHeightTxt" width="60"
+							 skinClass="spark.skins.mobile.TextInputSkin"
+							 text="{app.GlobalComponents.ConfigManager.elementBarHeight}"/>
 				<s:Label text="Min Value: 30"/>
 			</s:HGroup>
-			<s:HGroup  verticalAlign="middle">
-				<s:Button id="defScaleBtn" label="Default Scale"
-						  click="{openScaleSelect(event);}"/>
+			<s:HGroup verticalAlign="middle">
+				<s:Button id="defScaleBtn" label="Default Scale" click="{openScaleSelect(event);}"/>
 				
-				<s:TextInput id="defScale" width="60" skinClass="spark.skins.mobile.TextInputSkin" text="{app.GlobalComponents.ConfigManager.defaultScale}"/>
+				<s:TextInput id="defScale" width="60" skinClass="spark.skins.mobile.TextInputSkin"
+							 text="{app.GlobalComponents.ConfigManager.defaultScale}"/>
 			</s:HGroup>
-			<s:HGroup verticalAlign="top" gap="40">
+			<s:HGroup gap="40" verticalAlign="top">
 				<s:VGroup id="assetChks">
 					
 				</s:VGroup>
 				<s:VGroup>
-					<s:CheckBox label="Guide Bar On" id="guideBarOnCheck" selected="{app.GlobalComponents.ConfigManager.guideBarSwitch}" />
+					<s:CheckBox id="guideBarOnCheck" label="Guide Bar On"
+								selected="{app.GlobalComponents.ConfigManager.guideBarSwitch}"/>
 					<s:CheckBox id="feetMarkerViewCheck" label="Measure Bar Display On"
 								selected="{app.GlobalComponents.ConfigManager.feetMarkerSwitch}"/>
 					<s:CheckBox id="linearEditingEnabled" label="Linear Editing Enabled"
 								selected="{app.GlobalComponents.ConfigManager.linearEditingSwitch}"/>
 					<s:CheckBox id="linearEditFormEnabled" label="Use Form for Linear Edits"
 								selected="{app.GlobalComponents.ConfigManager.linearEditFormSwitch}"/>
-					<s:CheckBox label="Multiple Lanes On" id="roadwayLanesOnCheck" selected="{app.GlobalComponents.ConfigManager.roadwayLanesSwitch}" />
+					<s:CheckBox id="roadwayLanesOnCheck" label="Multiple Lanes On"
+								selected="{app.GlobalComponents.ConfigManager.roadwayLanesSwitch}"/>
 				</s:VGroup>
 			</s:HGroup>
 			
 			<s:Label text="Default Bottom Panel Content:"/>
 			<s:HGroup>
 				
-				<s:RadioButton id="mapRadio" label="Overview Map" group="{btmPanelRadioSelect}" 
+				<s:RadioButton id="mapRadio" label="Overview Map" group="{btmPanelRadioSelect}"
 							   value="map"></s:RadioButton>
-				<s:RadioButton id="barRadio" label="Attribute Bars" group="{btmPanelRadioSelect}" 
+				<s:RadioButton id="barRadio" label="Attribute Bars" group="{btmPanelRadioSelect}"
 							   value="bars"></s:RadioButton>
 			</s:HGroup>
 			<s:Label text="Data Unit:"/>
 			<s:HGroup>
-				<s:RadioButton label="Feet (FT)" groupName="dataUnitRadioSelect"
-							   value="{Units.FEET}" enabled="{dataUnitRadioSelect.selectedValue == Units.FEET}"></s:RadioButton>
-				<s:RadioButton label="Kilometer (KM)" groupName="dataUnitRadioSelect"
-							   value="{Units.KILOMETER}" enabled="{dataUnitRadioSelect.selectedValue == Units.KILOMETER}"></s:RadioButton>
-				<s:RadioButton label="Mile (MI)" groupName="dataUnitRadioSelect"
-							   value="{Units.MILE}" enabled="{dataUnitRadioSelect.selectedValue == Units.MILE}"></s:RadioButton>
-				<s:RadioButton label="Meter (M)" groupName="dataUnitRadioSelect"
-							   value="{Units.METER}" enabled="{dataUnitRadioSelect.selectedValue == Units.METER}"></s:RadioButton>
+				<s:RadioButton label="Feet (FT)"
+							   enabled="{dataUnitRadioSelect.selectedValue == Units.FEET}"
+							   groupName="dataUnitRadioSelect" value="{Units.FEET}"></s:RadioButton>
+				<s:RadioButton label="Kilometer (KM)"
+							   enabled="{dataUnitRadioSelect.selectedValue == Units.KILOMETER}"
+							   groupName="dataUnitRadioSelect" value="{Units.KILOMETER}"></s:RadioButton>
+				<s:RadioButton label="Mile (MI)"
+							   enabled="{dataUnitRadioSelect.selectedValue == Units.MILE}"
+							   groupName="dataUnitRadioSelect" value="{Units.MILE}"></s:RadioButton>
+				<s:RadioButton label="Meter (M)"
+							   enabled="{dataUnitRadioSelect.selectedValue == Units.METER}"
+							   groupName="dataUnitRadioSelect" value="{Units.METER}"></s:RadioButton>
 			</s:HGroup>
 			
 			<s:Label text="Measure Bar Unit:"/>
@@ -947,77 +971,102 @@
 
 
 			<s:HGroup id="defLanesFieldGrp" verticalAlign="middle">
-				<s:Button id="defRoadwayLanesBtn" label="Multiple Lanes Field" enabled="{roadwayLanesOnCheck.selected}"
-						  click="{openLanesFieldSelect(event);}"/>
-				<s:TextInput id="defLanesFieldVal" text="{app.GlobalComponents.ConfigManager.lanesFieldValue}" minWidth="150" 
-							 skinClass="spark.skins.mobile.TextInputSkin" enabled="{roadwayLanesOnCheck.selected}"/>
+				<s:Button id="defRoadwayLanesBtn" label="Multiple Lanes Field"
+						  click="{openLanesFieldSelect(event);}"
+						  enabled="{roadwayLanesOnCheck.selected}"/>
+				<s:TextInput id="defLanesFieldVal" minWidth="150"
+							 enabled="{roadwayLanesOnCheck.selected}"
+							 skinClass="spark.skins.mobile.TextInputSkin"
+							 text=""/>
 			</s:HGroup>
 			
 		</s:VGroup>  
-		<s:VGroup id="urlGroup" paddingTop="2" paddingBottom="2" paddingLeft="3" paddingRight="3" gap="4" width="100%" height="700" clipAndEnableScrolling="true">
+		<s:VGroup id="urlGroup" width="100%" height="700" clipAndEnableScrolling="true" gap="4"
+				  paddingBottom="2" paddingLeft="3" paddingRight="3" paddingTop="2">
 			
-			<s:Label fontWeight="bold" text="Service URL: " />
-			<s:TextInput id="serviceUrl" width="95%"   text="{ConfigUtility.get('serviceURL')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Label fontWeight="bold" text="Service URL: "/>
+			<s:TextInput id="serviceUrl" width="95%" skinClass="spark.skins.mobile.TextInputSkin"
+						 text="{ConfigUtility.get('serviceURL')}"/>
 			
-			<s:Label fontWeight="bold" text="Geotags: " />
-			<s:TextInput id="geotagUrl" width="95%" text="{BaseConfigUtility.get('geotags_folder')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Label fontWeight="bold" text="Geotags: "/>
+			<s:TextInput id="geotagUrl" width="95%" skinClass="spark.skins.mobile.TextInputSkin"
+						 text="{BaseConfigUtility.get('geotags_folder')}"/>
 			
-			<s:Label fontWeight="bold" text="Cached Map Images: " />
-			<s:TextInput id="cachedMapUrl" width="95%" text="{BaseConfigUtility.get('cached_map_folder')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Label fontWeight="bold" text="Cached Map Images: "/>
+			<s:TextInput id="cachedMapUrl" width="95%" skinClass="spark.skins.mobile.TextInputSkin"
+						 text="{BaseConfigUtility.get('cached_map_folder')}"/>
 			
-			<s:Label fontWeight="bold" text="Sign Images: " />
-			<s:TextInput id="signImagesUrl" width="95%" text="{BaseConfigUtility.get('sign_images_folder')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Label fontWeight="bold" text="Sign Images: "/>
+			<s:TextInput id="signImagesUrl" width="95%" skinClass="spark.skins.mobile.TextInputSkin"
+						 text="{BaseConfigUtility.get('sign_images_folder')}"/>
 			
-			<s:Label fontWeight="bold" text="Base Map Layer: " />
-			<s:TextInput id="baseMapUrl" width="95%" text="{BaseConfigUtility.get('basemapLayer')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Label fontWeight="bold" text="Base Map Layer: "/>
+			<s:TextInput id="baseMapUrl" width="95%" skinClass="spark.skins.mobile.TextInputSkin"
+						 text="{BaseConfigUtility.get('basemapLayer')}"/>
 			
-			<s:Label fontWeight="bold" text="Base Map SR: " />
-			<s:TextInput id="baseMapSR" width="95%" text="{BaseConfigUtility.get('basemapSR')}" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Label fontWeight="bold" text="Base Map SR: "/>
+			<s:TextInput id="baseMapSR" width="95%" skinClass="spark.skins.mobile.TextInputSkin"
+						 text="{BaseConfigUtility.get('basemapSR')}"/>
 			
-			<s:Label fontWeight="bold" text="asset_def: " />
-			<s:HGroup name="Asset_Def_Grp" width="100%">
-				<s:TextInput id="Asset_Def_Txt" name="Asset_Def_Txt" width="90%" text="{ConfigUtility.get('asset_def')}" skinClass="spark.skins.mobile.TextInputSkin"/>
-				<s:Button click="updateAssetJsonBtn_clickHandler(event,Asset_Def_Txt)" id="updateAssetJsonBtn" label="Update"/>
+			<s:Label fontWeight="bold" text="asset_def: "/>
+			<s:HGroup width="100%" name="Asset_Def_Grp">
+				<s:TextInput id="Asset_Def_Txt" width="90%" name="Asset_Def_Txt"
+							 skinClass="spark.skins.mobile.TextInputSkin"
+							 text="{ConfigUtility.get('asset_def')}"/>
+				<s:Button id="updateAssetJsonBtn" label="Update"
+						  click="updateAssetJsonBtn_clickHandler(event,Asset_Def_Txt)"/>
 			</s:HGroup>
 			
-			<s:Label fontWeight="bold" text="asset_data_template: " />
-			<s:HGroup name="Asset_Data_Template_Grp" width="100%">
-				<s:TextInput id="Asset_Data_Template_Txt" name="Asset_Data_Template_Txt" width="90%" text="{ConfigUtility.get('asset_data_template')}" skinClass="spark.skins.mobile.TextInputSkin" />
-				<s:Button click="updateAssetJsonTemplBtn_clickHandler(event,Asset_Data_Template_Txt)" id="updateAssetJsonTemplBtn" label="Update"/>
+			<s:Label fontWeight="bold" text="asset_data_template: "/>
+			<s:HGroup width="100%" name="Asset_Data_Template_Grp">
+				<s:TextInput id="Asset_Data_Template_Txt" width="90%" name="Asset_Data_Template_Txt"
+							 skinClass="spark.skins.mobile.TextInputSkin"
+							 text="{ConfigUtility.get('asset_data_template')}"/>
+				<s:Button id="updateAssetJsonTemplBtn" label="Update"
+						  click="updateAssetJsonTemplBtn_clickHandler(event,Asset_Data_Template_Txt)"/>
 			</s:HGroup>
 			
-			<s:Label fontWeight="bold" text="data_entry_template: " />
-			<s:HGroup name="Data_Entry_Template_Grp" width="100%">
-				<s:TextInput id="Data_Entry_Template_Txt" name="Data_Entry_Template_Txt" width="90%" text="{ConfigUtility.get('data_entry_template')}" skinClass="spark.skins.mobile.TextInputSkin"/>
-				<s:Button click="dataEntryTemplatesBtn_clickHandler(event,Data_Entry_Template_Txt)" id="dataEntryTemplatesBtn" label="Update"/>
+			<s:Label fontWeight="bold" text="data_entry_template: "/>
+			<s:HGroup width="100%" name="Data_Entry_Template_Grp">
+				<s:TextInput id="Data_Entry_Template_Txt" width="90%" name="Data_Entry_Template_Txt"
+							 skinClass="spark.skins.mobile.TextInputSkin"
+							 text="{ConfigUtility.get('data_entry_template')}"/>
+				<s:Button id="dataEntryTemplatesBtn" label="Update"
+						  click="dataEntryTemplatesBtn_clickHandler(event,Data_Entry_Template_Txt)"/>
 			</s:HGroup>
 			
-			<s:Label fontWeight="bold" text="bar_elements: " />
-			<s:HGroup name="Bar_Elements_Grp" width="100%">
-				<s:TextInput id="Bar_Elements_Txt" name="Bar_Elements_Txt" width="90%" text="{ConfigUtility.get('bar_elements')}" skinClass="spark.skins.mobile.TextInputSkin"/>
-				<s:Button click="updateBarElementsBtn_clickHandler(event,Bar_Elements_Txt)" id="updateBarElementsBtn" label="Update"/>
+			<s:Label fontWeight="bold" text="bar_elements: "/>
+			<s:HGroup width="100%" name="Bar_Elements_Grp">
+				<s:TextInput id="Bar_Elements_Txt" width="90%" name="Bar_Elements_Txt"
+							 skinClass="spark.skins.mobile.TextInputSkin"
+							 text="{ConfigUtility.get('bar_elements')}"/>
+				<s:Button id="updateBarElementsBtn" label="Update"
+						  click="updateBarElementsBtn_clickHandler(event,Bar_Elements_Txt)"/>
 			</s:HGroup>
 			
-			<s:Label fontWeight="bold" text="domain_def: " />
-			<s:HGroup name="Domain_Def_Grp" width="100%">
-				<s:TextInput id="Domain_Def_Txt" name="Domain_Def_Txt" width="90%" text="{ConfigUtility.get('domain_def')}" skinClass="spark.skins.mobile.TextInputSkin"/>
-				<s:Button click="updateDomainDefBtn_clickHandler(event,Domain_Def_Txt)" id="updateDomainDefBtn" label="Update"/>
+			<s:Label fontWeight="bold" text="domain_def: "/>
+			<s:HGroup width="100%" name="Domain_Def_Grp">
+				<s:TextInput id="Domain_Def_Txt" width="90%" name="Domain_Def_Txt"
+							 skinClass="spark.skins.mobile.TextInputSkin"
+							 text="{ConfigUtility.get('domain_def')}"/>
+				<s:Button id="updateDomainDefBtn" label="Update"
+						  click="updateDomainDefBtn_clickHandler(event,Domain_Def_Txt)"/>
 			</s:HGroup>
 			
 		</s:VGroup>
 		
-		<s:VGroup id="agsGroup" paddingTop="2" paddingBottom="2" paddingLeft="3" paddingRight="3" gap="10" width="100%" height="700" clipAndEnableScrolling="true">
-			<s:CheckBox label="Use ArcGIS for Assets" id="useAgsCheck" />
-			<s:CheckBox label="Use ArcGIS for Map" id="useLatLongCheck" />
-			<s:CheckBox label="Rollback Edits on Failure" id="rollbackCheck" />
+		<s:VGroup id="agsGroup" width="100%" height="700" clipAndEnableScrolling="true" gap="10"
+				  paddingBottom="2" paddingLeft="3" paddingRight="3" paddingTop="2">
+			<s:CheckBox id="useAgsCheck" label="Use ArcGIS for Assets"/>
+			<s:CheckBox id="useLatLongCheck" label="Use ArcGIS for Map"/>
+			<s:CheckBox id="rollbackCheck" label="Rollback Edits on Failure"/>
 			
 			
-			<s:Label fontWeight="bold" text="ArcGIS Service URL: " />
-			<s:TextInput id="agsServiceUrl" width="95%"    skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Label fontWeight="bold" text="ArcGIS Service URL: "/>
+			<s:TextInput id="agsServiceUrl" width="95%" skinClass="spark.skins.mobile.TextInputSkin"/>
 			
 			<s:VGroup id="gdbVersionGrp">
-				<s:Button id="gdbVersionBtn" label="gdbVersion"
-						  click="{opengdbSelect(event);}"/>
+				<s:Button id="gdbVersionBtn" label="gdbVersion" click="{opengdbSelect(event);}"/>
 				<s:TextInput id="gdbVersionVal" editable="false"
 							 skinClass="spark.skins.mobile.TextInputSkin" text=""/>
 			</s:VGroup>

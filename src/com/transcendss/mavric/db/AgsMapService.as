@@ -7,8 +7,8 @@ package com.transcendss.mavric.db
 	
 	import mx.core.FlexGlobals;
 	import mx.utils.ObjectUtil;
-	import mx.utils.URLUtil;
 	import mx.utils.StringUtil;
+	import mx.utils.URLUtil;
 	
 	public class AgsMapService
 	{
@@ -37,6 +37,7 @@ package com.transcendss.mavric.db
 				endpoints: {
 					
 					query: '/@layerId/query',
+					find: '/find',
 					layer: '/@layerId',
 					allEventLayers: '/exts/LRSServer/Layers',
 					lrsDefinition: '/exts/LRSServer',
@@ -80,6 +81,7 @@ package com.transcendss.mavric.db
 						returnDistinctValues:false,
 						f: 'pjson'
 				},
+				findEventWhereCluase:'searchText=@searchText&contains=true&searchFields=@searchFields&sr=&layers=@layerIds&layerDefs=&returnGeometry=false&maxAllowableOffset=&geometryPrecision=&dynamicLayers=&returnZ=false&returnM=false&gdbVersion=@gdbVersion&f=pjson',
 				allRoutesEventWhereClause:'@routeIdFieldName is not null',
 				routeEventWhereClause: '@routeIdFieldName = \'@routeId\'',
 				pointEventWhereClause: '@routeIdFieldName = \'@routeId\' and (@fromMeasureFieldName between @fromMeasure and @toMeasure)',
@@ -222,6 +224,8 @@ package com.transcendss.mavric.db
 			return _server.url +_server.mapServer +"/"+ layerID+"/"+featureID+ _server.endpoints.attachments+"/"+attachID+"?gdbVersion=" + _query.params.gdbVersion+"&f="+_query.params.f;
 		}
 		
+		
+		
 		public function getEventUrl(layerID:Number, routeName:String, routeFromMeasure:Number, routeToMeasure:Number):String
 		{
 			var queryParams:Object =  ObjectUtil.clone( _query.params);
@@ -276,6 +280,17 @@ package com.transcendss.mavric.db
 			var tempQueryStr:String = URLUtil.objectToString(queryParams,"&");
 			tempQueryStr = tempQueryStr.replace(/%40whereClause\b/gi, escape(whereClause));
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) + '?' + tempQueryStr;
+		}
+		
+		public function getFindEventUrl(layerIDList:Array, searchText:String, searchField:String):String
+		{
+			//searchText=@routeId&contains=true&searchFields=@routeIdFieldName&sr=&layers=@layerIds&layerDefs=&returnGeometry=false&maxAllowableOffset=&geometryPrecision=&dynamicLayers=&returnZ=false&returnM=false&gdbVersion=@gdbVersion&f=pjson
+			
+			return _server.url +_server.mapServer+ _server.endpoints.find + '?' + _query.findEventWhereCluase
+																						.replace(/@layerIds/gi, layerIDList.join(','))
+																						.replace(/@searchText/gi, searchText)
+																						.replace(/@searchFields/gi, searchField)
+																						.replace(/@gdbVersion/gi, _query.params.gdbVersion);
 		}
 		
 		

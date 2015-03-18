@@ -66,12 +66,9 @@
 			import com.transcendss.mavric.views.AssetEditForm;
 			import com.transcendss.mavric.views.EditElementDialog;
 			import com.transcendss.mavric.views.GeoOptionsDialog;
-			import com.transcendss.mavric.views.GuardrailMenu;
-			import com.transcendss.mavric.views.InventoryMenu;
 			import com.transcendss.mavric.views.MediaPopUp;
 			import com.transcendss.mavric.views.OverviewMap;
 			import com.transcendss.mavric.views.SettingsMenu;
-			import com.transcendss.mavric.views.SignInventory;
 			import com.transcendss.mavric.views.TextMemo;
 			import com.transcendss.mavric.views.VoiceMemo;
 			import com.transcendss.mavric.views.YesNoDialog;
@@ -85,12 +82,9 @@
 			import com.transcendss.mavric.views.ddot.InspectionDetails;
 			import com.transcendss.mavric.views.ddot.Inspections;
 			import com.transcendss.mavric.views.ddot.LinkedSign;
-			import com.transcendss.mavric.views.ddot.SignInventory;
 			import com.transcendss.mavric.views.ddot.SignSelector;
 			import com.transcendss.mavric.views.ddot.SignTab;
 			import com.transcendss.mavric.views.ddot.SupportInventory;
-			import com.transcendss.mavric.views.okdot.SignInv;
-			import com.transcendss.mavric.views.vdot.SignInv;
 			import com.transcendss.transcore.events.AttributeEvent;
 			import com.transcendss.transcore.events.CameraEvent;
 			import com.transcendss.transcore.events.ElementEditEvent;
@@ -102,7 +96,6 @@
 			import com.transcendss.transcore.events.videoEvent;
 			import com.transcendss.transcore.sld.models.components.AttrObj;
 			import com.transcendss.transcore.sld.models.components.BaseAsset;
-			import com.transcendss.transcore.sld.models.components.Element;
 			import com.transcendss.transcore.sld.models.components.ElementSection;
 			import com.transcendss.transcore.sld.models.components.GeoTag;
 			import com.transcendss.transcore.sld.models.components.Route;

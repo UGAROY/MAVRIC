@@ -165,9 +165,12 @@
 	
 	<s:VGroup paddingLeft="20" paddingTop="10" paddingRight="10" paddingBottom="10">
 		<s:HGroup verticalAlign="middle">
+			<s:Group id="SignStatusDDGroup"></s:Group>
 			<s:Button id="targetSignBtn" label="Target Sign" click="targetSignBtn_clickHandler(event)" />
 			<s:Spacer width="20"/>
 			<s:TextInput id="signText" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Spacer width="20"/>
+			
 		</s:HGroup>
 		<s:Line width="100%">
 			<s:stroke>
@@ -199,7 +202,7 @@
 							<s:Spacer height="10"/>
 							<s:Group id="SignSizeDDGroup"></s:Group>
 							<s:Spacer height="10"/>
-							<s:Group id="SignStatusDDGroup"></s:Group>
+							
 						</s:VGroup>
 						<s:VGroup width="50%">
 							<s:Label text="Sign Image" fontWeight="bold"/>

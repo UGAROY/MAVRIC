@@ -1,0 +1,104 @@
+[
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "1",
+            "CAPTURE_AVAILABLE": "true",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "SUPPORT",
+            "UI_NAME": "Support",
+            "LRM": "1",
+            "EVENT_LAYER_ID":10,
+            "TYPE_KEY": "LOCATION",
+            "DEFAULT_TYPE_VALUE": "NS",
+            "LENGTH_UNIT":"",
+            "SYNC": "true",
+      		"SYNC_COL_LIST":"",
+            "FORM_CLASS": "com.transcendss.mavric.views.ddot.SupportInventory",
+            "DEFINITION": {
+                "SUBTYPES": [
+                    {
+                        "SUBTYPE": "LEFT",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/ddot/marker.png",
+                            "SCALE": "True",
+                            "WIDTH": "80",
+                            "HEIGHT": "60",
+                            "CENTER_VERTICALLY": "True",
+                            "CENTER_HORIZONTALLY": "True",
+                            "PLACEMENT_Y": "0",
+                            "TEXT": null
+                        }
+                    },
+                    {
+                        "SUBTYPE": "RIGHT",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/ddot/marker.png",
+                            "SCALE": "True",
+                            "WIDTH": "80",
+                            "HEIGHT": "60",
+                            "CENTER_VERTICALLY": "True",
+                            "CENTER_HORIZONTALLY": "True",
+                            "PLACEMENT_Y": "45",
+                            "TEXT": null
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "2",
+            "CAPTURE_AVAILABLE": "false",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "MILEMARKER",
+            "UI_NAME": "Mile Marker",
+            "LRM": "1",
+            "EVENT_LAYER_ID": 10,
+            "LENGTH_UNIT": "",
+            "TYPE_KEY": "MUTCD",
+            "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+            "DEFINITION": {
+                "SUBTYPES": [ ]
+            }
+        }
+    },
+    {
+        "ASSET_DEF": {
+            "ASSET_TYPE": "3",
+            "CAPTURE_AVAILABLE": "false",
+            "VISIBLE_ON_STICK": "true",
+            "DESCRIPTION": "INT",
+            "LENGTH_UNIT":"",
+            "UI_NAME": "Intersection",
+            "LRM": "1",
+            "EVENT_LAYER_ID":12,
+            "TYPE_KEY": "",
+            "SYNC": "false",
+            "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+            "TIP_FIELD": "INTERSECTIONNAME",
+            "DEFINITION": {
+                "SUBTYPES": [
+                    {
+                        "SUBTYPE": "1",
+                        "LOCATION": "STICK",
+                        "DRAWOBJ": null,
+                        "DRAWING": {
+                            "DRAWSTRING": "InnerFiles/JSON_sync/ddot/Interchang.png",
+                            "WIDTH": "13",
+                            "HEIGHT": "110",
+                            "CENTER_VERTICALLY": "True",
+                            "CENTER_HORIZONTALLY": "True",
+                            "PLACEMENT_Y": "10",
+                            "TEXT": null
+                        }
+                    }
+                ]
+            }
+        }
+    }
+]

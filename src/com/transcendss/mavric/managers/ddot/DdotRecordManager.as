@@ -1,6 +1,5 @@
 package com.transcendss.mavric.managers.ddot
 {
-	import com.adobe.utils.StringUtil;
 	import com.asfusion.mate.events.Dispatcher;
 	import com.transcendss.mavric.db.AgsMapService;
 	import com.transcendss.mavric.db.MAVRICDBManager;
@@ -8,18 +7,14 @@ package com.transcendss.mavric.managers.ddot
 	import com.transcendss.mavric.util.FileUtility;
 	import com.transcendss.transcore.sld.models.StickDiagram;
 	import com.transcendss.transcore.sld.models.components.BaseAsset;
+	import com.transcendss.transcore.sld.models.components.Route;
 	import com.transcendss.transcore.sld.models.managers.CoreAssetManager;
 	
-	import flash.events.Event;
 	import flash.events.IEventDispatcher;
-	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
 	
 	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
 	import mx.rpc.IResponder;
-	import mx.rpc.Responder;
 	
 	
 	public class DdotRecordManager extends CoreAssetManager
@@ -56,6 +51,12 @@ package com.transcendss.mavric.managers.ddot
 		{
 			return _signEventLayerID;
 		}
+		
+		public function get wardEventLayerID():Number
+		{
+			return _wardEventLayerID;
+		}
+		
 		public function get inspectionEventLayerID():Number
 		{
 			return _inspectionEventLayerID;
@@ -228,7 +229,7 @@ package com.transcendss.mavric.managers.ddot
 			return sign;
 		}
 		
-		public override function onDBRetrievalComplete(arr:ArrayCollection, type:String, resp:IResponder):void
+		public  function onDBRetrievalCompleteDDOT(arr:ArrayCollection, type:String, resp:IResponder, route:Route =null):void
 		{
 			this.route =  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.route;
 			var assetCollection:Vector.<BaseAsset> = new Vector.<BaseAsset>();
@@ -253,13 +254,18 @@ package com.transcendss.mavric.managers.ddot
 				{
 					supportIDList.push(temp.id);
 					if(temp.invProperties[temp.typeKey].value=='null')
-						temp.invProperties[temp.typeKey].value='NS'; //set it to N by default
+						temp.invProperties[temp.typeKey].value='LEFT'; //set it to N by default
+					if(temp.invProperties["POLESTATUS"].value!=5)//if it is not retired
+						assetCollection.push(temp);
 				}
 				else if(type=="INT")
 				{
 					_intersectionList.addItem(temp);
+					assetCollection.push(temp)
 				}
-				assetCollection.push(temp)
+				else
+					assetCollection.push(temp);
+				
 			}
 			
 			
@@ -270,7 +276,7 @@ package com.transcendss.mavric.managers.ddot
 				getSignsForAllSupports(supportIDList,resp);
 			}
 			else
-				resp.result({assets: assetCollection, type: type});
+				resp.result({assets: assetCollection, type: type, route:route});
 		}
 		
 		private function toArrayCollection(iterable:*):ArrayCollection {
@@ -292,6 +298,8 @@ package com.transcendss.mavric.managers.ddot
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
 		}
+		
+		
 		
 		public function onAllSignServiceResult(obj:Object,event:DdotRecordEvent):void
 		{
@@ -388,7 +396,7 @@ package com.transcendss.mavric.managers.ddot
 			inspection['OVERALLCONDITION'] = inspection['OVERALLCONDITION'] || null;
 			inspection['ACTIONTAKEN'] = inspection['ACTIONTAKEN'] || null;
 			inspection['ADDITIONALACTIONNEEDED'] = inspection['ADDITIONALACTIONNEEDED'] || null;
-			inspection['DATEINSPECTED'] = Date.parse(inspection['DATEINSPECTED']);
+			inspection['DATEINSPECTED'] = (inspection['DATEINSPECTED'] && !isNaN(inspection['DATEINSPECTED'])) ? ((inspection['DATEINSPECTED'] is Date)? Date.parse(inspection['DATEINSPECTED']): inspection['DATEINSPECTED']):null;
 			inspection['BENT'] = inspection['BENT'] ? 1 : 0;
 			inspection['TWISTED'] = inspection['TWISTED'] ? 1 : 0;
 			inspection['LOOSE'] = inspection['LOOSE'] ? 1 : 0;

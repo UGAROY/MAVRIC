@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" title="Manage Time Restrictions"
-			   width="750" height="580"
+			   width="900" height="580"
 			   close="handleCloseEvent()"
 			   creationComplete="init()"
 			   skinClass="skins.MavricTitleWindowSkin" xmlns:ddot="com.transcendss.mavric.views.ddot.*">
@@ -23,6 +23,8 @@
 			
 			private var dayDomainObj:Object;
 			private var timeDomainObj:Object;
+			private var exceptionDomainObj:Object;
+			
 
 			private function init():void
 			{
@@ -30,9 +32,10 @@
 				{
 					var dayDomain:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("DAY");
 					var timeDomain:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("HOUR");
+					var exceptionDomain:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("EXCEPTION");
 					dayDomainObj = domainToObj(dayDomain);
 					timeDomainObj = domainToObj(timeDomain);
-					
+					exceptionDomainObj = domainToObj(exceptionDomain)
 					currTimeRestriction.refresh();
 				}
 				catch(err:Error)
@@ -78,7 +81,7 @@
 				newTimeObj['ENDHOUR'] = null;
 				newTimeObj['HOURLIMIT'] = null;
 				newTimeObj['RESTRICTIONORDER'] = null;
-				
+				newTimeObj['EXCEPTION'] = null;
 				openTrEditor(newTimeObj, true);
 			}
 			
@@ -117,6 +120,11 @@
 				return timeDomainObj != null ? timeDomainObj[item[column.dataField]] : "";
 			}
 			
+			private function formatExceptionColumn(item:Object, column:GridColumn):String
+			{
+				return exceptionDomainObj != null ? exceptionDomainObj[item[column.dataField]] : "";
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -146,6 +154,7 @@
 					<s:GridColumn dataField="ENDTIME" headerText="End Time" labelFunction="formatTimeColumn"/>
 					<s:GridColumn dataField="HOURLIMIT" headerText="Hour Limit"/>
 					<s:GridColumn dataField="RESTRICTIONORDER" headerText="Order"/> 
+					<s:GridColumn dataField="EXCEPTION" headerText="Exception" labelFunction="formatExceptionColumn"/> 
 				</s:ArrayList>
 			</s:columns>
 		</s:DataGrid>

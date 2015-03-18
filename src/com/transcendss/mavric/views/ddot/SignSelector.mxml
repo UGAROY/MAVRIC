@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" title="Sign Selection"
-			   width="500" height="600"
+			   width="800" height="550"
 			   backgroundColor="0xFFFFCC"
 			   close="handleCloseEvent()"
 			   creationComplete="init()"
@@ -22,12 +22,10 @@
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.core.UIComponent;
-			import mx.events.CloseEvent;
 			import mx.managers.PopUpManager;
 			
-			import spark.components.TextInput;
+			import spark.components.Button;
 			import spark.events.IndexChangeEvent;
-			import spark.skins.mobile.TextInputSkin;
 			
 			[Bindable]
 			[Embed(source="images/gray_icons/icon_Mav-Search_40x40.png")]
@@ -65,18 +63,18 @@
 					
 					signselCatDDView.domainTableIDColName =  "SIGN_MAJOR_CAT_ID";
 					signselCatDDView.fetchDomainValues();
-					signselCatDDView.width_TI = 180;
+					//signselCatDDView.width_TI = 180;
 					signselCatDDView.customCPCallback = getSubCats;
 					signselCatDDView.customCPEvent = new DropDownViewEvent(DropDownViewEvent.CATEGORYSELCTED);
 					signselCatDDView.bgColor = uint("0xFFFFCC");
 					var Catbutton:Button = signselCatDDView.button;
 					signselCatDDView.btnText = "Category";
 					signselCatDDView.genericPopup.height = 200;
-					signselCatDDView.genericPopup.width = 180;
+					signselCatDDView.genericPopup.width = 300;
 					SSCatGroup.addElement(signselCatDDView);
 					
 					signselsubCatDDView.domainTableIDColName =  "SIGN_SUB_CATEGORY_ID";
-					signselsubCatDDView.width_TI = 180;
+					//signselsubCatDDView.width_TI = 180;
 					signselsubCatDDView.isEnabled = false;
 					signselsubCatDDView.customCPCallback = getMutcdDP;
 					signselsubCatDDView.customCPEvent = new DropDownViewEvent(DropDownViewEvent.SUBCATEGORYSELCTED);
@@ -84,7 +82,7 @@
 					var subCatbutton:Button = signselsubCatDDView.button;
 					signselsubCatDDView.btnText = "Sub-Cat";
 					signselsubCatDDView.genericPopup.height = 200;
-					signselsubCatDDView.genericPopup.width = 200;
+					signselsubCatDDView.genericPopup.width = 300;
 					SSSubCatGroup.addElement(signselsubCatDDView);
 					
 					keywordText.text = initialKeyword;
@@ -133,7 +131,7 @@
 				}
 				if (keywordText.text != initialKeyword && keywordText.text != "")
 				{
-					flag = flag && item.DESCRIPTION.indexOf(keywordText.text) >= 0
+					flag = flag && String(item.DESCRIPTION).toLowerCase().indexOf(keywordText.text.toLowerCase()) >= 0
 				}
 				return flag;
 			}
@@ -154,6 +152,7 @@
 				SubCatID = 0;
 				keywordText.text = "";
 				signdesc.text = "";
+				signName.text="";
 				mutcdAc.removeAll();
 				mutcdImagegrp.removeAllElements();
 			}
@@ -166,6 +165,7 @@
 					signselectedEvent.category = signselCatDDView.description;
 					signselectedEvent.subcat = signselsubCatDDView.description;
 					signselectedEvent.description = signdesc.text;
+				//	signselectedEvent.mutcdText = mutcdList.selectedItem.ID;
 					//signselectedEvent.mutcdID = mutcdList.selectedItem? new Number(mutcdList.selectedItem.ID):0;
 					signselectedEvent.mutcdText = mutcdList.selectedItem.ID;
 					//dispatchEvent(signselectedEvent);
@@ -180,11 +180,12 @@
 			protected function mutcdList_changeHandler(event:IndexChangeEvent):void
 			{
 				// Retrieve the sign image from teh image manager
-				signdesc.text = StringUtil.trim(mutcdList.selectedItem.ID);
+				signdesc.text = StringUtil.trim(mutcdList.selectedItem.DESCRIPTION);
+				signName.text = StringUtil.trim(mutcdList.selectedItem.ID);
 				mutcdImagegrp.removeAllElements();
 				
 				var imageMngr:ImageManager = new ImageManager();
-				btmp = imageMngr.getById(signdesc.text);
+				btmp = imageMngr.getById(StringUtil.trim(mutcdList.selectedItem.ID));
 				
 				btmp = imageMngr.scaleImage(btmp,mutcdImagegrp);
 				// If the sign is valid
@@ -217,6 +218,10 @@
 				getMutcdDP();
 			}
 			
+			private function signLabelFunc(item:Object):String
+			{
+				return item["ID"] + " - " + item["DESCRIPTION"];	
+			}
 		]]>
 	</fx:Script>
 	
@@ -229,7 +234,7 @@
 	<s:layout>
 		<s:VerticalLayout verticalAlign="top"/>
 	</s:layout>
-	<s:VGroup gap="15" width="100%"  height="485" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20" paddingBottom="10">
+	<s:VGroup gap="15" width="100%"  height="450" horizontalAlign="left" paddingTop="10" paddingLeft="20" paddingRight="20" paddingBottom="10">
 		<s:HGroup>
 			<s:HGroup verticalAlign="middle" id="SSCatGroup"></s:HGroup>
 			<s:Spacer width="40"/>
@@ -242,18 +247,24 @@
 			<s:Image id="keywordSearch" source="{searchIcon}" height="40" width="40" buttonMode="true" click="keywordSearch_clickHandler(event)"/>
 		</s:HGroup>
 		<s:HGroup height="40%" width="100%">
-			<s:Group width="50%" height="100%">
-				<s:List left="0" id="mutcdList" dataProvider="{mutcdAc}" height="100%" width="100%" visible="{mutcdAc.length}" labelField="DESCRIPTION" fontSize="18" allowMultipleSelection="false" change="mutcdList_changeHandler(event)"/>
+			<s:Group width="70%" height="100%">
+				<s:List left="0" id="mutcdList" dataProvider="{mutcdAc}" height="100%" width="100%" visible="{mutcdAc.length>0}" labelFunction="signLabelFunc" fontSize="18" allowMultipleSelection="false" change="mutcdList_changeHandler(event)"/>
 				<!--<s:Label text="select the category or search by Keywords to populate the mutcd list" verticalCenter="0" horizontalCenter="0" width="100%" visible="{!mutcdAc.length}"/>-->
 			</s:Group>
-			<s:Group id="mutcdImagegrp" width="50%" height="100%"/>
+			<s:Group id="mutcdImagegrp" width="30%" height="100%"/>
 		</s:HGroup>
 	
-		<s:Spacer height="15"/>
+		<s:Spacer height="5"/>
 		<s:HGroup verticalAlign="middle">
 			<s:Label text="Description" fontWeight="bold" fontSize="14"/>
 			<s:Spacer width="10"/>
 			<s:TextInput id="signdesc" editable="true" skinClass="spark.skins.mobile.TextInputSkin"/>
+		</s:HGroup>
+		<s:Spacer height="5"/>
+		<s:HGroup verticalAlign="middle">
+			<s:Label text="MUTCD" fontWeight="bold" fontSize="14"/>
+			<s:Spacer width="16"/>
+			<s:TextInput id="signName" editable="true" skinClass="spark.skins.mobile.TextInputSkin"/>
 		</s:HGroup>
 
 	</s:VGroup>	

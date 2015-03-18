@@ -52,7 +52,7 @@
 					if (oldLinkSigns.indexOf(otherSign['SIGNID'].toString())!= -1) 
 						otherSign['Linked'] = true;
 					else
-						otherSign['Linked'] = false
+						otherSign['Linked'] = false;
 				}
 				otherSignsDp = otherSigns;
 			}
@@ -60,6 +60,11 @@
 			private function formatMeasureColumn(item:Object, column:GridColumn):String
 			{
 				return parseFloat(item[column.dataField]).toFixed(3);
+			}
+			
+			private function descLabelFunc(item:Object, column:GridColumn):String
+			{
+				return FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(item["SIGNNAME"]);
 			}
 			
 			protected function handleCloseEvent():void
@@ -113,7 +118,7 @@
 					dataProvider="{currentSignDp}">
 			<s:columns>
 				<s:ArrayList>
-					<s:GridColumn dataField="DESCRIPTION" headerText="Sign Code"/>
+					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Code"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn"/>
 					<s:GridColumn dataField="POLEID" headerText="Support ID"/>
@@ -138,7 +143,7 @@
 							</fx:Component>
 						</s:itemRenderer>
 					</s:GridColumn>
-					<s:GridColumn dataField="DESCRIPTION" headerText="Sign Code"/>
+					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Code"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn">
 					</s:GridColumn>

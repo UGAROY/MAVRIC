@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
 			   xmlns:s="library://ns.adobe.com/flex/spark" title="Edit Time Restrictions"
-			   width="620" height="300"
+			   width="650" height="400"
 			   close="handleCloseEvent()"
 			   creationComplete="init()"
 			   skinClass="skins.MavricTitleWindowSkin" xmlns:ddot="com.transcendss.mavric.views.ddot.*">
@@ -25,6 +25,7 @@
 			private var endDayDDView:DropDownViewHoriz = new DropDownViewHoriz();
 			private var startTimeDDView:DropDownViewHoriz = new DropDownViewHoriz();
 			private var endTimeDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			private var exceptionDDView:DropDownViewHoriz = new DropDownViewHoriz();
 			
 			private function init():void
 			{
@@ -61,6 +62,15 @@
 					endTimeDDView.genericPopup.height = 200;
 					endTimeDDView.genericPopup.width = 200;
 					endTimeDDGroup.addElement(endTimeDDView);
+					
+					
+					exceptionDDView.domainTableIDColName =  "EXCEPTION";
+					exceptionDDView.fetchDomainValues();
+					exceptionDDView.btnText = "Exception";
+					exceptionDDView.width_TI = 120;
+					exceptionDDView.genericPopup.height = 200;
+					exceptionDDView.genericPopup.width = 200;
+					exceptionDDGroup.addElement(exceptionDDView);
 				}
 				catch(err:Error)
 				{
@@ -76,6 +86,7 @@
 				endTimeDDView.domainID = String(currTimeObj['ENDTIME']);
 				hourLimitTextInut.text = String(currTimeObj['HOURLIMIT'] || "");
 				orderTextInut.text = String(currTimeObj['RESTRICTIONORDER'] || "") ;
+				exceptionDDView.domainID = String(currTimeObj['EXCEPTION']);
 			}
 
 			
@@ -95,6 +106,7 @@
 					currTimeObj['ENDTIME'] =  parseInt(endTimeDDView.domainID);
 					currTimeObj['HOURLIMIT'] = parseInt(hourLimitTextInut.text) || null;
 					currTimeObj['RESTRICTIONORDER'] = parseInt(orderTextInut.text) || null;
+					currTimeObj['EXCEPTION'] = parseInt(exceptionDDView.domainID);
 					
 					trEditorCallback(currTimeObj, this.isNewTimeObj); 
 					
@@ -144,7 +156,11 @@
 				<s:TextInput id="orderTextInut" width="120"  skinClass="spark.skins.mobile.TextInputSkin"/>
 				
 			</s:HGroup>
-			<s:Spacer height="20"/>
+			<s:Spacer height="5"/>
+			<s:HGroup verticalAlign="middle">
+				<s:Group id="exceptionDDGroup"/>
+			</s:HGroup>
+			<s:Spacer height="10"/>
 			<s:HGroup verticalAlign="middle">
 				<s:Spacer width="210"/>
 				<s:Button label="Save" height="35" click="SaveHandler(event)"/>

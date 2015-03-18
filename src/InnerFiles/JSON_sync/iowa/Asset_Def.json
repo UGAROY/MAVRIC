@@ -1,0 +1,573 @@
+[
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "1",
+      "DESCRIPTION": "CULV",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "UI_NAME": "Culvert",
+      "LRM": "1",
+      "TYPE_KEY": "D_CULV_PLACEMENT_TY_ID",
+      "LENGTH_UNIT":"FT",
+      "FORM_CLASS": "com.transcendss.mavric.views.InventoryMenu",
+      "SYNC": "true",
+      "SYNC_COL_LIST":"ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|COUNTY_NUM|D_GARAGE_ID|STATION|PROJECT_ID|CROSS_ST_NUM|CROSS_ST_NM|CULV_LENGTH_FT|CULV_LENGTH_FLG|NUM_BARRELS|SKEW_FLG|D_BEAM_MAT_ID|D_ABUTMENT_MAT_ID|D_CULV_MAT_ID|D_CULV_MAT_ID_2|D_CULV_SHAPE_ID|D_JOINT_SEP_LOC_ID|D_CULV_PLACEMENT_TY_ID|LOCATION_CMT|CULV_SIZE_HORIZ_INCH|CULV_SIZE_VERT_INCH|CULV_SIZE3|INV_CMT|LATITUDE|LONGITUDE|PRECISION|PDOP|INSP_DT|INSP_CMT|D_JOINT_COND_ID|D_CHNL_COND_ID|D_BARL_COND_ID|D_ENDS_COND_ID|D_FLOW_COND_ID|D_JOINT_RMK_ID|D_CHNL_RMK_ID|D_BARL_RMK_ID|D_ENDS_RMK_ID|D_FLOW_RMK_ID|D_REFER_TO_ID|D_MAINT_EQUIP_ID1|D_MAINT_EQUIP_ID2|D_MAINT_EQUIP_ID3|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+           "SUBTYPE":"1",
+            "SUBTYPE_DESC": "Crossing",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing.json",
+              "CENTER_VERTICALLY": "True",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "50",
+              "TEXT": null,
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing.json"
+                }
+              ]
+            }
+          },
+          {
+            "SUBTYPE":"2",
+             "SUBTYPE_DESC": "Entrance Culvert Right",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt.json",
+              "PLACEMENT_Y": "65",
+              "TEXT": null,
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt.json"
+                }
+              ]
+            }
+          },
+          {
+            "SUBTYPE":"3",
+            "SUBTYPE_DESC": "Entrance Culvert Left",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft.json",
+              "PLACEMENT_Y": "25",
+              "TEXT": null,
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft.json"
+                }
+              ]
+            }
+          },
+          {
+             "SUBTYPE":"4",
+            "SUBTYPE_DESC": "Other",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft.json",
+              "PLACEMENT_Y": "25",
+              "TEXT": null,
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft.json"
+                }
+              ]
+            }
+          },
+          {
+            "SUBTYPE":"5",
+            "SUBTYPE_DESC": "Median",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing.json",
+              "CENTER_VERTICALLY": "True",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "50",
+              "TEXT": null,
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culv_crossing.json"
+                }
+              ]
+            }
+          },
+          {
+            "SUBTYPE":"6",
+            "SUBTYPE_DESC": "Off-Ramp Primary",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft.json",
+              "PLACEMENT_Y": "65",
+              "TEXT": "R",
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft.json"
+                }
+              ]
+            }
+          },
+          {
+             "SUBTYPE":"7",
+            "SUBTYPE_DESC": "Off-Ramp Opposite",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt.json",
+              "PLACEMENT_Y": "25",
+              "TEXT": "R",
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt.json"
+                }
+              ]
+            }
+          },
+          {
+            "SUBTYPE":"8",
+            "SUBTYPE_DESC": "On-Ramp Primary",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt.json",
+              "PLACEMENT_Y": "65",
+              "TEXT": "R",
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_rt.json"
+                }
+              ]
+            }
+          },
+          {
+            "SUBTYPE":"9",
+            "SUBTYPE_DESC": "On-Ramp Opposite",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "URL": "images/icon.png",
+              "WIDTH": "30",
+              "HEIGHT": "30",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft.json",
+              "PLACEMENT_Y": "25",
+              "TEXT": "R",
+              "ALTERNATE_PROPERTY": "D_CULV_SHAPE_ID",
+              "ALTERNATES": [
+                {
+                  "VALUE": "1",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_pipe.json"
+                },
+                {
+                  "VALUE": "2",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_arch.json"
+                },
+                {
+                  "VALUE": "3",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft_box.json"
+                },
+                {
+                  "VALUE": "4",
+                  "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_culvert_lft.json"
+                }
+              ]
+            }
+          }
+        ],
+        "SUBTYPE_FIELD": "ASSET_TYPE"
+      },
+      "LAYER_ORDER": "95"
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "2",
+      "CAPTURE_AVAILABLE": "false",
+      "VISIBLE_ON_STICK": "true",
+      "DESCRIPTION": "MILEMARKER",
+      "UI_NAME": "Mile Marker",
+      "LRM": "1",
+      "TYPE_KEY": "MUTCD",
+       "SYNC": "false",
+      "FORM_CLASS": "com.transcendss.mavric.views.SignInventory",
+      "DEFINITION": {
+        "SUBTYPES": []
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "3",
+      "CAPTURE_AVAILABLE": "false",
+      "VISIBLE_ON_STICK": "false",
+      "DESCRIPTION": "ACCESSPOINT",
+      "UI_NAME": "Access Point",
+      "LRM": "1",
+      "TYPE_KEY": "SUBTYPE",
+       "SYNC": "false",
+      "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "0",
+            "LOCATION": "NONE",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "DRAWSTRING": "",
+              "WIDTH": "96",
+              "HEIGHT": "120",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "5",
+              "TEXT": null
+            }
+          },
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/access_pt_lft.png",
+              "SCALE": "True",
+              "WIDTH": "96",
+              "HEIGHT": "120",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "50",
+              "TEXT": null
+            }
+          },
+          {
+            "SUBTYPE": "2",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/access_pt.png",
+              "SCALE": "True",
+              "WIDTH": "96",
+              "HEIGHT": "120",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "50",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "4",
+      "CAPTURE_AVAILABLE": "false",
+      "VISIBLE_ON_STICK": "true",
+      "DESCRIPTION": "INT",
+      "UI_NAME": "Intersection",
+      "LRM": "1",
+      "TYPE_KEY": "",
+       "SYNC": "false",
+      "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+      "TIP_FIELD": "FEATURE_NAME",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/Interchang.png",
+              "WIDTH": "13",
+              "HEIGHT": "110",
+              "CENTER_VERTICALLY": "True",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "10",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "5",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "DESCRIPTION": "SIGN",
+      "UI_NAME": "Sign",
+      "LRM": "1",
+      "TYPE_KEY": "MUTCD",
+      "FORM_CLASS": "com.transcendss.mavric.views.SignInventory",
+       "SYNC": "true",
+      "SYNC_COL_LIST":"ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|COUNTY_NUM|ASSEMBLY_ID|ASSEMBLY_LOCAL_ID|D_SIDE_ROAD_ID|D_DIR_TRAVEL_ID|D_POST_SIZE_ID|D_POST_TY_ID|D_POST_RATING_ID|NUM_SIGNS|NUM_OF_POSTS|POST_LENGTH|LATERAL_OFFSET|LOC_COMMENT|SIGN_VALUE|SIGN_DESC|MUTCD_ID|D_COLOR_ID|D_DIMENSION_ID|D_IN_CATALOG|D_SHEETING_MAT_ID|D_BLANK_MAT_ID|D_DIR_TRAVEL_ID|SIGN_CMT|DATE_IN_SERVICE|LATITUDE|LONGITUDE|PRECISION|PDOP|INSP_DT|SIGN_INSP_RATING_ID|REFLECTIVITY_REVIEW|D_REFER_TO_ID|d_maint_equip_id1|d_maint_equip_id2|d_maint_equip_id3|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWOBJ": null,
+            "DRAWING": {
+              "DRAWSTRING": "",
+              "SCALE": "True",
+              "WIDTH": "80",
+              "HEIGHT": "60",
+              "CENTER_VERTICALLY": "True",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "0",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "7",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "DESCRIPTION": "INCIDENT",
+      "UI_NAME": "Incident",
+      "LRM": "1",
+      "TYPE_KEY": "",
+      "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
+       "SYNC": "true",
+      "SYNC_COL_LIST":"ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|COUNTY_NUM|D_URGENCY_ID|INCIDENT_CMT|LATITUDE|LONGITUDE|PRECISION|PDOP|INC_DT|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/warning_icon.png",
+              "SCALE": "true",
+              "WIDTH": "70",
+              "HEIGHT": "60",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "True",
+              "PLACEMENT_Y": "10",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ASSET_DEF": {
+      "ASSET_TYPE": "8",
+      "CAPTURE_AVAILABLE": "true",
+      "VISIBLE_ON_STICK": "true",
+      "DESCRIPTION": "GUARDRAIL",
+      "UI_NAME": "Guardrail",
+      "LRM": "1",
+      "LENGTH_UNIT":"FT",
+      "TYPE_KEY": "D_GRAIL_LOC_ID",
+      "FORM_CLASS": "com.transcendss.mavric.views.GuardrailMenu",
+       "SYNC": "true",
+      "SYNC_COL_LIST":"ASSET_BASE_ID|ID|ROUTE_NAME|REFPT|COUNTY_NUM|D_GRAIL_PURPOSE_ID|D_GRAIL_MATERIAL_ID|D_GRAIL_LOC_ID|BRIDGE_ATTACH_FLG|LENGTH_FT|LAT_BEGIN|LON_BEGIN|LAT_END|LON_END|PRECISION|PDOP|INSP_DT|D_GRAIL_CONDITION_ID|D_REFER_TO_ID|D_MAINT_EQUIP_ID1|D_MAINT_EQUIP_ID2|D_MAINT_EQUIP_ID3|RETIRED",
+      "DEFINITION": {
+        "SUBTYPES": [
+          {
+            "SUBTYPE": "1",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_guardrail_lft.json",
+              "SCALE": "true",
+              "WIDTH": "80",
+              "HEIGHT": "150",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "PLACEMENT_Y": "28",
+              "TEXT": null
+            }
+          },
+          {
+            "SUBTYPE": "2",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_guardrail_rt.json",
+              "SCALE": "true",
+              "WIDTH": "80",
+              "HEIGHT": "150",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "PLACEMENT_Y": "68",
+              "TEXT": null
+            }
+          },
+          {
+            "SUBTYPE": "3",
+            "LOCATION": "STICK",
+            "DRAWING": {
+              "DRAWSTRING": "InnerFiles/JSON_sync/MAVRICIowa/drawstring_guardrail_median.json",
+              "SCALE": "true",
+              "WIDTH": "80",
+              "HEIGHT": "150",
+              "CENTER_VERTICALLY": "False",
+              "CENTER_HORIZONTALLY": "False",
+              "PLACEMENT_Y": "7",
+              "TEXT": null
+            }
+          }
+        ]
+      }
+    }
+  }
+]

@@ -43,7 +43,7 @@ package com.transcendss.mavric.managers
 	import mx.rpc.IResponder;
 	
 	import spark.components.Image;
-
+	
 	// need to add pdfutil package
 	
 	/**
@@ -61,15 +61,16 @@ package com.transcendss.mavric.managers
 		
 		private var serviceCallName:String = "Domains/";
 		private var defaultDescCol:String = "DESCRIPTION";
-				
+		
 		
 		private var _domainDefs:Object = new Object();
 		
 		public var assetsForSync:Array=new Array();
+		public var eventLayerIDs:Array=new Array();
 		public var barElementsForSync:Array=new Array();
 		private var _barElementDomainDefs:Object = new Object();
 		public var barElementNames:Array = new Array();
-
+		
 		
 		/**
 		 * Creates tables for an list of different types of assets.
@@ -78,7 +79,7 @@ package com.transcendss.mavric.managers
 		{
 			_mdbm = MAVRICDBManager.newInstance();
 			_dispatcher = new Dispatcher(); 
-//			getAssetDefinitions(ConfigUtility.get("asset_json_def"));
+			//			getAssetDefinitions(ConfigUtility.get("asset_json_def"));
 			getAssetDefinitions(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.assetJsonDef);
 			cacheDrawStrings();
 			getDomainList(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.domainDef);
@@ -88,6 +89,32 @@ package com.transcendss.mavric.managers
 			//getDomainList(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.barElementDomainDef, false);
 		}
 		
+		public function getBarElementIDField(type:String):String
+		{
+			var uiName:String = "";
+			uiName = _barElementDefs[type].BAR_ELEMENT_DATA_TEMPLATE.PRIMARY_KEY;
+			return uiName;
+		}
+		
+		public function getBarElementFromMeasure(type:String):String
+		{
+			var uiName:String = "";
+			uiName = _barElementDefs[type].BAR_ELEMENT_DATA_TEMPLATE.FROM_MEASURE_COLUMN
+			return uiName;
+		}
+		public function getBarElementToMeasure(type:String):String
+		{
+			var uiName:String = "";
+			uiName = _barElementDefs[type].BAR_ELEMENT_DATA_TEMPLATE.TO_MEASURE_COLUMN;
+			return uiName;
+		}
+		public function getBarElementValueField(type:String):String
+		{
+			var uiName:String = "";
+			uiName = _barElementDefs[type].TYPE_KEY;
+			return uiName;
+		}
+		
 		private function cacheDrawStrings():void
 		{
 			for (var def:String in _assetDefs)
@@ -95,11 +122,11 @@ package com.transcendss.mavric.managers
 				_sprites[_assetDefs[def].DESCRIPTION] = new Array();
 				var subtypeCount:int = 1;
 				
-
+				
 				for each (var subtype:Object in _assetDefs[def].DEFINITION.SUBTYPES)
 				{
 					var meFile:File = new File("app:///" + subtype.DRAWING.DRAWSTRING);
-						
+					
 					if (!meFile.exists || subtype.DRAWING.DRAWSTRING == "")
 						continue;
 					
@@ -124,8 +151,8 @@ package com.transcendss.mavric.managers
 					}
 					
 					/*
-					 * Stores alternate drawings for subtypes where the key = "Description-Subtype-AltPropertyValue" 
-					 */
+					* Stores alternate drawings for subtypes where the key = "Description-Subtype-AltPropertyValue" 
+					*/
 					_sprites[_assetDefs[def].DESCRIPTION+"-"+subtypeCount] = new Array();
 					for each(var alt_drawstring:Object in subtype.DRAWING.ALTERNATES)
 					{
@@ -154,7 +181,11 @@ package com.transcendss.mavric.managers
 			}
 		}
 		
-
+		public function isCaptureAvailable(def:String):Boolean
+		{
+			return String(_assetDefs[def].CAPTURE_AVAILABLE).toLowerCase() == "true";
+		}
+		
 		private function getAssetDefinitions(path:String, isAsset:Boolean=true):void
 		{	
 			var meFile:File ;
@@ -166,7 +197,7 @@ package com.transcendss.mavric.managers
 			
 			var fs:FileStream = new FileStream();
 			fs.open(meFile, FileMode.READ);
-		
+			
 			var jsonString : String = fs.readUTFBytes(fs.bytesAvailable);
 			var jsonObj:Object = JSON.parse(jsonString);
 			buildDefinitionList(jsonObj, isAsset);
@@ -187,7 +218,8 @@ package com.transcendss.mavric.managers
 						_assetDescriptions[jsonObj[i].ASSET_DEF.DESCRIPTION] = jsonObj[i].ASSET_DEF.ASSET_TYPE; 
 					}	
 					if(String(jsonObj[i].ASSET_DEF.SYNC).toLowerCase()=="true")
-						this.assetsForSync.push(jsonObj[i].ASSET_DEF.DESCRIPTION);
+						this.assetsForSync.push({ID:jsonObj[i].ASSET_DEF.ASSET_TYPE,DESCRIPTION:jsonObj[i].ASSET_DEF.DESCRIPTION, EVENT_LAYER_ID:jsonObj[i].ASSET_DEF.EVENT_LAYER_ID} );
+					eventLayerIDs.push(jsonObj[i].ASSET_DEF.EVENT_LAYER_ID);
 				}
 				
 				//			var meFile:File = File.applicationDirectory.resolvePath(ConfigUtility.get("asset_json_template"));
@@ -217,32 +249,32 @@ package com.transcendss.mavric.managers
 			}
 			else
 			{
-				for (var i:int = 0; i < arr.length; i++)
+				for (var j:int = 0; j < arr.length; j++)
 				{
-//					if (jsonObj[i].BAR_ELEMENT_DEF.DEFINITION.hasOwnProperty("SUBTYPES"))
-//					{	
-						_barElementDefs[jsonObj[i].BAR_ELEMENT_DEF.ELEMENT_TYPE] = jsonObj[i].BAR_ELEMENT_DEF;
-						_barElementDescriptions[jsonObj[i].BAR_ELEMENT_DEF.DESCRIPTION] = jsonObj[i].BAR_ELEMENT_DEF.ELEMENT_TYPE; 
-//					}	
-					if(String(jsonObj[i].BAR_ELEMENT_DEF.SYNC).toLowerCase()=="true")
-						this.barElementsForSync.push(jsonObj[i].BAR_ELEMENT_DEF.DESCRIPTION);
+					//					if (jsonObj[i].BAR_ELEMENT_DEF.DEFINITION.hasOwnProperty("SUBTYPES"))
+					//					{	
+					_barElementDefs[jsonObj[j].BAR_ELEMENT_DEF.ELEMENT_TYPE] = jsonObj[j].BAR_ELEMENT_DEF;
+					_barElementDescriptions[jsonObj[j].BAR_ELEMENT_DEF.DESCRIPTION] = jsonObj[j].BAR_ELEMENT_DEF.ELEMENT_TYPE; 
+					//					}	
+					if(String(jsonObj[j].BAR_ELEMENT_DEF.SYNC).toLowerCase()=="true")
+						this.barElementsForSync.push(jsonObj[j].BAR_ELEMENT_DEF.DESCRIPTION);
 				}
 				
 				//			var meFile:File = File.applicationDirectory.resolvePath(ConfigUtility.get("asset_json_template"));
-				var meFile:File ;
-				var path:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.barElementJsonTempl;
-				if(path.indexOf("app-storage")!= -1)
-					meFile=File.applicationStorageDirectory.resolvePath(path.replace("app-storage:/",""))
+				var meFile2:File ;
+				var path2:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.barElementJsonTempl;
+				if(path2.indexOf("app-storage")!= -1)
+					meFile2=File.applicationStorageDirectory.resolvePath(path2.replace("app-storage:/",""))
 				else
-					meFile = File.applicationDirectory.resolvePath(path);
+					meFile2 = File.applicationDirectory.resolvePath(path2);
 				
-				var fs:FileStream = new FileStream();
-				fs.open(meFile, FileMode.READ);
+				var fs2:FileStream = new FileStream();
+				fs2.open(meFile2, FileMode.READ);
 				
-				var jsonString : String = fs.readUTFBytes(fs.bytesAvailable);
-				var jsonObj:Object = JSON.parse(jsonString);
+				var jsonString2 : String = fs2.readUTFBytes(fs2.bytesAvailable);
+				var jsonObj2:Object = JSON.parse(jsonString2);
 				
-				arr = jsonObj as Array;
+				arr = jsonObj2 as Array;
 				
 				_rebuildArr = arr;
 				
@@ -257,8 +289,8 @@ package com.transcendss.mavric.managers
 		}
 		
 		
-	
-
+		
+		
 		private function getDomainList(path:String, isAsset:Boolean=true):void
 		{	
 			var meFile:File ;
@@ -289,7 +321,7 @@ package com.transcendss.mavric.managers
 			}
 			else
 			{
-				for (var i:int = 0; i < arr.length; i++)
+				for ( i = 0; i < arr.length; i++)
 				{
 					_barElementDomainDefs[arr[i].BAR_ELEMENT_DOMAIN_DEF.TYPE] = arr[i].BAR_ELEMENT_DOMAIN_DEF.LIST;
 				}
@@ -301,13 +333,13 @@ package com.transcendss.mavric.managers
 			var dom:Array = _domainDefs[type] as Array;
 			return new ArrayCollection(dom);
 		}
-
+		
 		public function getBarElementDomain(type:String):ArrayCollection
 		{
 			var dom:Array = _barElementDomainDefs[type] as Array;
 			return new ArrayCollection(dom);
 		}
-
+		
 		public function getUsersDomainByBoundry(boundry:String):ArrayCollection
 		{
 			var dom:Array = _domainDefs["USERS"] as Array;
@@ -329,7 +361,7 @@ package com.transcendss.mavric.managers
 			}
 			_mdbm.createAssetTables(_rebuildArr);
 		}
-
+		
 		// Drop and recreate all bar element tables
 		public function clearBarElementTables():void
 		{
@@ -339,7 +371,7 @@ package com.transcendss.mavric.managers
 			}
 			_mdbm.createBarElementTables(_rebuildArr);
 		}
-
+		
 		public function mapAndAssignAssetSymbols(data:Object,type:String, resp:IResponder, assign:Boolean = true):void
 		{
 			var asset:BaseAsset;
@@ -395,7 +427,7 @@ package com.transcendss.mavric.managers
 			//assignAssetSymbol(returnVal,type,null);
 			return returnVal;
 		}
-
+		
 		// Returns the properties for a bar element.  Used by the Element Edit functions
 		public function getBarElementInvProperties(elem:Object, rteName:String):Object
 		{
@@ -410,7 +442,7 @@ package com.transcendss.mavric.managers
 			//tmpElem["STATUS"] = elem.status;
 			return tmpElem;
 		}
-
+		
 		public function getBarElementUIName(desc:String):String
 		{
 			var uiName:String = "";
@@ -472,7 +504,7 @@ package com.transcendss.mavric.managers
 			
 			return retArr;
 		}
-			
+		
 		
 		/**
 		 * saves a given asset to the local database
@@ -491,7 +523,7 @@ package com.transcendss.mavric.managers
 				_mdbm.updateAsset(asset);
 			return false;
 		}
-
+		
 		/**
 		 * saves a given bar element to the local database
 		 * If an element with a given id is already in the local database, it updates that element. 
@@ -516,7 +548,7 @@ package com.transcendss.mavric.managers
 			}
 			return false;
 		}
-
+		
 		// Used to get a bar element description from an attribute name
 		public function getTypeFromAttName(attName:String):String
 		{
@@ -531,22 +563,22 @@ package com.transcendss.mavric.managers
 			return attName.toUpperCase();
 		}
 		
-
+		
 		//For the purpose of matching the asset to the proper drawstring (by subtype)
-//		private function getDrawstringURL(subType:String, subtypes:Array):String
-//		{
-//			var fileName:String = "";
-//			
-//			var i:int = parseInt(subType);
-//			if (i < 1)
-//				return null;
-//			if(subtypes[i - 1].DRAWING.DRAWSTRING != null && subtypes[i - 1].DRAWING.DRAWSTRING !== "")
-//				fileName = subtypes[i - 1].DRAWING.DRAWSTRING;
-//			else
-//				fileName = subtypes[i - 1].DRAWING.URL;
-//
-//			return fileName;//jsonParseDrawstring(fileName);
-//		}
+		//		private function getDrawstringURL(subType:String, subtypes:Array):String
+		//		{
+		//			var fileName:String = "";
+		//			
+		//			var i:int = parseInt(subType);
+		//			if (i < 1)
+		//				return null;
+		//			if(subtypes[i - 1].DRAWING.DRAWSTRING != null && subtypes[i - 1].DRAWING.DRAWSTRING !== "")
+		//				fileName = subtypes[i - 1].DRAWING.DRAWSTRING;
+		//			else
+		//				fileName = subtypes[i - 1].DRAWING.URL;
+		//
+		//			return fileName;//jsonParseDrawstring(fileName);
+		//		}
 		
 		private function getAssetSubTypeDef(assetType:String, subtype:String):Object{
 			var subTyArr:Array = _assetDefs[assetType].DEFINITION.SUBTYPES;
@@ -556,7 +588,10 @@ package com.transcendss.mavric.managers
 				if(String(subTypO.SUBTYPE).toUpperCase() == subtype.toUpperCase())
 					subTyObject =  subTypO;
 			}
+			if(subTyObject)
 			return subTyObject;
+			else
+				return subTyArr[0];//if the type is not found return first one in list as defualt
 		}
 		
 		private function getAssetSubTypeIndex(assetType:String, subtype:String):int{
@@ -568,7 +603,10 @@ package com.transcendss.mavric.managers
 				if(String(subTypO.SUBTYPE).toUpperCase() == subtype.toUpperCase())
 					subTyIndex =  i;
 			}
-			return subTyIndex;
+			if(subTyIndex!=-1)
+				return subTyIndex;
+			else
+				return 0;
 		}
 		
 		public function assignAssetSymbol(asset:BaseAsset, type:String, resp:IResponder = null, multiples:Boolean=false):void
@@ -576,7 +614,7 @@ package com.transcendss.mavric.managers
 			//var fileName :String = getDrawstringURL(asset.subType.toString(), _assetDefs[asset.assetType].DEFINITION.SUBTYPES);
 			
 			//else
-				//trace("No culvert");
+			//trace("No culvert");
 			var img:Image;
 			if (asset.subType =="")
 				return;
@@ -645,13 +683,13 @@ package com.transcendss.mavric.managers
 					asset.symbol.buttonMode = true;
 					asset.symbol.useHandCursor = true;
 				}
-//				if(asset.description === "INT")
-//				{
-//					var bmd:BitmapData = (drawString as Bitmap).bitmapData.clone();
-//					asset.symbol.removeChildAt(0);
-//					asset.symbol.addChild(new Bitmap(bmd));
-//					asset.symbol.addEventListener(MouseEvent.RIGHT_CLICK, onIntDoubleClick);
-//				}
+				//				if(asset.description === "INT")
+				//				{
+				//					var bmd:BitmapData = (drawString as Bitmap).bitmapData.clone();
+				//					asset.symbol.removeChildAt(0);
+				//					asset.symbol.addChild(new Bitmap(bmd));
+				//					asset.symbol.addEventListener(MouseEvent.RIGHT_CLICK, onIntDoubleClick);
+				//				}
 				
 				//asset.symbol.addEventListener(MouseEvent.CLICK, onSpriteClick);
 				//asset.symbol.name = String(asset.invProperties[vName])+ " ft";
@@ -685,12 +723,12 @@ package com.transcendss.mavric.managers
 			
 			//if(drawing.TEXT != null && drawing.TEXT != "")
 			//{
-				//asset.symbol.addText(drawing.TEXT, drawing.TEXT_COLOR);
-				
+			//asset.symbol.addText(drawing.TEXT, drawing.TEXT_COLOR);
+			
 			//}
 			if(asset.symbol.baseAsset.assetType != "8")
 				asset.symbol.cacheAsBitmap = true;	//...
-
+			
 			if (resp != null)
 				resp.result({ftName:asset.description, bAsset:asset});
 		}
@@ -703,7 +741,7 @@ package com.transcendss.mavric.managers
 			var array:Array = new Array();
 			for(var i:int = 0; i< sym.parent.numChildren;i++)
 			{
-				array.push(sym.parent.getChildAt(i));
+			array.push(sym.parent.getChildAt(i));
 			}
 			trace(array);*/
 			
@@ -725,50 +763,50 @@ package com.transcendss.mavric.managers
 		}
 		
 		//We can probably get rid of this. It was meant to be used with Inventory Diagram
-//		public function copyAndScaleSymbol(asset:BaseAsset, ratio:Number):AssetSymbol
-//		{
-//			//var fileName :String = getDrawstringURL(asset.subType.toString(), _assetDefs[asset.assetType].DEFINITION.SUBTYPES);
-//			var img:Image;
-//			var type:String = asset.description;
-//			var symbol:AssetSymbol;
-//			
-//			if (asset.subType < 1)
-//				return null;
-//			
-//			var drawString:Object;
-//			if (_sprites[type])
-//				drawString = _sprites[type][asset.subType - 1];
-//			else
-//				drawString = _sprites[_assetDefs[type].DESCRIPTION][asset.subType - 1];
-//			
-//			var drawing:Object = _assetDefs[asset.assetType].DEFINITION.SUBTYPES[asset.subType - 1].DRAWING;
-//			if (drawString is Bitmap)
-//			{
-//				symbol = new AssetSymbol(asset);
-//				symbol.addChild(drawString as Bitmap);
-//				symbol.stdHeight = drawing.HEIGHT;
-//				symbol.stdWidth = drawing.WIDTH;
-//				symbol.centerH = drawing.CENTER_HORIZONTALLY === "True" ? true : false;
-//				symbol.centerV = drawing.CENTER_VERTICALLY === "True" ? true : false;
-//			}
-//			else
-//			{
-//				symbol = buildAssetSymbol(asset, drawString.SHAPES as Array, drawString.ROTATION, drawString.VARIABLE_NAME,drawing.TEXT, drawing.TEXT_COLOR, ratio);
-//				
-//				symbol.placement_y = drawing.PLACEMENT_Y;
-//				symbol.centerH = drawing.CENTER_HORIZONTALLY === "True" ? true : false;
-//				symbol.centerV = drawing.CENTER_VERTICALLY=== "True" ? true : false;
-//			}
-//			//if(drawing.TEXT != null && drawing.TEXT != "")
-//			//{
-//				//symbol.addText(drawing.TEXT, drawing.TEXT_COLOR);
-//				
-//			//}
-//			if(asset.symbol.baseAsset.assetType != "8")
-//				symbol.cacheAsBitmap = true;
-//			return symbol;
-//		}
-//		
+		//		public function copyAndScaleSymbol(asset:BaseAsset, ratio:Number):AssetSymbol
+		//		{
+		//			//var fileName :String = getDrawstringURL(asset.subType.toString(), _assetDefs[asset.assetType].DEFINITION.SUBTYPES);
+		//			var img:Image;
+		//			var type:String = asset.description;
+		//			var symbol:AssetSymbol;
+		//			
+		//			if (asset.subType < 1)
+		//				return null;
+		//			
+		//			var drawString:Object;
+		//			if (_sprites[type])
+		//				drawString = _sprites[type][asset.subType - 1];
+		//			else
+		//				drawString = _sprites[_assetDefs[type].DESCRIPTION][asset.subType - 1];
+		//			
+		//			var drawing:Object = _assetDefs[asset.assetType].DEFINITION.SUBTYPES[asset.subType - 1].DRAWING;
+		//			if (drawString is Bitmap)
+		//			{
+		//				symbol = new AssetSymbol(asset);
+		//				symbol.addChild(drawString as Bitmap);
+		//				symbol.stdHeight = drawing.HEIGHT;
+		//				symbol.stdWidth = drawing.WIDTH;
+		//				symbol.centerH = drawing.CENTER_HORIZONTALLY === "True" ? true : false;
+		//				symbol.centerV = drawing.CENTER_VERTICALLY === "True" ? true : false;
+		//			}
+		//			else
+		//			{
+		//				symbol = buildAssetSymbol(asset, drawString.SHAPES as Array, drawString.ROTATION, drawString.VARIABLE_NAME,drawing.TEXT, drawing.TEXT_COLOR, ratio);
+		//				
+		//				symbol.placement_y = drawing.PLACEMENT_Y;
+		//				symbol.centerH = drawing.CENTER_HORIZONTALLY === "True" ? true : false;
+		//				symbol.centerV = drawing.CENTER_VERTICALLY=== "True" ? true : false;
+		//			}
+		//			//if(drawing.TEXT != null && drawing.TEXT != "")
+		//			//{
+		//				//symbol.addText(drawing.TEXT, drawing.TEXT_COLOR);
+		//				
+		//			//}
+		//			if(asset.symbol.baseAsset.assetType != "8")
+		//				symbol.cacheAsBitmap = true;
+		//			return symbol;
+		//		}
+		//		
 		public function assetSymLoaded(eventResObj:Object,type:String, resp:IResponder,asset:BaseAsset):void
 		{
 			var jsonString : String = eventResObj as String;
@@ -781,9 +819,9 @@ package com.transcendss.mavric.managers
 			
 			//asset.symbol = buildAssetSymbol(asset, drawStringArray, drawStringObject.ROTATION, drawStringObject.VARIABLE_NAME);
 			
-//			asset.symbol.stdWidth = drawStringObject.WIDTH;
-//			asset.symbol.stdHeight = drawStringObject.HEIGHT;
-				
+			//			asset.symbol.stdWidth = drawStringObject.WIDTH;
+			//			asset.symbol.stdHeight = drawStringObject.HEIGHT;
+			
 			asset.symbol.placement_y = assetSubty.DRAWING.PLACEMENT_Y;
 			asset.symbol.centerH = assetSubty.DRAWING.CENTER_HORIZONTALLY === "True"? true:false;
 			asset.symbol.centerV = assetSubty.DRAWING.CENTER_VERTICALLY=== "True"? true:false;
@@ -849,15 +887,15 @@ package com.transcendss.mavric.managers
 						
 						case 1001:
 							//if(shape.VARIABLE_VAL.WIDTH != null)
-								rlsym = new RedLineSymbol(rshape, shape.D_REDLINE_TYPE_CODE, shape.ORIGIN_X, shape.ORIGIN_Y, shape.COORD.x+ len-shape.ORIGIN_X, shape.COORD.y - shape.ORIGIN_Y, shape.REDLINE_SIZE, null, 0, null,"",shape.COLOR);
-//							else
-//								rlsym = new RedLineSymbol(shape.D_REDLINE_TYPE_CODE, shape.ORIGIN_X, shape.ORIGIN_Y, shape.COORD.x, shape.COORD.y + len, shape.REDLINE_SIZE, null, 0, null,"",shape.COLOR);
+							rlsym = new RedLineSymbol(rshape, shape.D_REDLINE_TYPE_CODE, shape.ORIGIN_X, shape.ORIGIN_Y, shape.COORD.x+ len-shape.ORIGIN_X, shape.COORD.y - shape.ORIGIN_Y, shape.REDLINE_SIZE, null, 0, null,"",shape.COLOR);
+							//							else
+							//								rlsym = new RedLineSymbol(shape.D_REDLINE_TYPE_CODE, shape.ORIGIN_X, shape.ORIGIN_Y, shape.COORD.x, shape.COORD.y + len, shape.REDLINE_SIZE, null, 0, null,"",shape.COLOR);
 							break;
 						case 1000:
 							rlsym = new RedLineSymbol(rshape, shape.D_REDLINE_TYPE_CODE, shape.ORIGIN_X - len, shape.ORIGIN_Y - len, 0, 0, shape.REDLINE_SIZE, null, len, null, "", shape.COLOR, shape.D_FILLSTYLE_CODE?shape.D_FILLSTYLE_CODE:-1);
 							break;
 						
-							
+						
 					}
 					if(shape.D_REDLINE_TYPE_CODE != 1000)
 					{
@@ -926,7 +964,7 @@ package com.transcendss.mavric.managers
 						maxy = findMax(shape.ORIGIN_Y+shape.RADIUS, shape.ORIGIN_Y-shape.RADIUS, maxy);
 						minx = findMin(shape.ORIGIN_X-shape.RADIUS, shape.ORIGIN_X+shape.RADIUS, minx);
 						miny = findMin(shape.ORIGIN_Y+shape.RADIUS, shape.ORIGIN_Y-shape.RADIUS, miny);
-							
+						
 					}else if(shape.D_REDLINE_TYPE_CODE == 1003)
 					{
 						maxx = findMax(shape.ORIGIN_X, shape.ORIGIN_X - shape.RADIUS, maxx);
@@ -943,8 +981,8 @@ package com.transcendss.mavric.managers
 			
 			/*while(temp.numChildren != 0)
 			{
-				rlsym = temp.getChildAt(0) as RedLineSymbol;
-				symbol.addChild(rlsym);
+			rlsym = temp.getChildAt(0) as RedLineSymbol;
+			symbol.addChild(rlsym);
 			}*/
 			
 			symbol.graphics.copyFrom(rshape.graphics);
@@ -966,8 +1004,8 @@ package com.transcendss.mavric.managers
 			symbol.stdWidth = Math.max(Math.abs(maxx - minx),15);
 			if(rampText != null && rampText != "")
 			{
-			symbol.addText(rampText, textColor);
-			
+				symbol.addText(rampText, textColor);
+				
 			}
 			symbol.drawSelectRect();
 			
@@ -979,10 +1017,10 @@ package com.transcendss.mavric.managers
 				symbol.useHandCursor = true;
 			}
 			//symbol.name = String(asset.invProperties[vName])+ " ft";
-			 
+			
 			
 			symbol.usesPic = false;
-
+			
 			return symbol;
 		}
 		
@@ -1014,7 +1052,7 @@ package com.transcendss.mavric.managers
 			
 			_dispatcher.dispatchEvent(selectionEvent);
 			
-
+			
 		}
 		
 		public function clearAssets():void
@@ -1025,7 +1063,7 @@ package com.transcendss.mavric.managers
 			}
 			_mdbm.clearGeotagsTable();
 		}
-
+		
 		public function clearBarElements():void
 		{
 			for each (var prop:Object in _barElementDefs)
@@ -1034,7 +1072,7 @@ package com.transcendss.mavric.managers
 			}
 			//_mdbm.clearGeotagsTable();
 		}
-
+		
 		public function clearCachedRoutes():void
 		{
 			_mdbm.clearCachedRoutes();
@@ -1045,6 +1083,17 @@ package com.transcendss.mavric.managers
 			var cID:Number = _mdbm.addCachedRoute(cRoute);
 			_mdbm.addElement(cID, cStkElements);
 			_mdbm.addElement(cID, cInvElements);
+		}
+		
+		public function cacheDDOTRoute(cRoute:CachedRoute, cStkElements:CachedElement, cInvElements:CachedElement,signElement:CachedElement, timeResElement:CachedElement, inspElement:CachedElement, linkElement:CachedElement):void
+		{
+			var cID:Number = _mdbm.addCachedRoute(cRoute);
+			_mdbm.addElement(cID, cStkElements);
+			_mdbm.addElement(cID, cInvElements);
+			_mdbm.addElement(cID,signElement);
+			_mdbm.addElement(cID,timeResElement);
+			_mdbm.addElement(cID,inspElement);
+			_mdbm.addElement(cID,linkElement);
 		}
 		
 		public function getFormClass(assetDesc:String):String
@@ -1070,6 +1119,14 @@ package com.transcendss.mavric.managers
 				return -1;
 		}
 		
+		public function getEventLayerIDByType(assetTy:String):Number
+		{
+			if(_assetDefs[assetTy].hasOwnProperty("EVENT_LAYER_ID"))
+				return _assetDefs[assetTy].EVENT_LAYER_ID;
+			else
+				return -1;
+		}
+		
 		
 		public function getEventLengthUnits(assetDesc:String):String
 		{
@@ -1084,7 +1141,7 @@ package com.transcendss.mavric.managers
 		{
 			return _mdbm;
 		}
-
+		
 		public function cacheGeotags(gtags:Array,showAlert:Boolean):void
 		{
 			var tempGTArr:Array = new Array();
@@ -1095,7 +1152,7 @@ package com.transcendss.mavric.managers
 				{
 					var begM:Number = 0;
 					var endM:Number = 0;
-					
+					//{"size":25646,"isInspection":false,"attachmentId":964,"name":"1419349071036.wav","objectId":57922,"contentType":"audio/x-wav","fromMeasure":0.108,"type":"support","routeId":"11000132"}
 					if(gtags[i].hasOwnProperty("END_MILE"))
 						endM = Number(gtags[i].END_MILE);
 					if(gtags[i].hasOwnProperty("BEGIN_MILE"))
@@ -1114,9 +1171,9 @@ package com.transcendss.mavric.managers
 			}
 			if(tempGTArr.length<=0 && showAlert)
 			{				
-					FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
-					FlexGlobals.topLevelApplication.setBusyStatus(false);
-					return;
+				FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
+				return;
 			}
 			for(i =0; i<tempGTArr.length;i++)
 			{
@@ -1159,7 +1216,7 @@ package com.transcendss.mavric.managers
 						localAssetID = "" + tempAsset.id;
 						assetTypeID = tempAsset.assetType;
 						assetLabelText = "Support -- " + localAssetID;
-					    isInsp = 0;
+						isInsp = 0;
 						routeName = tempAsset.routeName;
 						objID =String(tempAsset.invProperties["OBJECTID"].value);
 						mileP= tempAsset.invProperties[tempAsset.fromMeasureColName].value;
@@ -1200,7 +1257,7 @@ package com.transcendss.mavric.managers
 					
 					
 					
-				//	var fileName:String = new Date().time + ".3gp";
+					//	var fileName:String = new Date().time + ".3gp";
 					
 					var tmpGT:GeoTag = new GeoTag();
 					tmpGT.cached_route_id = routeName ;
@@ -1230,7 +1287,117 @@ package com.transcendss.mavric.managers
 			FlexGlobals.topLevelApplication.decrementEventStack();
 			
 		}
-
+		
+		
+		public function cacheDDOTGeotags2(gtags:Array):void
+		{
+			
+			if (gtags != null) //make sure the object is not null before using the length
+			{
+				
+				for( var i:int =0; i<gtags.length;i++)
+				{
+					FlexGlobals.topLevelApplication.incrementEventStack();	
+					var begM:Number = 0;
+					var endM:Number = 0;
+					var assetBaseID:String = "";
+					var localAssetID:String = "";
+					var assetTypeID:String = "";
+					var assetLabelText:String = "";
+					var isInsp:int = 0;
+					var routeName:String ="";
+					var mileP:Number =0;
+					var image_fileName:String = "";
+					var video_fileName:String = "";
+					var voice_fileName:String = "";
+					var objID:String = "";
+					var attachID:String = gtags[i]["attachmentId"];
+					if(gtags[i].type=="support" && !gtags[i].isInspection)
+					{
+						
+						assetTypeID = "1";
+						assetLabelText = "Support -- " + localAssetID;
+						
+						isInsp = 0;
+						
+					}
+					else if (gtags[i].type=='SIGN' && !gtags[i].isInspection)
+					{
+					
+						assetTypeID = "SIGN";
+						assetLabelText = "Sign -- " + localAssetID;
+						isInsp = 0;
+						
+					} 
+					else if (gtags[i].isInspection)
+					{
+						
+						if (gtags[i].type=="support")
+						{
+							
+							assetLabelText = "Support -- " + localAssetID;
+							assetTypeID = "1";
+						}
+						else
+						{
+							assetLabelText = "Sign -- " + localAssetID;
+							assetTypeID = "SIGN";
+						}
+						
+						
+						isInsp = 1;
+					}
+					
+					assetBaseID = "" + gtags[i].objectId;
+					localAssetID = "" + gtags[i].objectId;
+					assetTypeID = "1";
+					assetLabelText = "Support -- " + localAssetID;
+					isInsp = 0;
+					routeName = gtags[i].routeId;
+					objID =String(gtags[i].objectId);
+					mileP= gtags[i].fromMeasure;
+					
+					//	var fileName:String = new Date().time + ".3gp";
+					
+					var tmpGT:GeoTag = new GeoTag();
+					tmpGT.cached_route_id = routeName ;
+					tmpGT.begin_mile_point = mileP;
+					tmpGT.end_mile_point = 0;
+					
+					
+					
+					
+					tmpGT.image_file_name = String(gtags[i].contentType).toLowerCase().indexOf("image")!=-1 ? String(gtags[i].name):"";
+					tmpGT.video_file_name = String(gtags[i].contentType).toLowerCase().indexOf("video")!=-1 ? String(gtags[i].name):"";
+					tmpGT.voice_file_name = String(gtags[i].contentType).toLowerCase().indexOf("audio")!=-1 ? String(gtags[i].name):"";
+					
+					tmpGT.asset_base_id = assetBaseID;
+					tmpGT.local_asset_id = localAssetID;
+					tmpGT.is_insp = isInsp;
+					tmpGT.asset_ty_id = assetTypeID;;
+					
+					//geoTagsArr.addItem(tmpGT);
+					//add gt info to local DB			
+					mdbm.addGeoTag(tmpGT, true);
+					
+					var url:String = "";
+					var layerID:String="";
+					
+					if(assetTypeID =="1" && isInsp==0)
+						layerID = String(getEventLayerID("SUPPORT"));
+					else if(assetTypeID =="SIGN" && isInsp==0)
+						layerID = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.signEventLayerID();
+					else
+						layerID = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.inspectionEventLayerID();
+					
+						url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentByIDUrl(layerID, objID, attachID);
+					downloadGeotag(new GeotagsManager().ConvertGeotags(tmpGT,url,"server",false), i, gtags.length-1, true);
+				}
+			}
+			FlexGlobals.topLevelApplication.decrementEventStack();
+			
+		}
+		
 		/**
 		 * Download the file realted to the TSSPicture/TSSVoice/TSSVideo that is passed in, to the local geotags folder 
 		 * @param TSSObj - Type TSSPicture, TSSVoice or TSSVideo
@@ -1266,37 +1433,37 @@ package com.transcendss.mavric.managers
 				URLLdr.addEventListener(Event.COMPLETE, 
 					function(e:Event):void { 
 						var fTemp:File = new File(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + fileName);
-//						var fTemp:File = new File(BaseConfigUtility.get("geotags_folder") + fileName);
+						//						var fTemp:File = new File(BaseConfigUtility.get("geotags_folder") + fileName);
 						var fsTemp:FileStream = new FileStream();
 						fsTemp.open(fTemp, FileMode.WRITE);
 						
 						var fileData:ByteArray =URLLdr.data;
 						fsTemp.writeBytes(fileData, 0, 0);
 						fsTemp.close();
-//						if(currentDwldIndex==maxDwnldLength && showAlert && FlexGlobals.topLevelApplication.attachmentDownloadError)
-//						{
-//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
-//						}
-//						else if(currentDwldIndex==maxDwnldLength && showAlert && !FlexGlobals.topLevelApplication.attachmentDownloadError)
-//						{
-//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
-//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-//						}
+						//						if(currentDwldIndex==maxDwnldLength && showAlert && FlexGlobals.topLevelApplication.attachmentDownloadError)
+						//						{
+						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
+						//						}
+						//						else if(currentDwldIndex==maxDwnldLength && showAlert && !FlexGlobals.topLevelApplication.attachmentDownloadError)
+						//						{
+						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
+						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+						//						}
 						FlexGlobals.topLevelApplication.decrementEventStack();				
-//						
-							
+						//						
+						
 					});
 				URLLdr.addEventListener(IOErrorEvent.IO_ERROR, 
 					function(e:Event):void { 
 						
-//						if(currentDwldIndex==maxDwnldLength && showAlert)
-//						{
-//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
-//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-//						}
-//						else
-//							FlexGlobals.topLevelApplication.attachmentDownloadError = true;
+						//						if(currentDwldIndex==maxDwnldLength && showAlert)
+						//						{
+						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
+						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+						//						}
+						//						else
+						//							FlexGlobals.topLevelApplication.attachmentDownloadError = true;
 						FlexGlobals.topLevelApplication.decrementEventStack();
 					});
 				URLLdr.load(new URLRequest(sourceURL));
@@ -1347,16 +1514,16 @@ package com.transcendss.mavric.managers
 						var fileData:ByteArray =URLLdr.data;
 						fsTemp.writeBytes(fileData, 0, 0);
 						fsTemp.close();
-//						if(currentDwldIndex==maxDwnldLength && showAlert && FlexGlobals.topLevelApplication.attachmentDownloadError)
-//						{
-//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
-//						}
-//						else if(currentDwldIndex==maxDwnldLength && showAlert && !FlexGlobals.topLevelApplication.attachmentDownloadError)
-//						{
-//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
-//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-//						}
+						//						if(currentDwldIndex==maxDwnldLength && showAlert && FlexGlobals.topLevelApplication.attachmentDownloadError)
+						//						{
+						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
+						//						}
+						//						else if(currentDwldIndex==maxDwnldLength && showAlert && !FlexGlobals.topLevelApplication.attachmentDownloadError)
+						//						{
+						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
+						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+						//						}
 						
 						FlexGlobals.topLevelApplication.decrementEventStack();
 						
@@ -1366,13 +1533,13 @@ package com.transcendss.mavric.managers
 				URLLdr.addEventListener(IOErrorEvent.IO_ERROR, 
 					function(e:Event):void { 
 						
-//						if(currentDwldIndex==maxDwnldLength && showAlert)
-//						{
-//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
-//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-//						}
-//						else
-//							FlexGlobals.topLevelApplication.attachmentDownloadError = true;
+						//						if(currentDwldIndex==maxDwnldLength && showAlert)
+						//						{
+						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
+						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
+						//						}
+						//						else
+						//							FlexGlobals.topLevelApplication.attachmentDownloadError = true;
 						
 						FlexGlobals.topLevelApplication.decrementEventStack();
 						
@@ -1403,183 +1570,183 @@ package com.transcendss.mavric.managers
 					fileUtil.deleteFiles(file.name);
 			}
 		}
-
-//		public function getAssetDomains():void
-//		{
-//			var tableName:String;
-//
-//			if (!mdbm.isCulvertDomainAvailable())
-//			{
-//				tableName = "CULVERT_DOMAIN";
-//				fetchDomainValues("D_CULV_COND_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_CULV_MAT_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_CULV_PLACEMENT_TY_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_CULV_SHAPE_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_BEAM_MAT_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_ABUTMENT_MAT_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_BARL_RMK_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_CHNL_RMK_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_FLOW_RMK_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_ENDS_RMK_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_JOINT_RMK_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_JOINT_SEP_LOC_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_MAINT_EQUIP_ID", defaultDescCol, tableName);
-//				fetchDomainValues("D_MAINT_WORK_TY_ID", defaultDescCol, tableName);
-//			}
-//			
-//			tableName = "ASSET_DOMAIN";
-//			fetchDomainValues("D_DIRECTION_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_SHEETING_MAT_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_BLANK_MAT_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_DIR_TRAVEL_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_POST_TY_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_SIDE_ROAD_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_POST_SIZE_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_SIGN_RATING_ID", defaultDescCol, tableName);
-//			fetchDomainValues("DIMENSION_ID", "DIMENSION_DESC", tableName);
-//			fetchDomainValues("COLOR_ID", "COLOR_DESC", tableName);
-//			fetchDomainValues("D_URGENCY_ID", "URGENCY_NAME", tableName);
-//			fetchDomainValues("D_GRAIL_MATERIAL_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_GRAIL_LOC_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_GRAIL_PURPOSE_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_GRAIL_CONDITION_ID", defaultDescCol, tableName);
-//			fetchDomainValues("SIGN_MAJOR_CAT_ID", "SIGN_MAJ_CAT_DESC", tableName);
-//			fetchDomainValues("D_MARKER_TYPE_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_COUNTY_NO_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_INTERSECT_TYPE_ID", defaultDescCol, tableName);
-//			fetchDomainValues("D_SIGN_LOCATION_ID", defaultDescCol, tableName);
-//			
-//			getSubCatDomains();
-//			
-//		}
-//		
-//		private function getSubCatDomains():void
-//		{
-//			if(mdbm.isAssetDomainAvailable("SIGN_SUB_CATEGORY_ID"))
-//				return;
-//			var httpServ:HTTPService = new HTTPService();
-//			httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL +"Subcats";
-//			httpServ.method = "GET";
-//			httpServ.resultFormat = "text";
-//			httpServ.addEventListener(FaultEvent.FAULT, fault);
-//			httpServ.addEventListener(ResultEvent.RESULT, setSubCatDomainFromService);
-//			httpServ.send();
-//		}
-//		
-//		public function setSubCatDomainFromService(event:ResultEvent):void
-//		{
-//			var resp:Array = JSON.parse(event.result as String) as Array;
-//			var ac:ArrayCollection= new ArrayCollection(resp);
-//			mdbm.insertAssetDomain(ac, "SIGN_SUB_CATEGORY_ID", "SIGN_MAJOR_CAT_ID");
-//		}
-//
-//		private function fetchDomainValues(idCol:String, descCol:String, tableName:String):void
-//		{
-//			
-//			if(!idCol || idCol ==="")
-//				return;
-//			
-//			if(tableName == "ASSET_DOMAIN")
-//			{
-//				if (mdbm.isAssetDomainAvailable(idCol))
-//					return;
-//			}
-//			
-//			var httpServ:HTTPService = new HTTPService();
-//			httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL +"Domains/"+ idCol +"/" + descCol;
-//			httpServ.method = "GET";
-//			httpServ.resultFormat = "text";
-//			// Need this so the request is available in the resultEvent
-//			httpServ.request["service"] = httpServ; 
-//			httpServ.addEventListener(FaultEvent.FAULT, fault);
-//			
-//			if(tableName == "ASSET_DOMAIN")
-//			{
-//				httpServ.addEventListener(ResultEvent.RESULT, setDomainFromService);
-//			}
-//			else if(tableName == "CULVERT_DOMAIN")
-//			{
-//				httpServ.addEventListener(ResultEvent.RESULT, setCulvertDomainFromService);
-//			}
-//			httpServ.send();
-//		}
-//
-//		public function setDomainFromService(event:ResultEvent):void
-//		{
-//			var resp:Array = JSON.parse(event.result as String) as Array;
-//			var domainArr:ArrayCollection = new ArrayCollection(resp);
-//			// Get the request data so the domain name can be extracted
-//			var eventService : HTTPService = HTTPService( AbstractOperation( event.currentTarget ).request["service"] );
-//			var urlStr:String = eventService.url;
-//			
-//			var indx:int = (urlStr.indexOf(serviceCallName))+serviceCallName.length;
-//			var tmpStr:String = urlStr.substr(indx);
-//			var indx2:int = tmpStr.indexOf("/");
-//			var nameStr:String = tmpStr.substr(0,indx2);
-//			mdbm.insertAssetDomain(domainArr, nameStr);	
-//		}
-//		
-//		public function setCulvertDomainFromService(event:ResultEvent):void
-//		{
-//			var resp:Array = JSON.parse(event.result as String) as Array;
-//			var domainArr:ArrayCollection = new ArrayCollection(resp);
-//			// Get the request data so the domain name can be extracted
-//			var eventService : HTTPService = HTTPService( AbstractOperation( event.currentTarget ).request["service"] );
-//			var urlStr:String = eventService.url;
-//			
-//			var indx:int = (urlStr.indexOf(serviceCallName))+serviceCallName.length;
-//			var tmpStr:String = urlStr.substr(indx);
-//			var indx2:int = tmpStr.indexOf("/");
-//			var idStr:String = tmpStr.substr(0,indx2);
-//			var nameStr:String;
-//			
-//			// Use the name that is used for the domain in the code
-//			if(idStr == "D_MAINT_EQUIP_ID")
-//				nameStr = "MaintEquipList";
-//			else if(idStr == "D_CULV_MAT_ID")
-//				nameStr = "MaterialList";
-//			else if(idStr == "D_CULV_PLACEMENT_TY_ID")
-//				nameStr = "PlacementList";
-//			else if(idStr == "D_CULV_SHAPE_ID")
-//				nameStr = "ShapeList";
-//			else if(idStr == "D_CULV_COND_ID")
-//				nameStr = "GeneralList";
-//			else if(idStr == "D_JOINT_SEP_LOC_ID")
-//				nameStr = "JointLocList";
-//			else if(idStr == "D_ABUTMENT_MAT_ID")
-//				nameStr = "AbutmentList";
-//			else if(idStr == "D_BEAM_MAT_ID")
-//				nameStr = "BeamList";
-//			else if(idStr == "D_FLOW_RMK_ID")
-//				nameStr = "FlowList";
-//			else if(idStr == "D_JOINT_RMK_ID")
-//				nameStr = "JointsList";
-//			else if(idStr == "D_BARL_RMK_ID")
-//				nameStr = "BarrelList";
-//			else if(idStr == "D_ENDS_RMK_ID")
-//				nameStr = "EndsList";
-//			else if(idStr == "D_CHNL_RMK_ID")
-//				nameStr = "ChannelList";
-//			else if(idStr == "D_MAINT_WORK_TY_ID")
-//				nameStr = "MaintList";
-//			
-//			mdbm.insertDomain(domainArr, nameStr);	
-//		}
-//
-//		private function fault(e:FaultEvent):void
-//		{
-//			// Get the request data so the domain name can be extracted
-//			var eventService : HTTPService = HTTPService( AbstractOperation( e.currentTarget ).request["service"] );
-//			var urlStr:String = eventService.url;
-//			
-//			var indx:int = (urlStr.indexOf(serviceCallName))+serviceCallName.length;
-//			var tmpStr:String = urlStr.substr(indx);
-//			var indx2:int = tmpStr.indexOf("/");
-//			var nameStr:String = tmpStr.substr(0,indx2);
-//
-//			FlexGlobals.topLevelApplication.TSSAlert("Error in Domain retrieval for " + nameStr);
-//		}
-//		
+		
+		//		public function getAssetDomains():void
+		//		{
+		//			var tableName:String;
+		//
+		//			if (!mdbm.isCulvertDomainAvailable())
+		//			{
+		//				tableName = "CULVERT_DOMAIN";
+		//				fetchDomainValues("D_CULV_COND_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_CULV_MAT_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_CULV_PLACEMENT_TY_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_CULV_SHAPE_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_BEAM_MAT_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_ABUTMENT_MAT_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_BARL_RMK_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_CHNL_RMK_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_FLOW_RMK_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_ENDS_RMK_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_JOINT_RMK_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_JOINT_SEP_LOC_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_MAINT_EQUIP_ID", defaultDescCol, tableName);
+		//				fetchDomainValues("D_MAINT_WORK_TY_ID", defaultDescCol, tableName);
+		//			}
+		//			
+		//			tableName = "ASSET_DOMAIN";
+		//			fetchDomainValues("D_DIRECTION_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_SHEETING_MAT_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_BLANK_MAT_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_DIR_TRAVEL_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_POST_TY_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_SIDE_ROAD_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_POST_SIZE_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_SIGN_RATING_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("DIMENSION_ID", "DIMENSION_DESC", tableName);
+		//			fetchDomainValues("COLOR_ID", "COLOR_DESC", tableName);
+		//			fetchDomainValues("D_URGENCY_ID", "URGENCY_NAME", tableName);
+		//			fetchDomainValues("D_GRAIL_MATERIAL_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_GRAIL_LOC_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_GRAIL_PURPOSE_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_GRAIL_CONDITION_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("SIGN_MAJOR_CAT_ID", "SIGN_MAJ_CAT_DESC", tableName);
+		//			fetchDomainValues("D_MARKER_TYPE_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_COUNTY_NO_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_INTERSECT_TYPE_ID", defaultDescCol, tableName);
+		//			fetchDomainValues("D_SIGN_LOCATION_ID", defaultDescCol, tableName);
+		//			
+		//			getSubCatDomains();
+		//			
+		//		}
+		//		
+		//		private function getSubCatDomains():void
+		//		{
+		//			if(mdbm.isAssetDomainAvailable("SIGN_SUB_CATEGORY_ID"))
+		//				return;
+		//			var httpServ:HTTPService = new HTTPService();
+		//			httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL +"Subcats";
+		//			httpServ.method = "GET";
+		//			httpServ.resultFormat = "text";
+		//			httpServ.addEventListener(FaultEvent.FAULT, fault);
+		//			httpServ.addEventListener(ResultEvent.RESULT, setSubCatDomainFromService);
+		//			httpServ.send();
+		//		}
+		//		
+		//		public function setSubCatDomainFromService(event:ResultEvent):void
+		//		{
+		//			var resp:Array = JSON.parse(event.result as String) as Array;
+		//			var ac:ArrayCollection= new ArrayCollection(resp);
+		//			mdbm.insertAssetDomain(ac, "SIGN_SUB_CATEGORY_ID", "SIGN_MAJOR_CAT_ID");
+		//		}
+		//
+		//		private function fetchDomainValues(idCol:String, descCol:String, tableName:String):void
+		//		{
+		//			
+		//			if(!idCol || idCol ==="")
+		//				return;
+		//			
+		//			if(tableName == "ASSET_DOMAIN")
+		//			{
+		//				if (mdbm.isAssetDomainAvailable(idCol))
+		//					return;
+		//			}
+		//			
+		//			var httpServ:HTTPService = new HTTPService();
+		//			httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL +"Domains/"+ idCol +"/" + descCol;
+		//			httpServ.method = "GET";
+		//			httpServ.resultFormat = "text";
+		//			// Need this so the request is available in the resultEvent
+		//			httpServ.request["service"] = httpServ; 
+		//			httpServ.addEventListener(FaultEvent.FAULT, fault);
+		//			
+		//			if(tableName == "ASSET_DOMAIN")
+		//			{
+		//				httpServ.addEventListener(ResultEvent.RESULT, setDomainFromService);
+		//			}
+		//			else if(tableName == "CULVERT_DOMAIN")
+		//			{
+		//				httpServ.addEventListener(ResultEvent.RESULT, setCulvertDomainFromService);
+		//			}
+		//			httpServ.send();
+		//		}
+		//
+		//		public function setDomainFromService(event:ResultEvent):void
+		//		{
+		//			var resp:Array = JSON.parse(event.result as String) as Array;
+		//			var domainArr:ArrayCollection = new ArrayCollection(resp);
+		//			// Get the request data so the domain name can be extracted
+		//			var eventService : HTTPService = HTTPService( AbstractOperation( event.currentTarget ).request["service"] );
+		//			var urlStr:String = eventService.url;
+		//			
+		//			var indx:int = (urlStr.indexOf(serviceCallName))+serviceCallName.length;
+		//			var tmpStr:String = urlStr.substr(indx);
+		//			var indx2:int = tmpStr.indexOf("/");
+		//			var nameStr:String = tmpStr.substr(0,indx2);
+		//			mdbm.insertAssetDomain(domainArr, nameStr);	
+		//		}
+		//		
+		//		public function setCulvertDomainFromService(event:ResultEvent):void
+		//		{
+		//			var resp:Array = JSON.parse(event.result as String) as Array;
+		//			var domainArr:ArrayCollection = new ArrayCollection(resp);
+		//			// Get the request data so the domain name can be extracted
+		//			var eventService : HTTPService = HTTPService( AbstractOperation( event.currentTarget ).request["service"] );
+		//			var urlStr:String = eventService.url;
+		//			
+		//			var indx:int = (urlStr.indexOf(serviceCallName))+serviceCallName.length;
+		//			var tmpStr:String = urlStr.substr(indx);
+		//			var indx2:int = tmpStr.indexOf("/");
+		//			var idStr:String = tmpStr.substr(0,indx2);
+		//			var nameStr:String;
+		//			
+		//			// Use the name that is used for the domain in the code
+		//			if(idStr == "D_MAINT_EQUIP_ID")
+		//				nameStr = "MaintEquipList";
+		//			else if(idStr == "D_CULV_MAT_ID")
+		//				nameStr = "MaterialList";
+		//			else if(idStr == "D_CULV_PLACEMENT_TY_ID")
+		//				nameStr = "PlacementList";
+		//			else if(idStr == "D_CULV_SHAPE_ID")
+		//				nameStr = "ShapeList";
+		//			else if(idStr == "D_CULV_COND_ID")
+		//				nameStr = "GeneralList";
+		//			else if(idStr == "D_JOINT_SEP_LOC_ID")
+		//				nameStr = "JointLocList";
+		//			else if(idStr == "D_ABUTMENT_MAT_ID")
+		//				nameStr = "AbutmentList";
+		//			else if(idStr == "D_BEAM_MAT_ID")
+		//				nameStr = "BeamList";
+		//			else if(idStr == "D_FLOW_RMK_ID")
+		//				nameStr = "FlowList";
+		//			else if(idStr == "D_JOINT_RMK_ID")
+		//				nameStr = "JointsList";
+		//			else if(idStr == "D_BARL_RMK_ID")
+		//				nameStr = "BarrelList";
+		//			else if(idStr == "D_ENDS_RMK_ID")
+		//				nameStr = "EndsList";
+		//			else if(idStr == "D_CHNL_RMK_ID")
+		//				nameStr = "ChannelList";
+		//			else if(idStr == "D_MAINT_WORK_TY_ID")
+		//				nameStr = "MaintList";
+		//			
+		//			mdbm.insertDomain(domainArr, nameStr);	
+		//		}
+		//
+		//		private function fault(e:FaultEvent):void
+		//		{
+		//			// Get the request data so the domain name can be extracted
+		//			var eventService : HTTPService = HTTPService( AbstractOperation( e.currentTarget ).request["service"] );
+		//			var urlStr:String = eventService.url;
+		//			
+		//			var indx:int = (urlStr.indexOf(serviceCallName))+serviceCallName.length;
+		//			var tmpStr:String = urlStr.substr(indx);
+		//			var indx2:int = tmpStr.indexOf("/");
+		//			var nameStr:String = tmpStr.substr(0,indx2);
+		//
+		//			FlexGlobals.topLevelApplication.TSSAlert("Error in Domain retrieval for " + nameStr);
+		//		}
+		//		
 		
 		
 		
@@ -1593,6 +1760,25 @@ package com.transcendss.mavric.managers
 		{
 			return String(_assetDefs[_assetDescriptions[type]].CAPTURE_AVAILABLE).toLowerCase()=="true";
 		}
+		
+		public function getSignDescriptionByMUTCD(mutcd:String):String
+		{
+			var mutcdDomain:ArrayCollection = getDomain("BARCODEID");
 			
+			for each(var obj:Object in mutcdDomain)
+			{
+				if(mutcd == obj.ID)
+					return obj.DESCRIPTION;
+			}
+			 
+			 
+			return "";
+			 
+			 
+
+		}
+		
+		
+		
 	}
 }

@@ -112,7 +112,7 @@ package com.transcendss.mavric.managers
 			var assetsForSync:Array = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetsForSync;
 			if(assetFileIndex<assetsForSync.length)
 			{
-				var currentAssetType:String = assetsForSync[assetFileIndex];
+				var currentAssetType:String = assetsForSync[assetFileIndex].DESCRIPTION;
 				
 				try
 				{

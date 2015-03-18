@@ -317,7 +317,7 @@ package com.transcendss.mavric.managers
 				if (feat2 is PolygonFeature)
 				{
 					feat = feat2 as PolygonFeature;
-					if (parseInt(feat.values.DISTRICT_N).toString() == polyID)
+					if (parseInt(feat.values.DISTRICT_N).toString() == polyID || parseInt(feat.values.WARD).toString() == polyID)
 					{
 						
 						minx = feat.geometry[0][0].x;

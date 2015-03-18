@@ -8,18 +8,13 @@
 			import com.transcendss.mavric.events.DropDownViewEvent;
 			import com.transcendss.mavric.managers.ImageManager;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
-			import com.transcendss.mavric.util.DropDownViewHoriz;
+			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
-			import com.transcendss.mavric.views.ddot.SignSelector;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.core.UIComponent;
 			import mx.managers.PopUpManager;
-			import mx.rpc.Responder;
-			
-			import spark.components.Button;
-			import spark.skins.mobile.TextInputSkin;
 			
 			private var recordManager:DdotRecordManager;
 			
@@ -30,9 +25,10 @@
 			private var linkedSignForm:LinkedSign;
 			private var timeRestrictionForm:TimeRestriction;
 			
-			public var signFacingDDView:DropDownViewHoriz = new DropDownViewHoriz();
-			public var signSizeDDView:DropDownViewHoriz = new DropDownViewHoriz();
-			public var signStatusDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			public var signFacingDDView:DropDownViewVert = new DropDownViewVert();
+			public var signSizeDDView:DropDownViewVert = new DropDownViewVert();
+			public var signOrderDDView:DropDownViewVert = new DropDownViewVert();
+			public var signStatusDDView:DropDownViewVert = new DropDownViewVert();
 			
 			private var attchView:AddAttachments = new AddAttachments();
 			
@@ -56,23 +52,31 @@
 					signFacingDDView.domainTableIDColName =  "DIRECTION";
 					signFacingDDView.fetchDomainValues();
 					signFacingDDView.btnText = "Sign Facing";
-					signFacingDDView.width_TI = 120;
+					//signFacingDDView.width_TI = 120;
 					signFacingDDView.genericPopup.height = 200;
 					signFacingDDView.genericPopup.width = 200;
 					SignFacingDDGroup.addElement(signFacingDDView);
 					
 					signSizeDDView.domainTableIDColName =  "SIGNSIZE";
 					signSizeDDView.fetchDomainValues();
-					signSizeDDView.btnText = "Sign    Size";
-					signSizeDDView.width_TI = 120;
+					signSizeDDView.btnText = "Sign Size";
+					//signSizeDDView.width_TI = 120;
 					signSizeDDView.genericPopup.height = 200;
 					signSizeDDView.genericPopup.width = 200;
 					SignSizeDDGroup.addElement(signSizeDDView);
 					
+					signOrderDDView.domainTableIDColName =  "SIGNORDER";
+					signOrderDDView.fetchDomainValues();
+					signOrderDDView.btnText = "Sign Order";
+					//signSizeDDView.width_TI = 120;
+					signOrderDDView.genericPopup.height = 200;
+					signOrderDDView.genericPopup.width = 200;
+					SignOrderDDGroup.addElement(signOrderDDView);
+					
 					signStatusDDView.domainTableIDColName =  "SIGNSTATUS";
 					signStatusDDView.fetchDomainValues();
 					signStatusDDView.btnText = "Sign Status";
-					signStatusDDView.width_TI = 120;
+					//signStatusDDView.width_TI = 120;
 					signStatusDDView.genericPopup.height = 200;
 					signStatusDDView.genericPopup.width = 200;
 					SignStatusDDGroup.addElement(signStatusDDView);
@@ -202,6 +206,7 @@
 				descriptionTextInut.text = sign['DESCRIPTION'];
 				signFacingDDView.domainID = sign['SIGNFACING'];
 				signSizeDDView.domainID = sign['SIGNSIZE'];
+				signOrderDDView.domainID = sign['SIGN_ORDER'];
 				signStatusDDView.domainID = sign['SIGNSTATUS'];
 				signComments.text = sign['COMMENTS'];
 				isLZchkbox.selected = sign['ISLOADINGZONE'];
@@ -214,9 +219,11 @@
 				sign['DESCRIPTION'] = descriptionTextInut.text;
 				sign['SIGNFACING']= signFacingDDView.domainID;
 				sign['SIGNSIZE'] = signSizeDDView.domainID;
+				sign['SIGN_ORDER'] = signOrderDDView.domainID;
 				sign['SIGNSTATUS'] = signStatusDDView.domainID;
 				sign['COMMENTS'] = signComments.text;
 				sign['ISLOADINGZONE'] = isLZchkbox.selected;
+				
 			}
 			
 		]]>
@@ -249,12 +256,14 @@
 					<s:Spacer height="10"/>
 					<s:HGroup width="100%">
 						<s:VGroup width="50%">
-							<s:Spacer height="10"/>
-							<s:Group id="SignFacingDDGroup"></s:Group>
-							<s:Spacer height="10"/>
-							<s:Group id="SignSizeDDGroup"></s:Group>
-							<s:Spacer height="10"/>
-							<s:Group id="SignStatusDDGroup"></s:Group>
+							
+								<s:Group id="SignFacingDDGroup"></s:Group>
+								<s:Spacer height="5"/>
+								<s:Group id="SignSizeDDGroup"></s:Group>
+								<s:Spacer height="5"/>
+								<s:Group id="SignOrderDDGroup"></s:Group>
+							
+							
 						</s:VGroup>
 						<s:Spacer width="20"/>
 						<s:VGroup width="50%">
@@ -264,10 +273,12 @@
 							</s:VGroup>
 						</s:VGroup>
 					</s:HGroup>
-					
+					<s:VGroup id="addAttchmentsHolder" left="-100" width="100%" gap="10"/>
 				</s:VGroup>
 				<s:Spacer width="5%"/>
 				<s:VGroup width="20%">
+					<s:Group id="SignStatusDDGroup"></s:Group>
+					<s:Spacer height="5"/>
 					<s:Label fontWeight="bold" text="Comments:  "/>
 					<s:TextArea id="signComments" height="170"/>
 <!--					<s:Spacer height="10"/>
@@ -277,7 +288,7 @@
 						<s:TextInput id="zoneIdTextInut" width="210"
 									 skinClass="spark.skins.mobile.TextInputSkin"/>
 					</s:HGroup>-->
-					<s:Spacer height="10"/>
+					<s:Spacer height="5"/>
 					<s:CheckBox id="isLZchkbox" label="Is Loading Zone"/>
 					<s:Spacer height="10"/>
 					<s:HGroup width="100%" verticalAlign="middle" visible="{isLZchkbox.selected}">
@@ -298,8 +309,8 @@
 			</s:HGroup>
 		</s:VGroup>
 		
-		<s:Spacer height="20"/>
-		<s:VGroup id="addAttchmentsHolder" right="0" width="100%" gap="10"/>
+		
+		
 	</s:VGroup>
 	
 </s:Group>

@@ -59,6 +59,7 @@
 			import com.transcendss.transcore.events.ViewMileEvent;
 			import com.transcendss.transcore.events.VoiceEvent;
 			import com.transcendss.transcore.events.videoEvent;
+			import com.transcendss.transcore.sld.models.components.Route;
 			import com.transcendss.transcore.sld.models.managers.CulvertManager;
 			import com.transcendss.transcore.sld.models.managers.MapManager;
 			import com.transcendss.transcore.sld.models.managers.NavManager;
@@ -72,7 +73,7 @@
 			
 			
 			[Bindable]
-			private var debugFlag : Boolean = true; 
+			public var debugFlag : Boolean = false; 
 			
 			[Bindable]
 			private var useAgsService:Boolean = FlexGlobals.topLevelApplication.useAgsService;
@@ -111,7 +112,7 @@
 			{
 				event.stopPropagation();
 				//Only for DDOT
-				FlexGlobals.topLevelApplication.GlobalComponents.recordManager.onDBRetrievalComplete(arr, event.featureName, event.responder);
+				FlexGlobals.topLevelApplication.GlobalComponents.recordManager.onDBRetrievalCompleteDDOT(arr, event.featureName, event.responder, new Route(event.routeName, event.begMile, event.endMile));
 				
 			}
 			
@@ -156,14 +157,21 @@
 			
 			public function callDEDiagram(ac:ArrayCollection, event:ElementEvent):void
 			{
-				event.stopPropagation();
-				FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawElemsFrmSrvceRes(ac);
+				
+				
+				if(event.responder)
+					event.responder.result({assets:ac, type:event.elementType, route:new Route(event.routeName, event.begMile, event.endMile), url:event.serviceURL});
+				else
+					FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawElemsFrmSrvceRes(ac, false, event.elementType);
 			}
 			
-			public function setFaultDEDiagram( event:Event):void
+			public function setFaultDEDiagram( event:ElementEvent):void
 			{
 				event.stopPropagation();
-				FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawElemsFrmSrvceResFaultHandler();
+				if(event.responder)
+					event.responder.result({ type:event.elementType, route:new Route(event.routeName, event.begMile, event.endMile), url:event.target.url});
+				else
+					FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.drawElemsFrmSrvceResFaultHandler(event.elementType);
 			}
 			
 			public function assetReqFaultHandler( event:Event):void
@@ -531,7 +539,7 @@
 					<mate:InlineInvoker method="updateAssetManager" arguments="{[lastReturn, event]} "/>
 				</mate:resultHandlers>
 				<mate:faultHandlers>
-					<mate:InlineInvoker  method="assetReqFaultHandler" arguments="{event} "/>
+					<mate:InlineInvoker  method="{assetReqFaultHandler}" arguments="{event} "/>
 				</mate:faultHandlers>
 			</mate:HTTPServiceInvoker>
 		</mate:EventHandlers>
@@ -610,14 +618,10 @@
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
 					</mate:MethodInvoker>
 					
-					<mate:InlineInvoker  method="callDEDiagram" arguments="{[lastReturn, event]} "/>
+					<mate:InlineInvoker  method="{callDEDiagram}" arguments="{[lastReturn, event]} "/>
 				</mate:resultHandlers>
 				<mate:faultHandlers>
-					<mate:MethodInvoker generator="{useAgsService ?  ArcGISServiceManager : ServiceManager}" method="{useAgsService ? 'onAssetServiceResult': 'onServiceResult'}" arguments="{[null, event]}">
-						<mate:Properties dispatcher="{scope.dispatcher}"/>
-					</mate:MethodInvoker>
-					
-					<mate:InlineInvoker  method="callDEDiagram" arguments="{[lastReturn, event]} "/>
+					<mate:InlineInvoker  method="{setFaultDEDiagram}" arguments="{event} "/>
 				</mate:faultHandlers>
 					
 			</mate:HTTPServiceInvoker>

@@ -1,0 +1,60 @@
+{
+  "DATA_ENTRY_TEMPLATE" : {
+    "TITLE" : "Access Point Data",
+    "SUBTITLE" : "",
+    "ASSET_TYPE" : "3",
+    "HEIGHT" : "330",
+    "WIDTH" : "300",
+    "TABS" : [
+      {
+        "ID" : "Inventory 1",
+        "TYPE" : "Inventory",
+        "ENABLEGEOTAGS" : "True",
+        "GROUPS" : [
+          {
+            "TYPE" : "vgroup",
+            "TITLE" : "",
+            "X" : "25",
+            "Y" : "10",
+            "HEIGHT" : "310",
+            "WIDTH" : "300",
+            "CONTROLS" : [
+              {
+                "ID" : "ROUTE_ID",
+                "TYPE" : "TextInput",
+				"EDITABLE": false,
+				"TIWidth": "6",
+                "LABEL" : "Route",
+                "Column" : "ROUTE"
+              },
+              {
+                "ID" : "MILEPOST",
+                "TYPE" : "TextInput",
+				"TIWidth": "6",
+                "LABEL" : "Milepost",
+				"EDITABLE": false,
+                "Column" : "600"
+              },
+              {
+                "ID" : "SUBTYPE",
+                "TYPE" : "RADIO",
+                "RADIO_OPTS" : [
+                  "Left",
+                  "Right"
+                ],
+                "LABEL" : "Type",
+                "Column" : "600"
+              },
+              {
+                "ID" : "OK_BUTTON",
+                "TYPE" : "BUTTON",
+                "LABEL" : "Ok",
+                "Column" : "600"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

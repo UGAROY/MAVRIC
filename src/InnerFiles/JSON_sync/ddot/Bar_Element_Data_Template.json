@@ -1,0 +1,262 @@
+[
+    {
+        "BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "1",
+            "DESCRIPTION": "FUNCTIONAL_CLASS",
+            "PRIMARY_KEY": "OBJECTID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTEID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "FROMMEASURE",
+	      	"TO_MEASURE_COLUMN" : "TOMEASURE",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "OBJECTID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "FROMMEASURE",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "TOMEASURE",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTEID",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "DESCRIPTION",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "FUNCTIONALCLASS",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "2",
+            "DESCRIPTION": "OWNERSHIP",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTEID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "FROMMEASURE",
+	      	"TO_MEASURE_COLUMN" : "TOMEASURE",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "FROMMEASURE",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "TOMEASURE",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTEID",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "OWNERSHIP",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "3",
+            "DESCRIPTION": "HPMS",
+            "PRIMARY_KEY": "OBJECTID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTEID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "FROMMEASURE",
+	      	"TO_MEASURE_COLUMN" : "TOMEASURE",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "OBJECTID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "FROMMEASURE",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "TOMEASURE",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTEID",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "SECTIONTYPE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "4",
+            "DESCRIPTION": "NHS",
+            "PRIMARY_KEY": "OBJECTID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTEID",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "FROMMEASURE",
+	      	"TO_MEASURE_COLUMN" : "TOMEASURE",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "OBJECTID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "FROMMEASURE",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "TOMEASURE",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTEID",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "NHSTYPE",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	},
+	{
+		"BAR_ELEMENT_DATA_TEMPLATE": {
+            "ELEMENT_TYPE": "5",
+            "DESCRIPTION": "NUMBER_OF_LANES",
+            "PRIMARY_KEY": "ID",
+            "BASE_ID": "",
+            "ROUTE_ID_COLUMN" : "ROUTE",
+            "LENGTH_COLUMN":"",
+	      	"FROM_MEASURE_COLUMN" : "REFPT",
+	      	"TO_MEASURE_COLUMN" : "ENDREFPT",
+	      	"INV_COLUMNS": [
+             	{
+                    "NAME": "ID",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "REFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ENDREFPT",
+                    "Nullable": "False",
+                    "TYPE": "FLOAT"
+                },
+                {
+                    "NAME": "ROUTE",
+                    "TYPE": "TEXT",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "ROUTE_NAME",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_DESC",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                },
+                {
+                    "NAME": "ELEM_VALUE",
+                    "TYPE": "INTEGER",
+                    "Nullable": "False"
+                },
+                {
+                    "NAME": "STATUS",
+                    "TYPE": "TEXT",
+                    "Nullable": "True"
+                }
+            ]
+		}
+	}
+]

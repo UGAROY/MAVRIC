@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <baseViews:BaseAssetTitleWindow  xmlns:fx="http://ns.adobe.com/mxml/2009" 
 								 xmlns:s="library://ns.adobe.com/flex/spark" title="Support Inventory"
-								 width="1030" height="750"
+								 width="1030" height="700"
 								 close="handleCloseEvent()"
 								 creationComplete="init()"
 								 skinClass="skins.MavricTitleWindowSkin"
@@ -14,7 +14,6 @@
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewVert;
-			import com.transcendss.mavric.util.MeasureSprite;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
 			import com.transcendss.transcore.events.CameraEvent;
 			import com.transcendss.transcore.events.VoiceEvent;
@@ -23,30 +22,20 @@
 			import com.transcendss.transcore.sld.models.components.GeoTag;
 			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
 			import com.transcendss.transcore.util.AssetSymbol;
-			import com.transcendss.transcore.util.Converter;
 			import com.transcendss.transcore.util.TSSAudio;
 			import com.transcendss.transcore.util.TSSPicture;
 			import com.transcendss.transcore.util.TSSVideo;
-			import com.transcendss.transcore.util.Units;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.core.UIComponent;
 			import mx.managers.PopUpManager;
-			import mx.rpc.IResponder;
 			import mx.rpc.Responder;
-			import mx.rpc.events.FaultEvent;
-			import mx.rpc.events.ResultEvent;
-			import mx.rpc.http.HTTPService;
 			
-			import skins.HeaderlessPanelSkin;
-			import skins.TSSSkinnablePopUpContainerSkin;
-			
-			import spark.components.Button;
-			import spark.core.SpriteVisualElement;
+			import spark.components.Group;
+			import spark.components.Label;
+			import spark.components.VGroup;
 			import spark.events.GridEvent;
-			import spark.skins.mobile.TextAreaSkin;
-			import spark.skins.mobile.TextInputSkin;
 			
 			//private var counter:int = 0;
 			private var sdlftx:int;
@@ -125,13 +114,13 @@
 					
 					signSupportDDView.domainTableIDColName =  "POLEMATERIAL";
 					signSupportDDView.fetchDomainValues();
-					signSupportDDView.btnText = "Sign Support";
+					signSupportDDView.btnText = "Support Type";
 					signSupportDDView.genericPopup.height = 200;
 					SignSupportDDGroup.addElement(signSupportDDView);
 					
 					supportStatusDDView.domainTableIDColName =  "POLESTATUS";
 					supportStatusDDView.fetchDomainValues();
-					supportStatusDDView.btnText = "Sign Status";
+					supportStatusDDView.btnText = "Support Status";
 					supportStatusDDView.genericPopup.height = 200;
 					SignStatusDDGroup.addElement(supportStatusDDView);
 					
@@ -214,9 +203,10 @@
 			
 			private function saveSupport():void
 			{
-				if(this.retireChk.selected)
+				if(supportStatusDDView.domainID=="5")
 				{
 					currSupport['invProperties'].RETIRED.value=1;
+					currSupport['invProperties'].POLESTATUS.value = supportStatusDDView.domainID;
 				}
 				else
 				{
@@ -294,6 +284,7 @@
 					//recordManager.getSigns(currSupportID, signResp);
 					var signObj:Object = recordManager.getSignsByPoleID(currSupportID);
 					currSigns = signObj.signs;
+					currSigns.source.sortOn("SIGN_ORDER", [ Array.NUMERIC]);
 					currInspections = recordManager.getInspectionsForAsset(currSupportID, signObj.signIDs);
 					var gtArray:Array = recordManager.getGeotags(currSupportID);
 					
@@ -350,32 +341,23 @@
 			{
 				//var cmp:Number =!(milepost==-1)?milepost:FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
 				var mileposts:Object = binarySearch(cmp);
-				var culvertSprite:AssetSymbol;
 				
-				var mpSprite:SpriteVisualElement = new SpriteVisualElement();
 				var llabel:TextField = new TextField();
-				var dummy:BaseAsset =  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.createAsset(currSupport.description, -1, ""+1);
-				dummy.invProperties[dummy.typeKey].value = 'NS';
-				var ratio:Number;
-				var diff:Number;
+				
 				var lmp:Number;
 				var rmp:Number;
-				var leftMS:MeasureSprite;
-				var rightMS:MeasureSprite;
+				
 				
 				var lintname:String="";
 				var rintname:String="";
 				
-				//create a dummy culvert as a means of creating the symbol
-				FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assignAssetSymbol(dummy, dummy.description);
-				culvertSprite = dummy.symbol;
-				culvertSprite.scaleStd(0.75);
-				culvertSprite.selectRect = null;
+				var offset:Number=0;
+				var offsetRouteName:String ="";
+				
+				
 				if(mileposts.leftPost != null && mileposts.rightPost != null)
 				{
-					leftSprite = AssetSymbol.clone(mileposts.leftPost.symbol);
-					rightSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
-					bottomSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
+				
 					lmp = mileposts.leftPost.invProperties[mileposts.leftPost.fromMeasureColName].value;
 					rmp =  mileposts.rightPost.invProperties[mileposts.rightPost.fromMeasureColName].value;
 					
@@ -384,111 +366,45 @@
 					rintname =  mileposts.rightPost.invProperties["INTERSECTIONNAME"].value;
 					
 					
+					if(cmp-lmp>rmp-cmp)
+					{
+						offset = cmp-rmp;
+						offsetRouteName = rintname;
+					}
+					else
+					{
+						offset = cmp-lmp;
+						offsetRouteName = lintname;
+					}
 					
-					diff = rmp - lmp;
-					ratio = milepostDiagram.width/(5280 * diff); // pixels per foot
-					culvertSprite.x = (cmp - lmp) * 5280  * ratio + culvertSprite.stdWidth/2;
 					
-					sdlftx = leftSprite.x;
-					sdlfty = leftSprite.y;
-					leftSprite.x = -5;
-					leftSprite.y = 40;
-					leftSprite.addText(lintname);
-					mpSprite.addChild(leftSprite);
 					
-					culvertSprite.y = 30;
-					mpSprite.addChild(culvertSprite);
-					
-					sdrtx = rightSprite.x;
-					sdrty = rightSprite.y;
-					rightSprite.x = milepostDiagram.width - 5;
-					rightSprite.y = 40;
-					rightSprite.addText(rintname);
-					mpSprite.addChild(rightSprite);
-					
-					bottomSprite.x = milepostDiagram.width + 5;
-					bottomSprite.y = 105;
-					bottomSprite.height = milepostDiagram.width+10;
-					bottomSprite.rotation = 90;
-					mpSprite.addChild(bottomSprite);
-					
-					// measure bars
-					leftMS = new MeasureSprite(lmp, cmp, ratio,Units.FEET);
-					leftMS.x = 0;
-					leftMS.y = 0;
-					
-					rightMS = new MeasureSprite(cmp, rmp, ratio,Units.FEET);											
-					rightMS.x = (cmp - lmp)*5280 * ratio;
-					rightMS.y =0;
-					mpSprite.addChild(leftMS);
-					mpSprite.addChild(rightMS);
 				}
 				else if(mileposts.leftPost != null)
 				{
 					lmp = mileposts.leftPost.invProperties[mileposts.leftPost.fromMeasureColName].value;
-					leftSprite = AssetSymbol.clone(mileposts.leftPost.symbol);
-					bottomSprite = AssetSymbol.clone(mileposts.leftPost.symbol);
+					
 					lintname  = mileposts.leftPost.invProperties["INTERSECTIONNAME"].value;
-					sdlftx = leftSprite.x;
-					sdlfty = leftSprite.y;
-					leftSprite.x = 0 - 5;
-					leftSprite.y = 40;
-					leftSprite.addText(lintname);
-					mpSprite.addChild(leftSprite);
+					offset = cmp-lmp;
+					offsetRouteName = lintname;
 					
-					diff = cmp - lmp;
-					ratio = milepostDiagram.width/(5280 * diff); // pixels per foot;
-					culvertSprite.x += culvertSprite.stdWidth/2;
-					culvertSprite.x += milepostDiagram.width - culvertSprite.stdWidth;
-					culvertSprite.y = 30;
-					mpSprite.addChild(culvertSprite);
-					
-					bottomSprite.x = milepostDiagram.width + 5;
-					bottomSprite.y = 105;
-					bottomSprite.height = milepostDiagram.width+10;
-					bottomSprite.rotation = 90;
-					mpSprite.addChild(bottomSprite);
-					
-					leftMS = new MeasureSprite(lmp, cmp, ratio,Units.FEET);
-					leftMS.x = 0;
-					leftMS.y = 0;
-					mpSprite.addChild(leftMS);
 				}
 				else if(mileposts.rightPost != null)
 				{
 					rmp =  mileposts.rightPost.invProperties[mileposts.rightPost.fromMeasureColName].value;
-					bottomSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
-					lintname  = mileposts.rightPost.invProperties["INTERSECTIONNAME"].value;
-					diff = rmp - cmp;
-					ratio = milepostDiagram.width/ Converter.mileToFeet(diff);
-					culvertSprite.x += culvertSprite.stdWidth/2;
-					culvertSprite.y = 30;
-					mpSprite.addChild(culvertSprite);
+					rintname =  mileposts.rightPost.invProperties["INTERSECTIONNAME"].value;
+					offset = cmp-rmp;
+					offsetRouteName = rintname;
 					
-					rightSprite = AssetSymbol.clone(mileposts.rightPost.symbol);
-					sdrtx = rightSprite.x;
-					sdrty = rightSprite.y;
-					rightSprite.x = (rmp - cmp) * 5280 * ratio-6;
-					rightSprite.y = 40;
-					rightSprite.addText(lintname);
-					mpSprite.addChild(rightSprite);
-					
-					bottomSprite.x = milepostDiagram.width + 5;
-					bottomSprite.y = 105;
-					bottomSprite.height = milepostDiagram.width+10;
-					bottomSprite.rotation = 90;
-					mpSprite.addChild(bottomSprite);
-					
-					rightMS = new MeasureSprite(cmp, rmp, ratio,Units.FEET);											
-					rightMS.x = 0;
-					rightMS.y =0;
-					mpSprite.addChild(rightMS);
 				}
 				else
 				{
 					trace("You have no nearby reference points");
 				}
-				milepostDiagram.addElement(mpSprite);
+				
+				offsetTextInut.text = String(offset);
+				offsetStreetTextInut.text = offsetRouteName;
+				
 			}
 			
 			private function binarySearch(target:Number):Object
@@ -563,10 +479,10 @@
 							
 							FlexGlobals.topLevelApplication.incrementEventStack();
 
-							var gtReq:GeotagEvent = new GeotagEvent(GeotagEvent.GEOTAG_REQUEST,'SIGN',String(sign['SIGNID']),false, String(signEventLayer), fromMeasure);
+							var gtReq2:GeotagEvent = new GeotagEvent(GeotagEvent.GEOTAG_REQUEST,'SIGN',String(sign['SIGNID']),false, String(signEventLayer), fromMeasure);
 							
-							gtReq.serviceURL = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(signEventLayer) ,String(sign['OBJECTID']));
-							dispatchEvent(gtReq);
+							gtReq2.serviceURL = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(signEventLayer) ,String(sign['OBJECTID']));
+							dispatchEvent(gtReq2);
 						}
 						
 						var inspEventLayer:int = FlexGlobals.topLevelApplication.GlobalComponents.recordManager.inspectionEventLayerID;
@@ -599,10 +515,10 @@
 //							httpServ3.send();
 							
 							
-							var gtReq:GeotagEvent = new GeotagEvent(GeotagEvent.GEOTAG_REQUEST,inspection.SIGNID!=null? "SIGN":currSupport.assetType,inspection.SIGNID!=null?inspection.SIGNID:inspection.POLEID,true, String(inspEventLayer), fromMeasure);
+							var gtReq3:GeotagEvent = new GeotagEvent(GeotagEvent.GEOTAG_REQUEST,inspection.SIGNID!=null? "SIGN":currSupport.assetType,inspection.SIGNID!=null?inspection.SIGNID:inspection.POLEID,true, String(inspEventLayer), fromMeasure);
 							
-							gtReq.serviceURL = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(inspEventLayer) ,String(inspection['OBJECTID']));
-							dispatchEvent(gtReq);
+							gtReq3.serviceURL = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(String(inspEventLayer) ,String(inspection['OBJECTID']));
+							dispatchEvent(gtReq3);
 						}
 					}
 			}
@@ -629,6 +545,7 @@
 			
 			public  override function handleCloseEvent(event:Event = null):void 
 			{
+				this.currSupport.symbol.deselectAsset();
 				PopUpManager.removePopUp(this);
 			}
 			
@@ -1131,17 +1048,23 @@
 				}
 			}	
 			
+		
+			private function signLabelFunc(item:Object):String
+			{
+				return item["SIGNID"] + " - " + FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(item["SIGNNAME"]) + " - " + item["SIGN_ORDER"];	
+			}
+			
 			//----------------------------------------------------------------------------------------
 		]]>
 	</fx:Script>
 	
 	
 	<fx:Declarations>
-		<s:SkinnablePopUpContainer id="signPopUp" width="300" height="400"  name="Select Sign"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+		<s:SkinnablePopUpContainer id="signPopUp" width="500" height="400"  name="Select Sign"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 				<s:VGroup width="100%" height="100%" horizontalAlign="center">
 					<s:Button id="newSignBtn" label="Add A New Sign" width="100%" height="50" click="newSignBtn_clickHandler(event)"/>
-					<s:List id="SignList" dataProvider="{currSigns}"   change="closeSignPop(event)" width="100%" height="100%" labelField="SIGNID" fontSize="18" allowMultipleSelection="false"/>
+					<s:List id="SignList" dataProvider="{currSigns}"   change="closeSignPop(event)" width="100%" height="100%"  labelFunction="signLabelFunc" fontSize="18" allowMultipleSelection="false"/>
 				</s:VGroup>
 			</s:Panel>
 		</s:SkinnablePopUpContainer>
@@ -1173,14 +1096,25 @@
 							</s:HGroup>
 							<s:Spacer height="5"/>
 							<s:HGroup verticalAlign="middle">
-								<s:Label text="Milepoint:  " fontWeight="bold"/>
-								<s:TextInput id="milepostTextInut" width="225" editable="false"/>
+								<s:Label text="Offset:  " fontWeight="bold"/>
+								<s:TextInput id="offsetTextInut" width="225" editable="false"/>
 							</s:HGroup>
 						</s:VGroup>
 						<s:Spacer width="10"/>
-						<s:VGroup width="50%">
-							<s:Group id="LocDDGroup"></s:Group>
+						<s:VGroup>
+						
+							<s:HGroup verticalAlign="middle">
+								<s:Label text="Milepoint:  " fontWeight="bold"/>
+								<s:TextInput id="milepostTextInut" width="225" editable="false"/>
+							</s:HGroup>
+							<s:Spacer height="5"/>
+							<s:HGroup verticalAlign="middle">
+								<s:Label text="From:  " fontWeight="bold"/>
+								<s:TextInput id="offsetStreetTextInut" width="225" editable="false"/>
+							</s:HGroup>
+							
 						</s:VGroup>
+						
 					</s:HGroup>
 					<s:HGroup>
 						<s:VGroup width="50%">
@@ -1188,8 +1122,9 @@
 						</s:VGroup>
 						<s:Spacer width="10"/>
 						<s:VGroup width="50%">
-							<s:Group id="SignStatusDDGroup"></s:Group>
+							<s:Group id="LocDDGroup"></s:Group>
 						</s:VGroup>
+						
 					</s:HGroup>
 					<s:HGroup>
 						<s:VGroup width="50%">
@@ -1199,6 +1134,7 @@
 						<s:VGroup width="50%">
 							<s:Group id="NoOfBasesDDGroup"></s:Group>
 						</s:VGroup>
+						
 					</s:HGroup>
 					<s:HGroup>
 						<s:VGroup width="50%">
@@ -1207,34 +1143,34 @@
 						<s:Spacer width="10"/>
 						<s:VGroup width="50%">
 							<s:Spacer height="25"/>
-							<s:Label text="Pole Height:  " fontWeight="bold"/>
+							<s:Label text="Support Height:  " fontWeight="bold"/>
 							<s:TextInput id="PoleHeightTextInut" width="{textInputWidth}"/>
 						</s:VGroup>
 					</s:HGroup>
+					<s:VGroup id="addAttchmentsHolder" left="0" width="60%" />
 				</s:VGroup>
 				<s:Spacer width="10"/>
 				<s:VGroup width="30%">
+					<s:VGroup width="50%">
+						<s:Group id="SignStatusDDGroup"></s:Group>
+					</s:VGroup>
+					<s:Spacer height="10"/>
 					<s:Label text="Comments:  " fontWeight="bold"/>
 					<s:TextArea height="170" width="100%" id= "PoleComments" skinClass="spark.skins.mobile.TextAreaSkin"/>
 					<s:Spacer height="10"/>
 					<s:Label text="MS Utility ID:  " fontWeight="bold"/>
 					<s:TextInput id="MsUtilityTextInut" width="{textInputWidth}" editable="false"/>
 					<s:Spacer height="10"/>
+					<s:VGroup width="50%">
 					<s:Group id="MsStartDateGroup"></s:Group>
+						</s:VGroup>
 					<s:Spacer height="10"/>
 					<s:Group id="MsEndDateGroup"></s:Group>
 				</s:VGroup>
 				
 			</s:HGroup>
 			
-			<s:Spacer height="20"/>
 			
-			<s:HGroup gap="100">
-				<s:VGroup id="addAttchmentsHolder" gap="10" right="0" width="50%" />
-				<s:HGroup id="milepostDiagram" width="200" paddingTop="-20">
-					
-				</s:HGroup>
-			</s:HGroup>
 		</s:VGroup>
 		
 		
@@ -1242,7 +1178,7 @@
 			<s:HGroup verticalAlign="middle">
 				<s:Button id="targetSignBtn" label="Target Sign" click="targetSignBtn_clickHandler(event)" />
 				<s:Spacer width="20"/>
-				<s:TextInput id="signText" text="{selectedSign['SIGNID']}" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:TextInput id="signText" text="{selectedSign.SIGNID}" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
 			</s:HGroup>
 			<!--			<s:Line width="100%">
 			<s:stroke>
@@ -1305,7 +1241,7 @@
 			<s:Button label="Save" click="onSave();"/>
 			<s:Button label="Close" id="clbtn" click="handleCloseEvent();"/>
 		</s:HGroup>
-		<s:CheckBox label="Retire" id="retireChk" change="retireChk_changeHandler(event);"/>
+		<s:CheckBox label="Retire" id="retireChk" visible="false" change="retireChk_changeHandler(event);"/>
 		<s:Button label="Move to Current Location" id="moveBtn"  click="moveBtn_changeHandler(event)" />
 	</s:HGroup>
 </baseViews:BaseAssetTitleWindow>

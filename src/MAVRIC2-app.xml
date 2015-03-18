@@ -15,7 +15,7 @@
 
 	<!-- A universally unique application identifier. Must be unique across all AIR applications.
 	Using a reverse DNS-style name as the id is recommended. (Eg. com.example.ExampleApplication.) Required. -->
-	<id>COM.TRANSCENDSS.MAVRIC.ddot</id>
+	<id>COM.TRANSCENDSS.MAVRIC.DDOT</id>
 
 	<!-- Used as the filename for the application. Required. -->
 	<filename>MAVRIC_DDOT</filename>

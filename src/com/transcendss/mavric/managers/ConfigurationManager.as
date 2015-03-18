@@ -39,7 +39,7 @@ package com.transcendss.mavric.managers
 		private var _feetMarkerSwitch:Boolean;
 		private var _linearEditingSwitch:Boolean;
 		private var _roadwayLanesSwitch:Boolean;
-
+		
 		//view Menu checkboxes
 		private var _FullScreenSwitch:Boolean;
 		private var _VideoLogSwitch:Boolean;
@@ -52,7 +52,7 @@ package com.transcendss.mavric.managers
 		private var wifiConnect:Boolean;
 		private var fileLoc:String;
 		private var _inspDays:Number=120;
-		private var _lanesFieldValue:String="Number of Lanes";
+		
 		
 		private var _syncActivity:int=2;
 		
@@ -85,17 +85,14 @@ package com.transcendss.mavric.managers
 		}
 		
 		
+		public function get roadwayLanesEventType():String
+		{
+			var url:String = _setMan.getSetting("ROADWAY_LANES_ELEMENT_TYPE");
+			return (url==""|| url ==null )?ConfigUtility.get('roadway_lanes_element_type'):url;
+		}
 		
-		public function get lanesFieldValue():String
-		{
-			return _lanesFieldValue;
-		}
-
-		public function set lanesFieldValue(value:String):void
-		{
-			_lanesFieldValue = value;
-		}
-
+		
+		
 		public function loadSettings():void
 		{
 			
@@ -106,14 +103,13 @@ package com.transcendss.mavric.managers
 			_feetMarkerSwitch =_setMan.getSetting("FEET_VIEW")?(_setMan.getSetting("FEET_VIEW") == "true" ? true : false):ConfigUtility.getBool("ruler_bool");
 			_linearEditingSwitch =_setMan.getSetting("LINEAR_DATA_EDIT_ENABLED")?(_setMan.getSetting("LINEAR_DATA_EDIT_ENABLED") == "true" ? true : false):ConfigUtility.getBool("linear_data_edit_enabled");
 			_roadwayLanesSwitch =_setMan.getSetting("ROADWAY_LANES_ENABLED")?(_setMan.getSetting("ROADWAY_LANES_ENABLED") == "true" ? true : false):ConfigUtility.getBool("roadway_lanes_enabled");
-
-			_measureBarUnit = _setMan.getSetting("TYPE_MEASURE")?int(_setMan.getSetting("TYPE_MEASURE")): ConfigUtility.getInt("type_measure");//( s=="kilometer"? Units.KILOMETER : (s=="meter"? Units.METER : (s=="mile"? Units.MILE : Units.FEET)));
+			
+			_measureBarUnit = _setMan.getSetting("MEASUREBAR_UNITS")?int(_setMan.getSetting("MEASUREBAR_UNITS")): ConfigUtility.getInt("measurebar_units");//( s=="kilometer"? Units.KILOMETER : (s=="meter"? Units.METER : (s=="mile"? Units.MILE : Units.FEET)));
 			sURL = _setMan.getSetting("SERVICE_URL")?String(_setMan.getSetting("SERVICE_URL")):ConfigUtility.get("serviceURL");
 			
 			
 			defBtmPanelContent = currBtmPanelContent = _setMan.getSetting("DEFAULT_BP_CONTENT")?String(_setMan.getSetting("DEFAULT_BP_CONTENT")):ConfigUtility.get("default_bp_content");
 			elemBarHeight = _setMan.getSetting("DEFAULT_ELEMENT_BAR_HEIGHT")?Number(_setMan.getSetting("DEFAULT_ELEMENT_BAR_HEIGHT")):ConfigUtility.getNumber("default_element_bar_height");
-			
 			
 			
 			var assetDefs:Object = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs;
@@ -161,8 +157,8 @@ package com.transcendss.mavric.managers
 			}
 			return defScaleLbl;
 		}
-
-
+		
+		
 		// Read the bar element definitions from json file
 		private function getDataElementDetails():void
 		{
@@ -175,8 +171,8 @@ package com.transcendss.mavric.managers
 				meFile = File.applicationDirectory.resolvePath(path);
 			
 			
-//			var path:String = barElementDef;
-//			var meFile:File = File.applicationDirectory.resolvePath(path);
+			//			var path:String = barElementDef;
+			//			var meFile:File = File.applicationDirectory.resolvePath(path);
 			
 			var fs:FileStream = new FileStream();
 			fs.open(meFile, FileMode.READ);
@@ -208,21 +204,21 @@ package com.transcendss.mavric.managers
 			else
 				return null;
 		}
-
+		
 		// Get the bar element names to display in the lanes field selection box
 		public function getBarElemNames():Array{
 			var namesArr:Array = new Array();
 			var obj:Object;
 			for each(obj in dataElemDefObj)
 			{
-				if(obj.AssetName == lanesFieldValue)
-					namesArr.splice(0,0,obj.AssetName);
+				if(String(obj.AssetLayerID) == roadwayLanesEventType)
+					namesArr.splice(0,0,{"id": obj.AssetLayerID,"name":obj.AssetName});
 				else
-					namesArr.push(obj.AssetName);
+					namesArr.push({"id": obj.AssetLayerID,"name":obj.AssetName});
 			}
 			return namesArr;
 		}
-
+		
 		// Store the bar element definitions for use by the code
 		private function buildDataElementDetails(jsonObj:Object):void
 		{
@@ -290,8 +286,8 @@ package com.transcendss.mavric.managers
 			_inspDays = value;
 		}
 		
-
-
+		
+		
 		[Bindable(event="configManagerMeasureBarUnitChanged")]
 		public function get measureBarUnit():Number
 		{
@@ -475,7 +471,7 @@ package com.transcendss.mavric.managers
 				_roadwayLanesSwitch = value;
 				var eventObj:ConfigManagerEvent = new ConfigManagerEvent(ConfigManagerEvent.ROADWAYLANES_SWITCH_CHANGED);
 				eventObj.NewValue = value;
-			
+				
 				mateDispatcher.dispatchEvent(eventObj);
 			}
 			
@@ -535,11 +531,7 @@ package com.transcendss.mavric.managers
 			return (s==""|| s ==null )?Number(ConfigUtility.get('default_scale')):Number(s);
 		}
 		
-		public function get defaultLanesField():String
-		{
-			var s:String = _setMan.getSetting("DEFAULT_LANES_FIELD");
-			return (s==""|| s ==null )?ConfigUtility.get('default_lanes_field'):s;
-		}
+		
 		
 		
 		public function get dataUnits():int
@@ -657,7 +649,7 @@ package com.transcendss.mavric.managers
 			var url:String =_setMan.getSetting("DOMAIN_DEF");
 			return (url==""|| url ==null )?ConfigUtility.get('domain_def'):url;
 		}
-
+		
 		public function get barElementJsonDef():String
 		{
 			var url:String = _setMan.getSetting("BAR_ELEMENT_DEF");
@@ -673,19 +665,19 @@ package com.transcendss.mavric.managers
 			var url:String =_setMan.getSetting("BAR_ELEMENT_DATA_ENTRY_TEMPLATE");
 			return (url==""|| url ==null )?ConfigUtility.get('bar_element_data_entry_template'):url;
 		}
-
+		
 		public function get barElementDomainDef():String
 		{
 			var url:String =_setMan.getSetting("BAR_ELEMENT_DOMAIN_DEF");
 			return (url==""|| url ==null )?ConfigUtility.get('bar_element_domain_def'):url;
 		}
-
+		
 		public function get syncActivityValue():String
 		{
 			var url:String = _setMan.getSetting("SYNC_ACTIVITY");
 			return (url==""|| url ==null )?ConfigUtility.get('sync_activity'):url;	
 		}
-
+		
 		public function get inspDaysValue():String
 		{
 			var url:String = _setMan.getSetting("INSP_DAYS");
@@ -700,8 +692,8 @@ package com.transcendss.mavric.managers
 		
 		public function get linearEditFormSwitch():Boolean
 		{
-//			var url:String = _setMan.getSetting("LINEAR_EDIT_FORM_ENABLED");
-//			return (url==""|| url ==null )?ConfigUtility.getBool('linear_edit_form_enabled'):(url=="true");	
+			//			var url:String = _setMan.getSetting("LINEAR_EDIT_FORM_ENABLED");
+			//			return (url==""|| url ==null )?ConfigUtility.getBool('linear_edit_form_enabled'):(url=="true");	
 			return true;
 		}
 		
