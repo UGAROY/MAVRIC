@@ -410,7 +410,7 @@
 			private function binarySearch(target:Number):Object
 			{
 				var array:ArrayCollection = recordManager.allIntersections;
-				array.source.sortOn("milePost");
+				array.source.sortOn("milePost", Array.NUMERIC);
 				var left:int = 0;
 				var right:int = array.length - 1;
 				var middle:int;
@@ -661,6 +661,7 @@
 				
 				// Load the sign info
 				currSignTab.sign = selectedSign;
+				
 				currSignTab.isNewSign = isNewSign;
 				currSignTab.currSupportID = currSupportID;
 				currSignTab.loadSignInfo();

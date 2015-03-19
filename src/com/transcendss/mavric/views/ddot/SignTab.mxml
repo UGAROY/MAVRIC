@@ -29,6 +29,7 @@
 			public var signSizeDDView:DropDownViewVert = new DropDownViewVert();
 			public var signOrderDDView:DropDownViewVert = new DropDownViewVert();
 			public var signStatusDDView:DropDownViewVert = new DropDownViewVert();
+			public var arrowDirDDView:DropDownViewVert = new DropDownViewVert();
 			
 			private var attchView:AddAttachments = new AddAttachments();
 			
@@ -80,6 +81,15 @@
 					signStatusDDView.genericPopup.height = 200;
 					signStatusDDView.genericPopup.width = 200;
 					SignStatusDDGroup.addElement(signStatusDDView);
+					
+					
+					arrowDirDDView.domainTableIDColName =  "ARROWDIRECTION";
+					arrowDirDDView.fetchDomainValues();
+					arrowDirDDView.btnText = "Arrow Direction";
+					//signStatusDDView.width_TI = 120;
+					arrowDirDDView.genericPopup.height = 200;
+					arrowDirDDView.genericPopup.width = 200;
+					ArrowDirDDGroup.addElement(arrowDirDDView);
 					
 					attchView.init("SignInventory",true,true,true);
 					addAttchmentsHolder.addElement(attchView);
@@ -208,6 +218,7 @@
 				signSizeDDView.domainID = sign['SIGNSIZE'];
 				signOrderDDView.domainID = sign['SIGN_ORDER'];
 				signStatusDDView.domainID = sign['SIGNSTATUS'];
+				arrowDirDDView.domainID = sign['ARROWDIRECTION'];
 				signComments.text = sign['COMMENTS'];
 				isLZchkbox.selected = sign['ISLOADINGZONE'];
 				setSignImage();
@@ -221,6 +232,7 @@
 				sign['SIGNSIZE'] = signSizeDDView.domainID;
 				sign['SIGN_ORDER'] = signOrderDDView.domainID;
 				sign['SIGNSTATUS'] = signStatusDDView.domainID;
+				sign['ARROWDIRECTION'] = arrowDirDDView.domainID ;
 				sign['COMMENTS'] = signComments.text;
 				sign['ISLOADINGZONE'] = isLZchkbox.selected;
 				
@@ -271,6 +283,8 @@
 							<s:Spacer height="5"/>
 							<s:VGroup id="selSignImgHolder" width="180" height="180">
 							</s:VGroup>
+							<s:Spacer height="5"/>
+							<s:Group id="ArrowDirDDGroup"></s:Group>
 						</s:VGroup>
 					</s:HGroup>
 					<s:VGroup id="addAttchmentsHolder" left="-100" width="100%" gap="10"/>

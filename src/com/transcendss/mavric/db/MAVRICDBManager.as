@@ -2007,6 +2007,7 @@ package com.transcendss.mavric.db
 				"OBJECTID INTEGER, " +
 				"SIGNID INTEGER, " +
 				"POLEID INTEGER, " + 
+				"MEASURE REAL, " + 
 				"SIGNNAME TEXT, " +
 				"DESCRIPTION TEXT, " + 
 				"SIGNFACING INTEGER, " +
@@ -2116,14 +2117,14 @@ package com.transcendss.mavric.db
 		
 		public function addDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("OBJECTID", "SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE")
+			var signColumns:Array = new Array("OBJECTID", "SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE", "MEASURE")
 			sStat.text = "INSERT INTO SIGNS " + buildDdotInsertKeyValueStr(sign, signColumns); 
 			sStat.execute();
 		}
 		
 		public function updateDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE");
+			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE",  "MEASURE");
 			sStat.text = StringUtil.substitute("UPDATE SIGNS SET {0} WHERE SIGNID={1}", [buildDdotUpdateKeyValueStr(sign, signColumns), sign['SIGNID'].toString()]);
 			sStat.execute();
 		}

@@ -338,7 +338,7 @@
 			private function closeRoutePop(event:Event):void
 			{
 				this.getMinMax(event);
-				sroute.text = RouteList.selectedItem.ROUTE_NAME;
+				sroute.text = RouteList.selectedItem.ROUTE_FULL_NAME||RouteList.selectedItem.ROUTE_NAME;
 				rsPopUp.close(true, RouteList.selectedItem);	
 			}
 			
@@ -361,6 +361,11 @@
 				EndMileInp.softKeyboardType = SoftKeyboardType.NUMBER;
 			}
 			
+			
+			private function routeLabelFunction(item:Object):String
+			{
+				return item['ROUTE_FULL_NAME'] ? item['ROUTE_FULL_NAME'] :  item['ROUTE_NAME'] 
+			}
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -398,7 +403,7 @@
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 			<s:VGroup width="100%" height="100%" horizontalAlign="center">
 	   <!-- <s:List id="RouteList"   change="this.getMinMax(event)" valueCommit="this.formValidator.validateForm(event)" dataProvider="{dp}" width="100%" height="100%" labelField="ROUTE_NAME" fontSize="18" allowMultipleSelection="false"/> -->
-			<s:List id="RouteList"   change="closeRoutePop(event)" dataProvider="{dp}" width="100%" height="100%" labelField="ROUTE_NAME" fontSize="18" allowMultipleSelection="false" valueCommit="this.formValidator.validateForm(event)"/>
+			<s:List id="RouteList"   change="closeRoutePop(event)" dataProvider="{dp}" width="100%" height="100%" labelField="ROUTE_NAME" labelFunction="routeLabelFunction" fontSize="18" allowMultipleSelection="false" valueCommit="this.formValidator.validateForm(event)"/>
 				<!---->
 		<!--	<s:Button label="OK" click="closeRoutePop()"/> -->
 			

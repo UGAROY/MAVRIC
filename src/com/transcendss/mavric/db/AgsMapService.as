@@ -194,7 +194,7 @@ package com.transcendss.mavric.db
 		public function getRouteUrl():String
 		{
 			var whereClause:String = _query.allRoutesEventWhereClause.replace(/@routeIdFieldName\b/gi, _networkLayerContext.compositeRouteIdFieldName) ;
-			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) + '?f=json&returnDistinctValues=true&outSR=&returnM=false&returnGeometry=false&orderByFields='+_networkLayerContext.compositeRouteIdFieldName+'&outFields='+_networkLayerContext.compositeRouteIdFieldName+'&where=' + escape(whereClause);
+			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) + '?f=json&returnDistinctValues=true&outSR=&returnM=false&returnGeometry=false&orderByFields='+_networkLayerContext.compositeRouteIdFieldName+'&outFields='+_networkLayerContext.compositeRouteIdFieldName+',ROUTENAME&where=' + escape(whereClause);
 		}
 		
 		public function getMinMaxUrl(routeName:String):String
