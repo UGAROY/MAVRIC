@@ -538,13 +538,13 @@ package com.transcendss.mavric.managers.ddot
 		
 		private function displaySyncResult():void
 		{
-			if(FlexGlobals.topLevelApplication.runningEvents==0 && FlexGlobals.topLevelApplication.failedSyncDetails=="")
+			if(FlexGlobals.topLevelApplication.runningEvents<1 && FlexGlobals.topLevelApplication.failedSyncDetails=="")
 			{
 				FlexGlobals.topLevelApplication.TSSAlert("Assets Synced Successfully.");
 				recordManager.updateSupportIDs(maxSupportIDOnServer);
 				recordManager.resetNewSignInspectionID();
 			}
-			else if(FlexGlobals.topLevelApplication.runningEvents==0 &&  FlexGlobals.topLevelApplication.failedSyncDetails!="")
+			else if(FlexGlobals.topLevelApplication.runningEvents<1 &&  FlexGlobals.topLevelApplication.failedSyncDetails!="")
 				FlexGlobals.topLevelApplication.TSSAlert("Error occured when syncing asset: " + FlexGlobals.topLevelApplication.failedSyncDetails);
 		}
 		

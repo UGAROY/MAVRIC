@@ -263,7 +263,7 @@
 					this.currMilePost = parseFloat(currSupport['invProperties'].MEASURE.value || "");
 				}
 				
-				supportRouteIdInput.text = this.currRouteID;
+				supportRouteIdInput.text = FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.route.routeFullName || this.currRouteID;
 				milepostTextInut.text = this.currMilePost.toFixed(3);
 				locDDView.domainID = currSupport['invProperties'].LOCATION.value || "";
 				signSupportDDView.domainID = currSupport['invProperties'].POLEMATERIAL.value || "";
@@ -402,7 +402,7 @@
 					trace("You have no nearby reference points");
 				}
 				
-				offsetTextInut.text = String(offset);
+				offsetTextInut.text = offset.toFixed(3);
 				offsetStreetTextInut.text = offsetRouteName;
 				
 			}

@@ -825,7 +825,7 @@
 					
 					
 					//httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String(asset.attributes.OBJECTID));
-					httpServ.url = "http://dev.tsstools.com/arcgis/rest/services/ddot/export/GPServer/link/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
+					httpServ.url = "http://dev.tsstools.com/arcgis/rest/services/ddot/export/GPServer/time/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
 					httpServ.addEventListener( ResultEvent.RESULT, function(ev:ResultEvent):void{
 						ev.stopPropagation();
 						var routeNamer:String = ev.currentTarget.request.routeName;

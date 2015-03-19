@@ -522,10 +522,23 @@ package com.transcendss.mavric.managers.ddot
 		
 		public function getOtherSigns(signID:Number):ArrayCollection{
 			var otherSigns:ArrayCollection = new ArrayCollection();
+			var tempSigns:ArrayCollection = new ArrayCollection();
+			var localIDs:Array = new Array();
+			
+			tempSigns.addAll( _mdbm.getAllLocalDdotSign());
+			
+			for each(var localsign:Object in tempSigns)
+			{
+				if (localsign['SIGNID'] != signID)
+				{
+					otherSigns.addItem(localsign);
+					localIDs.push(localsign['SIGNID']);
+				}
+			}
 			
 			for each (var sign:Object in _allSigns)
 			{
-				if (sign['SIGNID'] != signID)
+				if (sign['SIGNID'] != signID && localIDs.indexOf('SIGNID')===-1)
 					otherSigns.addItem(sign);
 			}
 			return otherSigns;

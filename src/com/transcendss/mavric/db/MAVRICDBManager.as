@@ -2142,6 +2142,24 @@ package com.transcendss.mavric.db
 				return false;
 		}
 		
+		public function getAllLocalDdotSign():ArrayCollection
+		{
+			var signs:ArrayCollection = new ArrayCollection();
+			try
+			{
+				sStat.text = "SELECT * FROM SIGNS" ;
+				sStat.execute();
+				var data:Array = sStat.getResult().data;
+				signs = new ArrayCollection(data);
+			}
+			catch(err:Error)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert(err.message);
+			}
+			return signs;
+		}
+		
+		
 		public function getDdotSignByPoleID(poleID:Number):ArrayCollection
 		{
 			var signs:ArrayCollection = new ArrayCollection();

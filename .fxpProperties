@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fxpProperties abbreviated="false" authoringTool="Flex Builder" compiles="true" parentProject="ac8d64a2-4e51-4215-ad59-e47be892f7cd" projectUUID="ac8d64a2-4e51-4215-ad59-e47be892f7cd" pureCatalystProject="false" sdkVersion="4.6.0" uuid="7d6ef928-b6a3-4c5f-b378-9ee42ec7a578" version="15">
+  <projects>
+    <project filename="TSSMaps.fxpl" position="2" projectUUID="9fcc0300-40cd-4838-b816-2a7f57455c55" uuid="7d6ef928-b6a3-4c5f-b378-9ee42ec7a578"/>
+    <project filename="TransCore.fxpl" position="3" projectUUID="d67e33a3-4b80-4466-9a64-76d6835a24d1" uuid="7d6ef928-b6a3-4c5f-b378-9ee42ec7a578"/>
+  </projects>
+  <src>
+    <linked isMain="false" location="properties" path="properties" position="0" uuid="7d6ef928-b6a3-4c5f-b378-9ee42ec7a578"/>
+  </src>
+  <swc>
+    <linked location="sdkPlaceHolder" path="sdkPlaceHolder" position="0" uuid="7d6ef928-b6a3-4c5f-b378-9ee42ec7a578"/>
+    <linked location="C:/TSS/Projects/DDOT/MAVRIC2/libs" path="/libs" position="1" uuid="7d6ef928-b6a3-4c5f-b378-9ee42ec7a578"/>
+  </swc>
+  <misc/>
+  <theme/>
+  <mxmlFormattingPrefs groupAttributesByState="true" maxLineWidth="100" mxmlAlignAttributes="true" mxmlAttributeOrder="id,userLabel,includeIn,excludeFrom,visible,x,y,z,left,right,top,bottom,width,height,minWidth,minHeight,maxWidth,maxHeight,label" mxmlKeepAttributeValuesOrganized="true"/>
+</fxpProperties>
