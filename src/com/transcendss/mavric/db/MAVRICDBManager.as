@@ -2401,7 +2401,7 @@ package com.transcendss.mavric.db
 			sStat.execute();
 			var data:Array = sStat.getResult().data;
 			if (data != null && data.length > 0 && data[0]["min(" + asset.primaryKey + ")"] != null)
-				return data[0]["min(" + asset.primaryKey + ")"];
+				return data[0]["min(" + asset.primaryKey + ")"] - 1;
 			else	
 				return -2;
 		}
