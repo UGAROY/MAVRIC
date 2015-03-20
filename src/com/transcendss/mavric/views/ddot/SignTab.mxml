@@ -104,10 +104,12 @@
 				
 			}
 			
-			private function linkRetrieved(linkID:String):void
+			private function linkRetrieved(linkID:Object):void
 			{
-				this.linkSignPair['NEW'] = linkID;
+				this.linkSignPair['NEW'] = linkID.link;
+				this.linkSignPair['ZONEID'] = linkID.zoneid;
 				linkIdLabel.text = linkSignPair['NEW'];
+			    
 				trEnable = linkID != "";
 			}
 			
@@ -143,6 +145,7 @@
 				linkedSignForm.currentSign = sign;
 				linkedSignForm.otherSigns =  data;
 				linkedSignForm.oldLinkID = this.linkSignPair['NEW'];
+				linkedSignForm.zoneIDText.text = this.linkSignPair['ZONEID'];
 				linkedSignForm.linkedSignCallback = linkedSignCompleteHandler;
 				linkedSignForm.loadLinkedSignsInfo();
 			}
@@ -178,7 +181,10 @@
 			protected function linkedSignCompleteHandler(linkIDPair:Object):void
 			{
 				this.linkSignPair = linkIDPair;
-				linkRetrieved(linkSignPair['NEW']);
+				//linkRetrieved(linkSignPair['NEW']);
+				linkIdLabel.text = linkSignPair['NEW'];
+				
+				trEnable = linkSignPair['NEW'] != "";
 			}
 			
 			protected function timeRestrictionCompleteHandler(timeRestrictions:ArrayCollection):void
@@ -283,7 +289,7 @@
 							<s:Spacer height="5"/>
 							<s:VGroup id="selSignImgHolder" width="180" height="180">
 							</s:VGroup>
-							<s:Spacer height="5"/>
+							
 							<s:Group id="ArrowDirDDGroup"></s:Group>
 						</s:VGroup>
 					</s:HGroup>
@@ -303,7 +309,7 @@
 									 skinClass="spark.skins.mobile.TextInputSkin"/>
 					</s:HGroup>-->
 					<s:Spacer height="5"/>
-					<s:CheckBox id="isLZchkbox" label="Is Loading Zone"/>
+					<s:CheckBox id="isLZchkbox" label="Is Parking Zone"/>
 					<s:Spacer height="10"/>
 					<s:HGroup width="100%" verticalAlign="middle" visible="{isLZchkbox.selected}">
 						<s:Button id="linkedSignBtn" width="45%" label="Linked Sign"

@@ -25,7 +25,7 @@
 			public var oldLinkID:String = null;
 			// A pair of new linkID and old linkID
 			private var linkIDPair:Object = new Object();
-			
+			private var arrowDirDomainObj:Object;
 			public var linkedSignCallback:Function;
 			
 			//private var signTypes:ArrayCollection;
@@ -34,12 +34,23 @@
 			{
 				try
 				{
+					var arrowDirDomain:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("ARROWDIRECTION");
+					
+					arrowDirDomainObj = domainToObj(arrowDirDomain)
 					// signTypes = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SIGNTYPE");
 				}
 				catch(err:Error)
 				{
 					FlexGlobals.topLevelApplication.TSSAlert(err.getStackTrace());		
 				}
+			}
+			
+			private function domainToObj(domain:ArrayCollection):Object
+			{
+				var domainObj:Object = new Object();
+				for each (var item:Object in domain)
+				domainObj[item['ID']] = item['DESCRIPTION'];
+				return domainObj;
 			}
 			
 			public function loadLinkedSignsInfo():void
@@ -67,6 +78,11 @@
 				return FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(item["SIGNNAME"]);
 			}
 			
+			private function formatArrowDirColumn(item:Object, column:GridColumn):String
+			{
+				return arrowDirDomainObj != null ? arrowDirDomainObj[item[column.dataField]] : "";
+			}
+			
 			protected function handleCloseEvent():void
 			{
 				PopUpManager.removePopUp(this);
@@ -86,6 +102,9 @@
 					}
 					linkIDPair['NEW'] = linkedSignIDs.join("_");
 					linkIDPair['OLD'] = oldLinkID;
+					linkIDPair['ZONEID'] = zoneIDText.text;
+					if(!linkIDPair['NEW'])//if only zoneid changed
+						linkIDPair['NEW'] = linkIDPair['OLD'];
 					linkedSignCallback(linkIDPair);
 					PopUpManager.removePopUp(this);
 				}
@@ -119,7 +138,7 @@
 			<s:columns>
 				<s:ArrayList>
 					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Code"/>
-					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
+					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction" labelFunction="formatArrowDirColumn"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn"/>
 					<s:GridColumn dataField="POLEID" headerText="Support ID"/>
 				</s:ArrayList>
@@ -144,7 +163,7 @@
 						</s:itemRenderer>
 					</s:GridColumn>
 					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Code"/>
-					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction"/>
+					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction" labelFunction="formatArrowDirColumn"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn">
 					</s:GridColumn>
 					<s:GridColumn dataField="POLEID" headerText="Support ID"/>
@@ -155,7 +174,7 @@
 		<s:VGroup width="100%" horizontalAlign="center" >
 			<s:HGroup verticalAlign="middle">
 				<s:Label text="Zone ID" fontWeight="bold"/>
-				<s:TextInput editable="true" skinClass="spark.skins.mobile.TextInputSkin" width="120"/>
+				<s:TextInput id= "zoneIDText" editable="true" skinClass="spark.skins.mobile.TextInputSkin" width="120"/>
 				<s:Spacer width="40"/>
 				<s:Button label="Save"  width="100" height="35" click="SaveHandler(event)"/>
 				<s:Spacer width="20"/>

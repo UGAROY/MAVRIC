@@ -547,6 +547,7 @@
 			{
 				this.currSupport.symbol.deselectAsset();
 				PopUpManager.removePopUp(this);
+				
 			}
 			
 			protected function retireChk_changeHandler(event:Event):void

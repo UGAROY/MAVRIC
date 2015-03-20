@@ -2291,22 +2291,23 @@ package com.transcendss.mavric.db
 				return false;
 		}
 		
-		public function addLink(linkID:String, signID:Number, oldLinkID:String):void
+		public function addLink(linkID:String, signID:Number, oldLinkID:String, zoneID:String):void
 		{
-			sStat.text = "INSERT INTO LINKEDSIGN (LINKID, SIGNID, OLDLINKEDID) VALUES ('@linkID', @signID, '@oldLinkID')"
+			sStat.text = "INSERT INTO LINKEDSIGN (LINKID, SIGNID, OLDLINKEDID, ZONEID) VALUES ('@linkID', @signID, '@oldLinkID','@zoneID')"
 				.replace("@linkID", linkID)
 				.replace("@signID", signID.toString())
-				.replace("@oldLinkID", oldLinkID);
+				.replace("@oldLinkID", oldLinkID)
+				.replace("@zoneID", zoneID);
 			sStat.execute();
 		}
 		
-		public function getLinkBySignID(signID:Number):String
+		public function getLinkBySignID(signID:Number):Object
 		{
-			sStat.text = "SELECT LINKID FROM LINKEDSIGN WHERE SIGNID = " + signID.toString();
+			sStat.text = "SELECT LINKID, ZONEID FROM LINKEDSIGN WHERE SIGNID = " + signID.toString();
 			sStat.execute();
 			var data:Array = sStat.getResult().data;
 			if (data != null && data.length > 0)
-				return data[0]['LINKID'];
+				return {'link':data[0]['LINKID'], 'zoneid':data[0]['ZONEID']};
 			else
 				return null;
 		}

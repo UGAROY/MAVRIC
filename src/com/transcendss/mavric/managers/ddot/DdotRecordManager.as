@@ -593,16 +593,19 @@ package com.transcendss.mavric.managers.ddot
 			}
 		}
 		
-		public function getLinkBySignID(signID:Number):String
+		public function getLinkBySignID(signID:Number):Object
 		{
 
-			var link:String ="";
+			var link:Object= new Object();
 			
 			for each(var links:Object in this._allLinks)
 				if(links.signID == signID)
-					link=links.linkID;
+				{
+					link["link"]=links.linkID;
+					link["zoneid"]=links.zoneID;
+				}
 			
-			var localLink:String = _mdbm.getLinkBySignID(signID);
+			var localLink:Object = _mdbm.getLinkBySignID(signID);
 			
 			if (localLink != null)
 				 return localLink;
@@ -633,7 +636,7 @@ package com.transcendss.mavric.managers.ddot
 			
 				for each (var linkObj in arr)
 				{
-					_allLinks.addItem({linkID:linkObj.attributes.LINKID, signID:linkObj.attributes.SIGNID});
+					_allLinks.addItem({linkID:linkObj.attributes.LINKID, signID:linkObj.attributes.SIGNID, zoneID:linkObj.attributes.ZONEID});
 					linkIDs.push(linkObj.attributes.LINKID);
 				}
 			
@@ -649,13 +652,14 @@ package com.transcendss.mavric.managers.ddot
 				{
 					var newLinkID:String = link[key]['NEW'];
 					var oldLinkID:String = link[key]['OLD'];
+					var zoneID:String = link[key]['ZONEID'];
 					if (oldLinkID != null)
 						_mdbm.deleteOldLinkByLinkID(oldLinkID);
 					if (!_mdbm.isLinkExist(newLinkID))
 					{
 						var allSignIDs:Array = newLinkID.split('_');
 						for each (var signID:String in allSignIDs)
-						_mdbm.addLink(newLinkID, parseInt(signID), oldLinkID);
+						_mdbm.addLink(newLinkID, parseInt(signID), oldLinkID, zoneID);
 					}
 				}
 			}
