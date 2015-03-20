@@ -72,7 +72,7 @@ package com.transcendss.mavric.managers
 			var arr:Array = parseJsonObj(obj);
 			for each(var arrItem:Object in arr)
 			{
-				arrayColl.addItem({ "ROUTE_NAME" : arrItem.attributes[FlexGlobals.topLevelApplication.agsMapService.networkLayerContext.compositeRouteIdFieldName], "ROUTE_FULL_NAME":arrItem.attributes["RTE_COMMON_NM"]});
+				arrayColl.addItem({ "ROUTE_NAME" : arrItem.attributes[FlexGlobals.topLevelApplication.agsMapService.networkLayerContext.compositeRouteIdFieldName], "ROUTE_FULL_NAME":arrItem.attributes["ROUTENAME"]});
 			}
 			return arrayColl;
 		}

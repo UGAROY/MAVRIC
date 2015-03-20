@@ -153,6 +153,26 @@
       ]
     }
   },
+   {
+    "DOMAIN_DEF": {
+      "TYPE": "ARROWDIRECTION",
+      "LIST": [
+        {
+          "ID": "1",
+          "DESCRIPTION": "Left"
+        },
+        {
+          "ID": "2",
+          "DESCRIPTION": "Right"
+        },
+        {
+          "ID": "3",
+          "DESCRIPTION": "Bidirectional"
+        }
+        
+      ]
+    }
+  },
   {
     "DOMAIN_DEF": {
       "TYPE": "BASETYPE",
