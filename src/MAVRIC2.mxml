@@ -287,14 +287,14 @@
 			
 			public function incrementEventStack():void
 			{
-				trace("call function incrementEventStack:" + runningEvents);
+				//trace("call function incrementEventStack:" + runningEvents);
 				runningEvents++;
 				setBusyStatus(true);
 			}
 			
 			public function decrementEventStack():void
 			{
-				trace("call function decrementEventStack :" + runningEvents);
+				//trace("call function decrementEventStack :" + runningEvents);
 				runningEvents--;
 				if (runningEvents == 0 && !_keepRunning)
 					setBusyStatus(false);
