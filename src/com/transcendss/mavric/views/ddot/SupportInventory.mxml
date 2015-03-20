@@ -100,7 +100,7 @@
 			private function init():void
 			{
 				try
-				{
+				{				
 					recordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;
 					// Build a support POLEID --- ROUTEID/MEASURE dictionary
 					// TODO: place it somewhere else
@@ -199,6 +199,7 @@
 				}
 				
 				PopUpManager.removePopUp(this);
+				
 			}
 			
 			private function saveSupport():void
@@ -438,7 +439,7 @@
 			{
 				if(FlexGlobals.topLevelApplication.connected)
 					{
-						FlexGlobals.topLevelApplication.setBusyStatus(true);
+						FlexGlobals.topLevelApplication.incrementEventStack();
 //						var httpServ:HTTPService = new HTTPService();
 //						httpServ.method = "GET";
 //						httpServ.resultFormat = "text";
@@ -524,7 +525,7 @@
 			}
 			
 			public  function setGeotag( event:GeotagEvent):void{
-				//event.stopPropagation();
+				event.stopPropagation();
 				var attachments:Object = event.result;
 				
 				gtManager.setGeotags(
