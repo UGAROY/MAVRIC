@@ -178,7 +178,7 @@
 			{
 				FlexGlobals.topLevelApplication.decrementEventStack();
 			}
-			public function signDataReqFaultHandler():void{
+			public function signDataReqFaultHandler(event:Event):void{
 				FlexGlobals.topLevelApplication.setBusyStatus(false);
 				FlexGlobals.topLevelApplication.TSSAlert("Error in obtaining milemarkerdata");
 			}

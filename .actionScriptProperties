@@ -23,9 +23,9 @@
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/spark_dmv.swc" useDefaultLinkType="false"/>
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/automation.swc" useDefaultLinkType="false"/>
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/automation_dmv.swc" useDefaultLinkType="false"/>
-          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/automation_flashflexkit.swc" useDefaultLinkType="false"/>
-          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/air/applicationupdater_ui.swc" useDefaultLinkType="false"/>
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/air/airframework.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/air/applicationupdater_ui.swc" useDefaultLinkType="false"/>
+          <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/automation_flashflexkit.swc" useDefaultLinkType="false"/>
           <libraryPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/automation_agent.swc" useDefaultLinkType="false"/>
         </excludedEntries>
       </libraryPathEntry>
@@ -45,16 +45,35 @@
   <buildCSSFiles/>
   <flashCatalyst validateFlashCatalystCompatibility="false"/>
   <buildTargets>
-    <buildTarget buildTargetName="device" iosSettingsVersion="2" isCurrent="false" platformId="com.adobe.flexide.multiplatform.ios.platform" provisioningFile="C:/TSS/Key/iosKeys_Feb_2015/Generic_Transcend_Profile.mobileprovision" releasePackageType="ipa-ad-hoc">
+    <buildTarget buildTargetName="device" iosSettingsVersion="2" isCurrent="true" platformId="com.adobe.flexide.multiplatform.ios.platform" provisioningFile="C:/TSS/Key/iosKeys_Feb_2015/Generic_Transcend_Profile.mobileprovision" releasePackageType="ipa-ad-hoc">
+      <multiPlatformSettings enabled="true" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.ios.platform" reducedSizePackaging="false" version="2"/>
       <airSettings airCertificatePath="C:/TSS/Key/iosKeys_Feb_2015/ios_development.p12" airTimestamp="true" anePathSet="true" version="1">
-        <airExcludes/>
+        <airExcludes>
+          <pathEntry path="images/loading7.swf"/>
+          <pathEntry path="images/loading11.swf"/>
+          <pathEntry path="images/loading6.swf"/>
+          <pathEntry path="images/loading18.swf"/>
+          <pathEntry path="images/loading3.swf"/>
+          <pathEntry path="images/loading14.swf"/>
+          <pathEntry path="images/loading12.swf"/>
+          <pathEntry path="images/loading5.swf"/>
+          <pathEntry path="images/loading9.swf"/>
+          <pathEntry path="images/loading10.swf"/>
+          <pathEntry path="images/loading4.swf"/>
+          <pathEntry path="images/loading15.swf"/>
+          <pathEntry path="images/loading16.swf"/>
+          <pathEntry path="images/loading17.swf"/>
+          <pathEntry path="images/loading2.swf"/>
+          <pathEntry path="images/loading8.swf"/>
+          <pathEntry path="images/loading1.swf"/>
+          <pathEntry path="images/loading13.swf"/>
+        </airExcludes>
         <anePaths/>
         <newLaunchParams/>
         <modifiedLaunchParams/>
         <newPackagingParams/>
         <modifiedPackagingParams/>
       </airSettings>
-      <multiPlatformSettings enabled="true" hideAneLibSymbols="0" includePlatformLibs="false" platformID="com.adobe.flexide.multiplatform.ios.platform" reducedSizePackaging="false" version="2"/>
       <actionScriptSettings version="1"/>
     </buildTarget>
     <buildTarget airDownloadURL="" androidSettingsVersion="2" buildTargetName="device" isCurrent="false" platformId="com.adobe.flexide.multiplatform.android.platform">
@@ -83,4 +102,3 @@
     </buildTarget>
   </buildTargets>
 </actionScriptProperties>
-

@@ -168,6 +168,7 @@
 				this.useAgsCheck.selected =  app.GlobalComponents.ConfigManager.useAgsService;
 				this.useLatLongCheck.selected = app.GlobalComponents.ConfigManager.useAgsLatLong;
 				this.agsServiceUrl.text = app.GlobalComponents.ConfigManager.agsServiceURL;
+				this.gpServiceUrl.text = app.GlobalComponents.ConfigManager.gpServiceURL;
 				this.rollbackCheck.selected = app.GlobalComponents.ConfigManager.rollbackOnFailure;
 				this.gdbVersionVal.text = app.GlobalComponents.ConfigManager.gdbVersion;
 				fireAllChanges();
@@ -210,6 +211,7 @@
 				this.useAgsCheck.selected =  ConfigUtility.getBool('use_ags_service');
 				this.useLatLongCheck.selected = ConfigUtility.getBool('use_ags_latlong');
 				this.agsServiceUrl.text = ConfigUtility.get('ags_service_url');
+				this.gpServiceUrl.text = ConfigUtility.get('gp_service_url');
 				this.rollbackCheck.selected = ConfigUtility.getBool('rollback_on_failure');
 				this.gdbVersionVal.text = ConfigUtility.get('gdb_version');
 				//fireAllChanges();
@@ -444,14 +446,20 @@
 			
 			private function onZipDownloadComplete(event:Event):void
 			{
+				try{
 				var imgManager:ImageManager = new ImageManager();
 				imgManager.setupDB();
-						
+				}
+				catch(e:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Error Creating Sign Database");
+				}
 				FlexGlobals.topLevelApplication.setBusyStatus(false);
 				FlexGlobals.topLevelApplication.TSSAlert("Sign image download complete.");
 			}
 			
 			private function onfileLoadComplete(event:FZipEvent):void{
+				
 				
 				var path:String ;
 				if(_mdbm.getKeys().length<1)
@@ -459,15 +467,20 @@
 				else
 					path = setMan.getSetting("SIGN_IMAGES_FOLDER");
 				
+				
+				try
+				{
 				var file:FZipFile = event.file;
 				var newfl:File;
 				if (FlexGlobals.topLevelApplication.platform == "IOS") {
 					newfl = File.applicationStorageDirectory.resolvePath(path+file.filename);
-					
+					//FlexGlobals.topLevelApplication.TSSAlert("ios******************************")
 				} else {
 					newfl = new File(path+file.filename);
 					
 				}
+				
+				//FlexGlobals.topLevelApplication.TSSAlert(newfl.nativePath);
 				
 				if(file.filename.lastIndexOf("/") == file.filename.length-1)
 				{
@@ -480,6 +493,10 @@
 					fs.writeBytes(file.content,0,file.content.length);
 					fs.close();
 					
+				}
+				}catch(e:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert("Error downloading the sign im "+ e.message);
 				}
 			}
 			
@@ -1064,6 +1081,8 @@
 			
 			<s:Label fontWeight="bold" text="ArcGIS Service URL: "/>
 			<s:TextInput id="agsServiceUrl" width="95%" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Label fontWeight="bold" text="GP Service URL: "/>
+			<s:TextInput id="gpServiceUrl" width="95%" skinClass="spark.skins.mobile.TextInputSkin"/>
 			
 			<s:VGroup id="gdbVersionGrp">
 				<s:Button id="gdbVersionBtn" label="gdbVersion" click="{opengdbSelect(event);}"/>

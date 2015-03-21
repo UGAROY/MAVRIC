@@ -715,6 +715,12 @@ package com.transcendss.mavric.managers
 			return (url==""|| url ==null )?ConfigUtility.get('ags_service_url'):url;	
 		}
 		
+		public function get gpServiceURL():String
+		{
+			var url:String = _setMan.getSetting("GP_SERVICE_URL");
+			return (url==""|| url ==null )?ConfigUtility.get('gp_service_url'):url;	
+		}
+		
 		public function get rollbackOnFailure():Boolean
 		{
 			var url:String = _setMan.getSetting("ROLLBACK_ON_FAILURE");

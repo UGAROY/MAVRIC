@@ -1101,6 +1101,7 @@
 							<s:HGroup verticalAlign="middle">
 								<s:Label text="Offset:  " fontWeight="bold"/>
 								<s:TextInput id="offsetTextInut" width="225" editable="false"/>
+								<s:Label text="(m)" fontWeight="bold"/>
 							</s:HGroup>
 						</s:VGroup>
 						<s:Spacer width="10"/>
@@ -1108,7 +1109,8 @@
 						
 							<s:HGroup verticalAlign="middle">
 								<s:Label text="Milepoint:  " fontWeight="bold"/>
-								<s:TextInput id="milepostTextInut" width="225" editable="false"/>
+								<s:TextInput id="milepostTextInut" width="150" editable="false"/>
+								<s:Label text="(m)" fontWeight="bold"/>
 							</s:HGroup>
 							<s:Spacer height="5"/>
 							<s:HGroup verticalAlign="middle">

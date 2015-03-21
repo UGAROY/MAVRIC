@@ -3,6 +3,8 @@
 	<name>MAVRIC2</name>
 	<comment></comment>
 	<projects>
+		<project>TransCore</project>
+		<project>TSSMaps</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -55,7 +55,9 @@
 			
 			public function loadLinkedSignsInfo():void
 			{
-				var oldLinkSigns:Array = this.oldLinkID.split("_");
+				var oldLinkSigns:Array = new Array();
+				if(oldLinkID)
+					oldLinkSigns = this.oldLinkID.split("_");
 				
 				currentSignDp = new ArrayCollection([currentSign]);
 				for each(var otherSign:Object in otherSigns)

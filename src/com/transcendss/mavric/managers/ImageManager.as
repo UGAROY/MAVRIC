@@ -1,27 +1,18 @@
 package com.transcendss.mavric.managers
 {
 	
+	import com.transcendss.mavric.db.MAVRICDBManager;
 	import com.transcendss.mavric.util.PNGDecoder;
-	import com.transcendss.transcore.util.TSSLoader;
-	import com.transcendss.transcore.util.TSSPicture;
 	
 	import flash.data.SQLConnection;
 	import flash.data.SQLResult;
 	import flash.data.SQLStatement;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.errors.SQLError;
-	import flash.events.ErrorEvent;
-	import flash.events.Event;
-	import flash.events.IOErrorEvent;
-	import flash.events.SQLEvent;
-	import flash.events.TimerEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
 	import flash.geom.Matrix;
-	import flash.net.URLRequest;
-	import flash.net.dns.AAAARecord;
 	import flash.utils.ByteArray;
 	
 	import mx.collections.ArrayCollection;
@@ -30,9 +21,11 @@ package com.transcendss.mavric.managers
 	
 	import spark.components.Group;
 	
+	import deng.fzip.FZipFile;
+	
 	public class ImageManager
 	{
-		
+		private var setMan:SettingsManager = new SettingsManager();
 		private var sConn:SQLConnection = new SQLConnection();
 		private var sStat:SQLStatement = new SQLStatement();
 		private var table:String = "signs";
@@ -44,12 +37,14 @@ package com.transcendss.mavric.managers
 		private var baseDir:String;
 		//private var db:String;
 		
+		private var _mdbm:MAVRICDBManager;
+		
 		//Change this, and when you do, call setupDB(db) once to populate your database.
 		private var db:String = "app:///InnerFiles/signs.db";
 		
 		public function ImageManager()
 		{
-			
+			_mdbm = MAVRICDBManager.newInstance();
 			sConn.open(new File(db));
 			sStat.sqlConnection = sConn;
 			//var folder:File = File.userDirectory.resolvePath(BaseConfigUtility.get("sign_images_SD_folder"));
@@ -93,7 +88,24 @@ package com.transcendss.mavric.managers
 			sStat.text = "CREATE TABLE " + catMap + " (catNum INTEGER, catString TEXT)";
 			sStat.execute();
 			
-			var dir:File = new File(baseDir);
+			
+			var path:String ;
+			if(_mdbm.getKeys().length<1)
+				path =BaseConfigUtility.get('sign_images_folder');
+			else
+				path = setMan.getSetting("SIGN_IMAGES_FOLDER");
+			
+			
+				
+				var dir:File;
+				if (FlexGlobals.topLevelApplication.platform == "IOS") {
+					dir = File.applicationStorageDirectory.resolvePath(baseDir);
+					//FlexGlobals.topLevelApplication.TSSAlert("ios******************************")
+				} else {
+					dir = new File(baseDir);
+					
+				}
+			
 			var folders:Array = dir.getDirectoryListing();
 			var category:int = 1;
 			var id:int = 1;

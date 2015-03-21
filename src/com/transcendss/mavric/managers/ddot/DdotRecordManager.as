@@ -32,11 +32,11 @@ package com.transcendss.mavric.managers.ddot
 		
 		private var _supportDict:Object;
 		
-		private var _signEventLayerID:Number = 19;
+		private var _signEventLayerID:Number = 17;
 		private var _inspectionEventLayerID:Number = 15;
 		private var _linkEventLayerID:Number = 16;
 		private var _trEventLayerID:Number = 18;
-		private var _wardEventLayerID:Number = 20;
+		private var _wardEventLayerID:Number = 14;
 		
 		public var dispatcher:IEventDispatcher;
 		
@@ -50,6 +50,15 @@ package com.transcendss.mavric.managers.ddot
 		public function get signEventLayerID():Number
 		{
 			return _signEventLayerID;
+		}
+		public function get linkEventLayerID():Number
+		{
+			return _linkEventLayerID;
+		}
+		
+		public function get trEventLayerID():Number
+		{
+			return _trEventLayerID;
 		}
 		
 		public function get wardEventLayerID():Number

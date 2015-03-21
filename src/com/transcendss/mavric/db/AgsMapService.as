@@ -139,6 +139,11 @@ package com.transcendss.mavric.db
 				{
 					_allLayerInfo[layer3.id] = layer3;	
 				}
+				layerArr = JSON.parse(evt.target.data).nonLRSLayers as Array;
+				for each (var layer4:Object in layerArr)
+				{
+					_allLayerInfo[layer4.id] = layer4;	
+				}
 			});
 			urlLoader.addEventListener(IOErrorEvent.IO_ERROR, handleAgsError);
 			urlLoader.load(urlRequest);
@@ -238,6 +243,25 @@ package com.transcendss.mavric.db
 				whereClause= _query.pointEventWhereClause
 					.replace(/@routeIdFieldName\b/gi, this._allLayerInfo[layerID].routeIdFieldName)
 					.replace(/@fromMeasureFieldName\b/gi, this._allLayerInfo[layerID].fromMeasureFieldName)
+					.replace(/@fromMeasure\b/gi, routeFromMeasure)
+					.replace(/@toMeasure\b/gi, routeToMeasure)
+					.replace(/@routeId\b/gi, routeName);
+			}
+			else if(this._allLayerInfo[layerID].type=="esriNonLRSLayer" )
+			{
+				var assetTemplate:Object = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getAssetDataTemplateByEventLayerID(layerID);
+				if(assetTemplate.TO_MEASURE_COLUMN)
+					_query.linearEventWhereClause
+						.replace(/@routeIdFieldName\b/gi, assetTemplate.ROUTE_ID_COLUMN)
+						.replace(/@fromMeasureFieldName\b/gi, assetTemplate.FROM_MEASURE_COLUMN)
+						.replace(/@toMeasureFieldName\b/gi, assetTemplate.TO_MEASURE_COLUMN)
+						.replace(/@fromMeasure\b/gi, routeFromMeasure)
+						.replace(/@toMeasure\b/gi, routeToMeasure)
+						.replace(/@routeId\b/gi, routeName)
+				else
+					whereClause= _query.pointEventWhereClause
+					.replace(/@routeIdFieldName\b/gi, assetTemplate.ROUTE_ID_COLUMN)
+					.replace(/@fromMeasureFieldName\b/gi, assetTemplate.FROM_MEASURE_COLUMN)
 					.replace(/@fromMeasure\b/gi, routeFromMeasure)
 					.replace(/@toMeasure\b/gi, routeToMeasure)
 					.replace(/@routeId\b/gi, routeName);

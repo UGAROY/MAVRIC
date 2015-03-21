@@ -110,7 +110,7 @@
 				this.linkSignPair['ZONEID'] = linkID.zoneid;
 				linkIdLabel.text = linkSignPair['NEW'];
 			    
-				trEnable = linkID != "";
+				trEnable = linkID.link ;
 			}
 			
 			protected function selectSignBtn_clickHandler(event:MouseEvent):void

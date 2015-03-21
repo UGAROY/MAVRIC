@@ -41,11 +41,11 @@ package com.transcendss.mavric.managers.ddot
 		private var layerID:String ="";
 		private var objectID:String="";
 		
-		private var _supportEventLayerID:Number = 10;
-		private var _signEventLayerID:Number = 19;
-		private var _inspectionEventLayerID:Number = 15;
-		private var _linkEventLayerID:Number = 16;
-		private var _trEventLayerID:Number = 18;
+		private var _supportEventLayerID:Number ;
+//		private var _signEventLayerID:Number = 19;
+//		private var _inspectionEventLayerID:Number = 15;
+//		private var _linkEventLayerID:Number = 16;
+//		private var _trEventLayerID:Number = 18;
 		
 		private var maxSupportIDOnServer:Number;
 		private var maxSignIDOnServer:Number;
@@ -64,6 +64,7 @@ package com.transcendss.mavric.managers.ddot
 			dtFormatter.dateTimePattern = "MM/dd/yyyy HH:mm:ss";
 			dtFormatter.useUTC=false;
 			dtFormatter.errorText="";
+			
 		}
 		
 //		private function getLocalData():ArrayCollection
@@ -87,6 +88,7 @@ package com.transcendss.mavric.managers.ddot
 		
 		private function getLocalRecords(assetType:String):Object
 		{
+			
 			var dataArr:Array;
 			var gtArr:Array;
 			var assetData:Object = new Object();
@@ -100,13 +102,13 @@ package com.transcendss.mavric.managers.ddot
 			{
 				dataArr = dbManager.exportDdotRecords("SIGNS");
 				gtArr = dbManager.exportGeotagData("SIGN");
-				assetData = {eventLayerID:_signEventLayerID,assetTy:"SIGN", assetDesc:"SIGN", data: dataArr, geotags:gtArr, primaryKey:"SIGNID"};
+				assetData = {eventLayerID:recordManager.signEventLayerID,assetTy:"SIGN", assetDesc:"SIGN", data: dataArr, geotags:gtArr, primaryKey:"SIGNID"};
 			}
 			else if (assetType == "INSPECTION")
 			{
 				dataArr = dbManager.exportDdotRecords("INSPECTIONS");
 				gtArr = dbManager.exportGeotagData("INSPECTION");
-				assetData = {eventLayerID:_inspectionEventLayerID,assetTy:"INSPECTION", assetDesc:"INSPECTION", data: dataArr, geotags:gtArr, primaryKey:"INSPECTIONID"};
+				assetData = {eventLayerID:recordManager.inspectionEventLayerID,assetTy:"INSPECTION", assetDesc:"INSPECTION", data: dataArr, geotags:gtArr, primaryKey:"INSPECTIONID"};
 			}
 			
 			return assetData;
@@ -114,6 +116,7 @@ package com.transcendss.mavric.managers.ddot
 		
 		public function syncChanges():void
 		{
+			_supportEventLayerID = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerIDByType("1");
 			FlexGlobals.topLevelApplication.failedSyncDetails ="";
 			var uname:String = FlexGlobals.topLevelApplication.menuBar.getCurrentUser();
 			var edits:Array = new Array();
@@ -139,6 +142,7 @@ package com.transcendss.mavric.managers.ddot
 		
 		private function fireMaxIDRequest(idField:String, eventLayerID:Number)
 		{
+			
 			var maxRecordIDEvent:DdotRecordEvent = new DdotRecordEvent(DdotRecordEvent.MAX_RECORD_ID_REQUEST);
 			maxRecordIDEvent.idField = idField;
 			maxRecordIDEvent.eventLayerID = eventLayerID;
@@ -160,14 +164,14 @@ package com.transcendss.mavric.managers.ddot
 				maxSupportIDOnServer = maxId;
 				syncSupport();
 				// fire off events to find the max sign id
-				fireMaxIDRequest("SIGNID", this._signEventLayerID)
+				fireMaxIDRequest("SIGNID", recordManager.signEventLayerID)
 			}
-			else if (evt.eventLayerID == this._signEventLayerID)
+			else if (evt.eventLayerID == recordManager.signEventLayerID)
 			{
 				maxSignIDOnServer = maxId;
 				syncSign();
 				// fire off events to find the max inspection id
-				fireMaxIDRequest("INSPECTIONID", this._inspectionEventLayerID);
+				fireMaxIDRequest("INSPECTIONID", recordManager.inspectionEventLayerID);
 				
 				// sync link
 				syncLink();
@@ -175,7 +179,7 @@ package com.transcendss.mavric.managers.ddot
 				// sync time restriction
 				syncTimeRestriction();
 			}
-			else if (evt.eventLayerID == this._inspectionEventLayerID)
+			else if (evt.eventLayerID == recordManager.inspectionEventLayerID)
 			{
 				maxInspectionIDOnServer = maxId;
 				syncInspection();
@@ -261,7 +265,7 @@ package com.transcendss.mavric.managers.ddot
 		
 			var getLinkIDsEvent:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.LINK_ID_REQUEST);
 			var whereClause:String = StringUtil.substitute("SIGNID in ({0})", signIDs.join(','));
-			getLinkIDsEvent.serviceURL = agsManager.getCustomEventUrl(this._linkEventLayerID, whereClause);
+			getLinkIDsEvent.serviceURL = agsManager.getCustomEventUrl(recordManager.linkEventLayerID, whereClause);
 			dispatcher.dispatchEvent(getLinkIDsEvent);
 		}
 		
@@ -280,7 +284,7 @@ package com.transcendss.mavric.managers.ddot
 				// Get the object ids of the link id records to be deleted
 				var getLinkObjectIDsEvent:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.LINK_OBJECTID_REQUEST);
 				var whereClause:String = StringUtil.substitute("LINKID in ({0})", "'" + tbdLinkIDs.join("','") + "'");
-				getLinkObjectIDsEvent.serviceURL = agsManager.getCustomEventUrl(this._linkEventLayerID, whereClause);
+				getLinkObjectIDsEvent.serviceURL = agsManager.getCustomEventUrl(recordManager.linkEventLayerID, whereClause);
 				dispatcher.dispatchEvent(getLinkObjectIDsEvent);
 			}
 			else
@@ -309,7 +313,7 @@ package com.transcendss.mavric.managers.ddot
 			var editsArr:Array = new Array(); 
 			
 			var applyEditsObj:Object = new Object();
-			applyEditsObj.id= this._linkEventLayerID;
+			applyEditsObj.id= recordManager.linkEventLayerID;
 			if (deleteOIDs != null)
 				applyEditsObj.deletes = deleteOIDs;
 			applyEditsObj.adds = new Array();
@@ -360,7 +364,7 @@ package com.transcendss.mavric.managers.ddot
 			// Get the object ids of the link id records to be deleted
 			var getTRObjectIDsEvent:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.TR_OBJECTID_REQUEST);
 			var whereClause:String = StringUtil.substitute("LINKID in ({0})", "'" + tbdLinkIDs.join("','") + "'");
-			getTRObjectIDsEvent.serviceURL = agsManager.getCustomEventUrl(this._trEventLayerID, whereClause);
+			getTRObjectIDsEvent.serviceURL = agsManager.getCustomEventUrl(recordManager.trEventLayerID, whereClause);
 			dispatcher.dispatchEvent(getTRObjectIDsEvent);
 		}
 		
@@ -388,7 +392,7 @@ package com.transcendss.mavric.managers.ddot
 			var editsArr:Array = new Array(); 
 			
 			var applyEditsObj:Object = new Object();
-			applyEditsObj.id= this._trEventLayerID;
+			applyEditsObj.id= recordManager.trEventLayerID;
 			if (deleteOIDs != null)
 				applyEditsObj.deletes = deleteOIDs;
 			applyEditsObj.adds = new Array();

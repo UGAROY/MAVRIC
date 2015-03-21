@@ -87,6 +87,8 @@ package com.transcendss.mavric.managers
 			// Get bar element definitions and domains
 			getAssetDefinitions(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.barElementJsonDef, false);
 			//getDomainList(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.barElementDomainDef, false);
+			
+			
 		}
 		
 		public function getBarElementIDField(type:String):String
@@ -1117,6 +1119,26 @@ package com.transcendss.mavric.managers
 				return _assetDefs[assetDescriptions[assetDesc]].EVENT_LAYER_ID;
 			else
 				return -1;
+		}
+		
+		public function getAssetDataTemplateByEventLayerID(layerID:String):Object
+		{
+			var assetTy:Number = -1;
+			for each(var def:Object in _assetDefs)
+			{
+				if(def.hasOwnProperty("EVENT_LAYER_ID") && String(def["EVENT_LAYER_ID"])==layerID)
+				{
+					assetTy= def.ASSET_TYPE;
+					break;
+				}
+					
+			}
+			
+			if(assetTy==-1)
+				return null;
+			
+			return _assetDefs[assetTy].ASSET_DATA_TEMPLATE;
+			
 		}
 		
 		public function getEventLayerIDByType(assetTy:String):Number

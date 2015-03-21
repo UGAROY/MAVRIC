@@ -1,12 +1,17 @@
 package com.transcendss.mavric.util
 {
-	import flash.display.*;
-	import flash.events.*;
-	import flash.net.*;
-	import flash.utils.*;
+	import flash.display.Bitmap;
+	import flash.display.Loader;
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.TimerEvent;
+	import flash.system.Capabilities;
+	import flash.utils.ByteArray;
+	import flash.utils.Timer;
 	
-	import mx.events.*;
-	import mx.preloaders.*;
+	import mx.core.FlexGlobals;
+	import mx.events.FlexEvent;
+	import mx.preloaders.IPreloaderDisplay;
 
 	public class MAVRICPreLoader extends Sprite implements IPreloaderDisplay
 	{
@@ -41,8 +46,19 @@ package com.transcendss.mavric.util
 		{
 			logoLoader.stage.addChild(this) 
 			//logoLoader.filters=[f];; 
-			logoLoader.x = logoLoader.stage.stageWidth/2 - logoLoader.width/2 
-			logoLoader.y = logoLoader.stage.stageHeight/2 - logoLoader.height/2 
+			var version:String = Capabilities.version;
+			if (version.indexOf('IOS') <0)
+			
+			{
+				logoLoader.x = logoLoader.stage.stageWidth/2 - logoLoader.width/2;
+				logoLoader.y = logoLoader.stage.stageHeight/2 - logoLoader.height/2 ;
+			}
+			else
+			{
+				logoLoader.x = logoLoader.stage.fullScreenWidth/2  - logoLoader.width/2;
+				logoLoader.y = logoLoader.stage.fullScreenHeight /2 - logoLoader.height/2 ;
+			}
+			
 			logoLoader.visible=true; 
 			
 			logoLoader.contentLoaderInfo.removeEventListener( 
