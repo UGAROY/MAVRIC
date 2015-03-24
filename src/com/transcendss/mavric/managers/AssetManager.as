@@ -1260,9 +1260,9 @@ package com.transcendss.mavric.managers
 						routeName = parentObject.routeName;
 						objID =String(asset["OBJECTID"]);
 						mileP= parentObject.invProperties[parentObject.fromMeasureColName].value;
-						if (asset['POLEID'] != null)
+						if (asset['SUPPORTID'] != null)
 						{
-							localAssetID = "" + asset['POLEID'];
+							localAssetID = "" + asset['SUPPORTID'];
 							assetLabelText = "Support -- " + localAssetID;
 							assetTypeID = parentObject.assetType;
 						}

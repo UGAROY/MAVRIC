@@ -437,6 +437,7 @@
 					return;
 				} 
 				FlexGlobals.topLevelApplication.setBusyStatus(true);
+				downloadLabel.text ='Downloading Signs...';
 				zip = new FZip();
 				zip.addEventListener( Event.COMPLETE, onZipDownloadComplete);
 				zip.addEventListener( FZipEvent.FILE_LOADED, onfileLoadComplete);
@@ -454,6 +455,7 @@
 				{
 					FlexGlobals.topLevelApplication.TSSAlert("Error Creating Sign Database");
 				}
+				downloadLabel.text ='';
 				FlexGlobals.topLevelApplication.setBusyStatus(false);
 				FlexGlobals.topLevelApplication.TSSAlert("Sign image download complete.");
 			}
@@ -496,6 +498,7 @@
 				}
 				}catch(e:Error)
 				{
+					downloadLabel.text ='';
 					FlexGlobals.topLevelApplication.TSSAlert("Error downloading the sign im "+ e.message);
 				}
 			}
@@ -792,7 +795,7 @@
 				<s:VGroup width="100%" height="100%" horizontalAlign="center">
 					<s:List id="barNamesList" width="100%" height="100%"
 							allowMultipleSelection="false" change="{closeLanesField()}"
-							dataProvider="{barNamesDP}" fontSize="18" labelField="DESCRIPTION"
+							dataProvider="{barNamesDP}" fontSize="18" labelField="name"
 							selectedIndex="{lanesFieldIndex}"/>
 				</s:VGroup>
 			</s:Panel>
@@ -899,6 +902,7 @@
 					<s:Spacer height="3"/>
 					<s:Button width="250" label="Download Sign Images"
 							  click="{this.downloadSigns();}"/>
+					<s:Label id="downloadLabel" fontWeight="bold" color="red" text=""/>
 					<s:Spacer height="1"/>
 					<s:Button width="250" label="Download All Json Settings Files"
 							  click="{this.updateAllJsonFilesBtn_clickHandler(event);}"/>

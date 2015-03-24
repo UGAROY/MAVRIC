@@ -149,11 +149,11 @@
 			<s:HGroup verticalAlign="middle">
 				<s:Label text="Hour Limit:" fontWeight="bold" />
 				<s:Spacer width="40"/>
-				<s:TextInput id="hourLimitTextInut" width="120" skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:TextInput id="hourLimitTextInut" width="120" skinClass="spark.skins.mobile.TextInputSkin" softKeyboardType="number" restrict = "0-9 \."/>
 				<s:Spacer width="50"/>
 				<s:Label text="Order:" fontWeight="bold"/>
 				<s:Spacer width="80"/>
-				<s:TextInput id="orderTextInut" width="120"  skinClass="spark.skins.mobile.TextInputSkin"/>
+				<s:TextInput id="orderTextInut" width="120"  skinClass="spark.skins.mobile.TextInputSkin" softKeyboardType="number" restrict = "0-9"/>
 				
 			</s:HGroup>
 			<s:Spacer height="5"/>

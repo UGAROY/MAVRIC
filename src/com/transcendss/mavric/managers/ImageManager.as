@@ -21,8 +21,6 @@ package com.transcendss.mavric.managers
 	
 	import spark.components.Group;
 	
-	import deng.fzip.FZipFile;
-	
 	public class ImageManager
 	{
 		private var setMan:SettingsManager = new SettingsManager();
@@ -40,13 +38,14 @@ package com.transcendss.mavric.managers
 		private var _mdbm:MAVRICDBManager;
 		
 		//Change this, and when you do, call setupDB(db) once to populate your database.
-		private var db:String = "app:///InnerFiles/signs.db";
+		private var db:String = "signs.db";
 		
 		public function ImageManager()
 		{
 			_mdbm = MAVRICDBManager.newInstance();
-			sConn.open(new File(db));
+			sConn.open(File.applicationStorageDirectory.resolvePath(db));
 			sStat.sqlConnection = sConn;
+			
 			//var folder:File = File.userDirectory.resolvePath(BaseConfigUtility.get("sign_images_SD_folder"));
 			//curDir = folder.exists? BaseConfigUtility.get("sign_images_SD_folder"):BaseConfigUtility.get("sign_images_Desktop_folder");
 			//			baseDir = BaseConfigUtility.get("sign_images_folder")
@@ -67,6 +66,7 @@ package com.transcendss.mavric.managers
 		// Open the database and make the table for the first time. Must provide databse location as a string.
 		public function setupDB():void
 		{
+			
 			//sConn.close();
 			//sConn.open(File.applicationStorageDirectory.resolvePath(db));
 			
@@ -87,16 +87,7 @@ package com.transcendss.mavric.managers
 			
 			sStat.text = "CREATE TABLE " + catMap + " (catNum INTEGER, catString TEXT)";
 			sStat.execute();
-			
-			
-			var path:String ;
-			if(_mdbm.getKeys().length<1)
-				path =BaseConfigUtility.get('sign_images_folder');
-			else
-				path = setMan.getSetting("SIGN_IMAGES_FOLDER");
-			
-			
-				
+						
 				var dir:File;
 				if (FlexGlobals.topLevelApplication.platform == "IOS") {
 					dir = File.applicationStorageDirectory.resolvePath(baseDir);
@@ -283,7 +274,7 @@ package com.transcendss.mavric.managers
 				sStat.execute();
 				var result:SQLResult = sStat.getResult();
 				if (!result.data)
-					return getData("NoFile.png");
+					return getData("Missing.png");
 				extension = result.data[0].dir;
 			}
 			else

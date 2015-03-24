@@ -14,29 +14,30 @@
 		<![CDATA[
 			import com.transcendss.mavric.db.CachedRoute;
 			import com.transcendss.mavric.db.MAVRICDBManager;
-			import com.transcendss.mavric.events.*;
+			import com.transcendss.mavric.events.GPSEvent;
 			import com.transcendss.mavric.handlers.GPSMessageHandler;
 			import com.transcendss.mavric.managers.ConfigurationManager;
 			import com.transcendss.mavric.util.TSSRectangle;
-			import com.transcendss.mavric.views.SettingsMenu;
 			import com.transcendss.mavric.views.componentviews.GoToMilepostForm;
 			import com.transcendss.mavric.views.componentviews.LocalRoutesForm;
-			import com.transcendss.transcore.events.*;
+			import com.transcendss.transcore.events.CameraEvent;
+			import com.transcendss.transcore.events.MenuBarEvent;
+			import com.transcendss.transcore.events.NavControlEvent;
+			import com.transcendss.transcore.events.PrintEvent;
+			import com.transcendss.transcore.events.RouteSelectorEvent;
+			import com.transcendss.transcore.events.TextMemoEvent;
+			import com.transcendss.transcore.events.ViewMileEvent;
+			import com.transcendss.transcore.events.VoiceEvent;
+			import com.transcendss.transcore.events.videoEvent;
 			import com.transcendss.transcore.sld.models.components.Route;
 			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
 			
 			import flash.sensors.Geolocation;
 			
-			import merapi.Bridge;
-			import merapi.handlers.*;
-			import merapi.messages.*;
-			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.managers.PopUpManager;
 			import mx.rpc.Responder;
-			
-			import spark.components.*;
 
 
 			[Bindable]
@@ -482,7 +483,7 @@
 					</s:Label>-->
 					<s:Label id="scaleText" text="Scale:" fontSize="10"/>
 				</s:VGroup>
-				<s:Spacer width="150"/>
+				<s:Spacer width="275"/>
 				<s:VGroup horizontalAlign="center" click="rteSelectBtnClick(event)">
 					<s:Image id="rteSelectBtn" toolTip="Route" width="40" height="40" source="{road}"/>
 					<!--<S:LABEL TEXT="SELECT ROUTE"  FONTSIZE="12">
@@ -528,7 +529,7 @@
 				</s:VGroup>-->
 				
 				<!--<s:Spacer />-->
-				<s:HGroup>
+				<s:HGroup visible="false">
 					<s:Image id="Capture"  buttonMode="true" width="40" height="40" click="imageCapture(event)"/>
 					<s:Spacer width="25"/>
 					<s:Image id="Video" buttonMode="true" width="40" height="40" click="videoCapture(event)"/>
@@ -540,7 +541,7 @@
 				<s:Spacer width="150"/>
 				<!--<mx:Spacer width="100%"/>-->
 				<!--<s:Image id="Sync" buttonMode="true" width="40" height="40" click="{verifySyncChanges(event)}"/>-->
-				<s:Image id="Exit" buttonMode="true" width="40" height="40" visible="{!FlexGlobals.topLevelApplication._platform=='IOS'}" click="quitApp(event)"/>
+				<s:Image id="Exit" buttonMode="true" width="40" height="40" visible="{FlexGlobals.topLevelApplication.platform!='IOS'}" click="quitApp(event)"/>
 				
 			</s:HGroup><!--
 			<mx:Spacer width="100%"/>-->

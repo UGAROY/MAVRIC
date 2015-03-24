@@ -1,33 +1,19 @@
 package com.transcendss.mavric.util
 {
-	import com.adobe.air.filesystem.FileUtil;
 	import com.adobe.audio.format.WAVWriter;
-	import com.transcendss.mavric.util.FLVEncoderPckg.FileStreamFlvEncoder;
-	import com.transcendss.mavric.util.FLVEncoderPckg.FlvEncoder;
-	import com.transcendss.mavric.util.FLVEncoderPckg.VideoPayloadMaker;
-	import com.transcendss.mavric.util.FLVEncoderPckg.VideoPayloadMakerAlchemy;
 	
 	import flash.display.Bitmap;
-	import flash.display.BitmapData;
-	import flash.display.Loader;
-	import flash.display.Sprite;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.ProgressEvent;
 	import flash.filesystem.File;
 	import flash.filesystem.FileMode;
 	import flash.filesystem.FileStream;
-	import flash.media.Camera;
 	import flash.media.Video;
-	import flash.media.VideoCodec;
-	import flash.net.NetStream;
 	import flash.utils.ByteArray;
-	import flash.utils.Endian;
 	
 	import mx.core.FlexGlobals;
 	import mx.graphics.codec.PNGEncoder;
-	
-	import spark.utils.BitmapUtil;
 	public class FileUtility
 	{
 		
@@ -40,6 +26,8 @@ package com.transcendss.mavric.util
 		
 		public function WritePicture(aName:String, aBmp:Bitmap):void
 		{
+			try
+			{
 			var path:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + aName;
 			var fTemp:File;
 			if (FlexGlobals.topLevelApplication.platform == "IOS") {
@@ -47,6 +35,7 @@ package com.transcendss.mavric.util
 			} else {
 				fTemp= new File(path);
 			}
+			
 			//			var fTemp:File = new File(BaseConfigUtility.get("geotags_folder") + aName);
 			var fsTemp:FileStream = new FileStream();
 			fsTemp.open(fTemp, FileMode.WRITE);
@@ -54,6 +43,10 @@ package com.transcendss.mavric.util
 			var fileData:ByteArray = pngEnc.encode(aBmp.bitmapData);
 			fsTemp.writeBytes(fileData, 0, 0);
 			fsTemp.close();
+			}catch(e:Error)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert('Error Writing Picture' + e.message);
+			}
 		}
 		
 		public function WriteMapImage(aName:String, aBmp:Bitmap):void
@@ -215,7 +208,12 @@ package com.transcendss.mavric.util
 		
 		public function openFile(aName:String):String
 		{
-			var fTemp:File = new File(aName);
+			var fTemp:File ;
+			if (FlexGlobals.topLevelApplication.platform == "IOS") {
+				fTemp = File.applicationStorageDirectory.resolvePath(aName);
+			} else {
+				fTemp = new File(aName);
+			}
 			var stream:FileStream = new FileStream();
 			stream.open(fTemp, FileMode.READ);
 			var fileText:String = stream.readUTFBytes(stream.bytesAvailable);
@@ -226,7 +224,12 @@ package com.transcendss.mavric.util
 		{
 			var path:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl+fileName;
 			var byteArr:ByteArray = new ByteArray();
-			var fTemp:File = new File(path);
+			var fTemp:File ;
+			if (FlexGlobals.topLevelApplication.platform == "IOS") {
+				fTemp = File.applicationStorageDirectory.resolvePath(path);
+			} else {
+				fTemp = new File(path);
+			}
 			var stream:FileStream = new FileStream();
 			stream.open(fTemp, FileMode.READ);
 			stream.readBytes(byteArr,0,stream.bytesAvailable);

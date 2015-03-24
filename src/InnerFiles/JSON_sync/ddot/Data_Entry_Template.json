@@ -96,10 +96,10 @@
                             "CONTROLS": [
                                 
                                 {
-                                    "ID": "DIRECTION",
+                                    "ID": "SIGNFACING",
                                     "TYPE": "DropDownButton",
-                                    "LABEL": "Direction",
-                                    "COLUMN": "DIRECTION",
+                                    "LABEL": "Sign Facing",
+                                    "COLUMN": "SIGNFACING",
                                     "EDITABLE": "TRUE",
                                     "LAYOUT": "Vert"
                                 },
@@ -301,10 +301,10 @@
                                     "LAYOUT": "Vert"
                                 },
                                 {
-                                    "ID": "DIRECTION",
+                                    "ID": "SIGNFACING",
                                     "TYPE": "DropDownButton",
-                                    "LABEL": "Direction",
-                                    "COLUMN": "DIRECTION",
+                                    "LABEL": "Sign Facing",
+                                    "COLUMN": "SIGNFACING",
                                     "EDITABLE": "TRUE",
                                     "LAYOUT": "Vert"
                                 },

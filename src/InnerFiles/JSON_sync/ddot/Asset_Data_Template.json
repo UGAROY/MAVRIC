@@ -3,7 +3,7 @@
         "ASSET_DATA_TEMPLATE": {
             "ASSET_TYPE": "1",
             "DESCRIPTION": "SUPPORT",
-            "PRIMARY_KEY": "POLEID",
+            "PRIMARY_KEY": "SUPPORTID",
             "VALUE_KEY": "MEASURE",
             "LENGTH_COLUMN": "",
             "ROUTE_ID_COLUMN": "ROUTEID",
@@ -17,7 +17,7 @@
                     "TYPE": "INTEGER"
                 },
                 {
-                    "NAME": "POLEID",
+                    "NAME": "SUPPORTID",
                     "TYPE": "INTEGER",
                     "Nullable": "FALSE"
                 },
@@ -32,7 +32,7 @@
                     "Nullable": "TRUE"
                 },
                 {
-                    "NAME": "POLEMATERIAL",
+                    "NAME": "SUPPORTTYPE",
                     "TYPE": "INTEGER",
                     "Nullable": "TRUE"
                 },
@@ -42,22 +42,22 @@
                     "Nullable": "TRUE"
                 },
                 {
-                    "NAME": "POLESTATUS",
+                    "NAME": "SUPPORTSTATUS",
                     "TYPE": "INTEGER",
                     "Nullable": "TRUE"
                 },
                 {
                     "NAME": "LOCATION",
-                    "TYPE": "TEXT",
-                    "Nullable": "TRUE"
-                },
-                {
-                    "NAME": "NOOFHEADS",
                     "TYPE": "INTEGER",
                     "Nullable": "TRUE"
                 },
                 {
-                    "NAME": "POLEHEIGHT",
+                    "NAME": "NUMBEROFBASES",
+                    "TYPE": "INTEGER",
+                    "Nullable": "TRUE"
+                },
+                {
+                    "NAME": "SUPPORTHEIGHT",
                     "TYPE": "REAL",
                     "Nullable": "TRUE"
                 },

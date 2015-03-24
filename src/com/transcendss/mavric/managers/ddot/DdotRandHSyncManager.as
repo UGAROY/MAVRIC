@@ -19,7 +19,6 @@ package com.transcendss.mavric.managers.ddot
 	import flash.net.URLRequestMethod;
 	import flash.utils.ByteArray;
 	
-	import mx.collections.ArrayCollection;
 	import mx.core.FlexGlobals;
 	import mx.utils.StringUtil;
 	
@@ -41,11 +40,11 @@ package com.transcendss.mavric.managers.ddot
 		private var layerID:String ="";
 		private var objectID:String="";
 		
-		private var _supportEventLayerID:Number ;
-//		private var _signEventLayerID:Number = 19;
-//		private var _inspectionEventLayerID:Number = 15;
-//		private var _linkEventLayerID:Number = 16;
-//		private var _trEventLayerID:Number = 18;
+		//private var _supportEventLayerID:Number ;
+		//		private var _signEventLayerID:Number = 19;
+		//		private var _inspectionEventLayerID:Number = 15;
+		//		private var _linkEventLayerID:Number = 16;
+		//		private var _trEventLayerID:Number = 18;
 		
 		private var maxSupportIDOnServer:Number;
 		private var maxSignIDOnServer:Number;
@@ -67,24 +66,48 @@ package com.transcendss.mavric.managers.ddot
 			
 		}
 		
-//		private function getLocalData():ArrayCollection
-//		{
-//			var assetDef:Object = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs;
-//			var assetsForSync:Array = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetsForSync;
-//			
-//			var assetData:ArrayCollection = new ArrayCollection();
-//			for each (var def:Object in assetDef) 
-//			{
-//				if(assetsForSync.indexOf(def.DESCRIPTION !=-1))//if asset sync is true
-//				{
-//					var dataArr:Array = dbManager.exportAssets(def.DESCRIPTION);
-//					var gtArr:Array = dbManager.exportGeotagData(def.ASSET_TYPE);
-//					assetData.addItem({eventLayerID:def.EVENT_LAYER_ID,assetTy:def.ASSET_TYPE, assetDesc:def.DESCRIPTION, data: dataArr, geotags:gtArr, primaryKey:def.ASSET_DATA_TEMPLATE.PRIMARY_KEY});
-//				}
-//			}
-//			
-//			return assetData;
-//		}
+		//		private function getLocalData():ArrayCollection
+		//		{
+		//			var assetDef:Object = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs;
+		//			var assetsForSync:Array = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetsForSync;
+		//			
+		//			var assetData:ArrayCollection = new ArrayCollection();
+		//			for each (var def:Object in assetDef) 
+		//			{
+		//				if(assetsForSync.indexOf(def.DESCRIPTION !=-1))//if asset sync is true
+		//				{
+		//					var dataArr:Array = dbManager.exportAssets(def.DESCRIPTION);
+		//					var gtArr:Array = dbManager.exportGeotagData(def.ASSET_TYPE);
+		//					assetData.addItem({eventLayerID:def.EVENT_LAYER_ID,assetTy:def.ASSET_TYPE, assetDesc:def.DESCRIPTION, data: dataArr, geotags:gtArr, primaryKey:def.ASSET_DATA_TEMPLATE.PRIMARY_KEY});
+		//				}
+		//			}
+		//			
+		//			return assetData;
+		//		}
+		
+		private function getAssetCount():Number
+		{
+			
+			var changeCount:Number =0 ;
+			
+			
+			var data:Array 	 = dbManager.exportAssets("SUPPORT");
+			changeCount   	+=  data?data.length:0;
+			data 		  	 = dbManager.exportGeotagData("1");
+			changeCount 	+=   data?data.length:0;
+			data 			 = dbManager.exportDdotRecords("SIGNS");
+			changeCount 	+=   data?data.length:0;
+			data 			 = dbManager.exportGeotagData("SIGN");
+			
+			changeCount		+=  data?data.length:0;
+			data 			 = dbManager.exportDdotRecords("INSPECTIONS");
+			changeCount 	+=  data?data.length:0;
+			data 			 = dbManager.exportGeotagData("INSPECTION");
+			changeCount 	+=   data?data.length:0;
+			
+			
+			return changeCount ;
+		}
 		
 		private function getLocalRecords(assetType:String):Object
 		{
@@ -96,7 +119,7 @@ package com.transcendss.mavric.managers.ddot
 			{
 				dataArr= dbManager.exportAssets("SUPPORT");
 				gtArr = dbManager.exportGeotagData("1");
-				assetData = {eventLayerID:_supportEventLayerID,assetTy:"1", assetDesc:"SUPPORT", data: dataArr, geotags:gtArr, primaryKey:"POLEID"};
+				assetData = {eventLayerID:FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerIDByType("1"),assetTy:"1", assetDesc:"SUPPORT", data: dataArr, geotags:gtArr, primaryKey:"SUPPORTID"};
 			}
 			else if (assetType == "SIGN")
 			{
@@ -116,7 +139,7 @@ package com.transcendss.mavric.managers.ddot
 		
 		public function syncChanges():void
 		{
-			_supportEventLayerID = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerIDByType("1");
+			//_supportEventLayerID = ;
 			FlexGlobals.topLevelApplication.failedSyncDetails ="";
 			var uname:String = FlexGlobals.topLevelApplication.menuBar.getCurrentUser();
 			var edits:Array = new Array();
@@ -132,12 +155,17 @@ package com.transcendss.mavric.managers.ddot
 				return;
 			}
 			
-//			// temporary codes
-//			syncLink();
-//			return;
+			if(getAssetCount()<1){
+				FlexGlobals.topLevelApplication.TSSAlert('No Data Changes Available for Sync');
+				return;
+			}
+			
+			//			// temporary codes
+			//			syncLink();
+			//			return;
 			
 			// Fire off find max support id event
-			fireMaxIDRequest("POLEID", this._supportEventLayerID);
+			fireMaxIDRequest("SUPPORTID", FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerIDByType("1"));
 		}
 		
 		private function fireMaxIDRequest(idField:String, eventLayerID:Number)
@@ -159,7 +187,7 @@ package com.transcendss.mavric.managers.ddot
 				return;
 			}
 			
-			if (evt.eventLayerID == this._supportEventLayerID)
+			if (evt.eventLayerID == FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerIDByType("1"))
 			{
 				maxSupportIDOnServer = maxId;
 				syncSupport();
@@ -186,18 +214,22 @@ package com.transcendss.mavric.managers.ddot
 			}
 		}
 		
-		private function syncSupport():void
+		private function syncSupport():Boolean
 		{	
 			var supportAssetData:Object = getLocalRecords("SUPPORT");
 			if (supportAssetData.data ==null)
-				return;
+			{
+				
+				return false;
+			}
 			for each(var supportAsset:Object in supportAssetData.data)
 			{
-				if (supportAsset['POLEID'] < 0)
+				if (supportAsset['SUPPORTID'] < 0)
 					// Based on the current code, the support starts from -2. So do an extra -1
-					supportAsset['POLEID'] = maxSupportIDOnServer - supportAsset['POLEID'] - 1; 
+					supportAsset['SUPPORTID'] = maxSupportIDOnServer - supportAsset['SUPPORTID'] - 1; 
 			}
 			applyEdits(supportAssetData);	
+			return true;
 		}
 		
 		private function syncSign():void
@@ -209,8 +241,8 @@ package com.transcendss.mavric.managers.ddot
 			{
 				for each(var signAsset:Object in signAssetData.data)
 				{
-					if (signAsset['POLEID'] < 0)
-						signAsset['POLEID'] = maxSupportIDOnServer - signAsset['POLEID'] - 1; 
+					if (signAsset['SUPPORTID'] < 0)
+						signAsset['SUPPORTID'] = maxSupportIDOnServer - signAsset['SUPPORTID'] - 1; 
 					if (signAsset['SIGNID'] < 0)
 					{
 						signAsset['SIGNID'] = maxSignIDOnServer - signAsset['SIGNID'];
@@ -228,8 +260,8 @@ package com.transcendss.mavric.managers.ddot
 			{
 				for each(var inspection:Object in inspectionData.data)
 				{
-					if (inspection['POLEID'] < 0)
-						inspection['POLEID'] = maxSupportIDOnServer - inspection['POLEID'] - 1; 
+					if (inspection['SUPPORTID'] < 0)
+						inspection['SUPPORTID'] = maxSupportIDOnServer - inspection['SUPPORTID'] - 1; 
 					if (inspection['SIGNID'] != null && inspection['SIGNID'] < 0)
 						inspection['SIGNID'] = maxSignIDOnServer - inspection['SIGNID'];
 					if (inspection['INSPECTIONID'] < 0)
@@ -262,7 +294,7 @@ package com.transcendss.mavric.managers.ddot
 				link['LINKID'] = linkIDArray.join('_');
 				signIDs.push(link['SIGNID']);
 			}
-		
+			
 			var getLinkIDsEvent:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.LINK_ID_REQUEST);
 			var whereClause:String = StringUtil.substitute("SIGNID in ({0})", signIDs.join(','));
 			getLinkIDsEvent.serviceURL = agsManager.getCustomEventUrl(recordManager.linkEventLayerID, whereClause);
@@ -444,7 +476,7 @@ package com.transcendss.mavric.managers.ddot
 				sync.serviceURL = agsManager.getURL("edits");
 				
 				// add support ID and signID
-				sync.supportID = asset.hasOwnProperty('POLEID') && asset['POLEID'] != null? asset['POLEID'] : -9999;
+				sync.supportID = asset.hasOwnProperty('SUPPORTID') && asset['SUPPORTID'] != null? asset['SUPPORTID'] : -9999;
 				sync.signID = asset.hasOwnProperty('SIGNID') && asset['SIGNID'] != null? asset['SIGNID'] : -9999;
 				
 				if(asset.STATUS == 'NEW')

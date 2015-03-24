@@ -50,7 +50,7 @@
 				{	
 					recordManager = FlexGlobals.topLevelApplication.GlobalComponents.recordManager;	
 					
-					signFacingDDView.domainTableIDColName =  "DIRECTION";
+					signFacingDDView.domainTableIDColName =  "SIGNFACING";
 					signFacingDDView.fetchDomainValues();
 					signFacingDDView.btnText = "Sign Facing";
 					//signFacingDDView.width_TI = 120;
@@ -218,7 +218,7 @@
 			
 			public function loadSignInfo():void
 			{
-				signCodeTextInut.text = sign['SIGNNAME'] || sign['MUTCD'];
+				signCodeTextInut.text = sign['SIGNCODE'] || sign['MUTCD'];
 				descriptionTextInut.text = sign['DESCRIPTION'];
 				signFacingDDView.domainID = sign['SIGNFACING'];
 				signSizeDDView.domainID = sign['SIGNSIZE'];
@@ -232,7 +232,7 @@
 			
 			public function updateSignValues():void
 			{
-				sign['SIGNNAME'] = signCodeTextInut.text;
+				sign['SIGNCODE'] = signCodeTextInut.text;
 				sign['DESCRIPTION'] = descriptionTextInut.text;
 				sign['SIGNFACING']= signFacingDDView.domainID;
 				sign['SIGNSIZE'] = signSizeDDView.domainID;
@@ -290,7 +290,7 @@
 							<s:VGroup id="selSignImgHolder" width="180" height="180">
 							</s:VGroup>
 							
-							<s:Group id="ArrowDirDDGroup"></s:Group>
+							
 						</s:VGroup>
 					</s:HGroup>
 					<s:VGroup id="addAttchmentsHolder" left="-100" width="100%" gap="10"/>
@@ -311,6 +311,7 @@
 					<s:Spacer height="5"/>
 					<s:CheckBox id="isLZchkbox" label="Is Parking Zone"/>
 					<s:Spacer height="10"/>
+					<s:Group id="ArrowDirDDGroup" visible="{isLZchkbox.selected}"></s:Group>
 					<s:HGroup width="100%" verticalAlign="middle" visible="{isLZchkbox.selected}">
 						<s:Button id="linkedSignBtn" width="45%" label="Linked Sign"
 								  click="linkedSignBtn_clickHandler(event)"/>

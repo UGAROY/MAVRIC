@@ -173,7 +173,7 @@ package com.transcendss.mavric.managers.ddot
 				var supportProperties:Object = new Object();
 				supportProperties['MEASURE'] = support['invProperties'].MEASURE.value;
 				supportProperties['ROUTEID'] = support['invProperties'].ROUTEID.value;
-				this._supportDict[parseInt(support['invProperties'].POLEID.value)] = supportProperties;
+				this._supportDict[parseInt(support['invProperties'].SUPPORTID.value)] = supportProperties;
 			}
 		}
 		
@@ -182,8 +182,8 @@ package com.transcendss.mavric.managers.ddot
 		{
 			var sign:Object = new Object();
 			sign['SIGNID'] = --this._newSignID;
-			sign['POLEID'] = poleID;
-			sign['SIGNNAME'] = null;
+			sign['SUPPORTID'] = poleID;
+			sign['SIGNCODE'] = null;
 			sign['DESCRIPTION'] = null;
 			sign['SIGNFACING'] = null;
 			sign['SIGNSIZE'] = null;
@@ -220,10 +220,10 @@ package com.transcendss.mavric.managers.ddot
 			sign['ISLOADINGZONE'] = sign['ISLOADINGZONE'] == 1 ? true : false;
 			
 			// Set the DESCRIPTION. TODO: map it to the real description
-			sign['DESCRIPTION'] = sign['DESCRIPTION'] || sign['SIGNNAME'];
+			sign['DESCRIPTION'] = sign['DESCRIPTION'] || sign['SIGNCODE'];
 			
 			// Add the routeId and measure to the sign
-			if (sign['POLEID'] < 0)
+			if (sign['SUPPORTID'] < 0)
 			{
 				// if new sign, get the current route id and measure 
 				sign['MEASURE'] = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
@@ -231,8 +231,8 @@ package com.transcendss.mavric.managers.ddot
 			} 
 			else
 			{
-				sign['MEASURE'] = this._supportDict[sign['POLEID']]['MEASURE'];
-				sign['ROUTEID'] = this._supportDict[sign['POLEID']]['ROUTEID'];
+				sign['MEASURE'] = this._supportDict[sign['SUPPORTID']]['MEASURE'];
+				sign['ROUTEID'] = this._supportDict[sign['SUPPORTID']]['ROUTEID'];
 			}
 			
 			return sign;
@@ -264,7 +264,7 @@ package com.transcendss.mavric.managers.ddot
 					supportIDList.push(temp.id);
 					if(temp.invProperties[temp.typeKey].value=='null')
 						temp.invProperties[temp.typeKey].value='LEFT'; //set it to N by default
-					if(temp.invProperties["POLESTATUS"].value!=5)//if it is not retired
+					if(temp.invProperties["SUPPORTSTATUS"].value!=5)//if it is not retired
 						assetCollection.push(temp);
 				}
 				else if(type=="INT")
@@ -299,7 +299,7 @@ package com.transcendss.mavric.managers.ddot
 		{
 			FlexGlobals.topLevelApplication.incrementEventStack();
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.SIGN_REQUEST);
-			var whereClause:String =  "POLEID in (@poleIds)"
+			var whereClause:String =  "SUPPORTID in (@poleIds)"
 				.replace("@poleIds", supportIDList.join(','));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._signEventLayerID, whereClause);
 			_requestEvent.supportIDs = supportIDList;
@@ -363,7 +363,7 @@ package com.transcendss.mavric.managers.ddot
 		{
 			FlexGlobals.topLevelApplication.incrementEventStack();
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.INSPECTION_REQUEST);
-			var whereClause:String =  "POLEID in (@poleId) or SIGNID in (@signIds)"
+			var whereClause:String =  "SUPPORTID in (@poleId) or SIGNID in (@signIds)"
 				.replace("@poleId", ddotEvent.supportIDs.join(','))
 				.replace('@signIds', ddotEvent.signIDs.join(","));
 			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._inspectionEventLayerID, whereClause);
@@ -378,7 +378,7 @@ package com.transcendss.mavric.managers.ddot
 		{
 			var inspection:Object = new Object();
 			inspection['INSPECTIONID'] = --_newInspectionID;
-			inspection['POLEID'] = poleID == 0 ? null: poleID;
+			inspection['SUPPORTID'] = poleID == 0 ? null: poleID;
 			inspection['SIGNID'] = signID == 0 ? null: signID;
 			inspection['INSPECTOR'] = null;
 			inspection['TYPE'] = null;
@@ -495,7 +495,7 @@ package com.transcendss.mavric.managers.ddot
 			
 			for each (var liveSign:Object in _allSigns)
 			{
-				if (curSignIDList.indexOf(liveSign['SIGNID']) == -1 && liveSign.POLEID == poleID)
+				if (curSignIDList.indexOf(liveSign['SIGNID']) == -1 && liveSign.SUPPORTID == poleID)
 				{
 					tempSigns.addItem(liveSign);
 					curSignList.addItem(liveSign);
@@ -520,7 +520,7 @@ package com.transcendss.mavric.managers.ddot
 			
 			
 			var filterFunction:Function = function(element:*, index:int, arr:Array):Boolean {
-				return (element.POLEID == poleID || signIDs.indexOf(element.SIGNID) != -1) && (inspID.indexOf(element.INSPECTIONID)==-1);
+				return (element.SUPPORTID == poleID || signIDs.indexOf(element.SIGNID) != -1) && (inspID.indexOf(element.INSPECTIONID)==-1);
 			}
 			
 				var inspections:ArrayCollection = new ArrayCollection(_allInspections.source.filter(filterFunction));

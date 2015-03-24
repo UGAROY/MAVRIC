@@ -1027,6 +1027,18 @@ package com.transcendss.mavric.db
 			return rowid + 1;
 		}
 		
+		public function countDDOTAssetsToSync():int
+		{
+			var rowid : int;
+			sStat.text = "SELECT COUNT(*) as countSupp FROM SIGN_INV where ASSEMBLY_LOCAL_ID is not null";
+			sStat.execute();
+			
+			var arr:Array = sStat.getResult().data;
+			rowid = arr[0]["countAssm"];
+			
+			return rowid + 1;
+		}
+		
 		public function getAllSignsByAssemblyID(id:String,idColName:String, local:Boolean=true):ArrayCollection
 		{
 			var rowid : int;
@@ -2006,9 +2018,9 @@ package com.transcendss.mavric.db
 			sStat.text = "CREATE TABLE IF NOT EXISTS SIGNS ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
 				"OBJECTID INTEGER, " +
 				"SIGNID INTEGER, " +
-				"POLEID INTEGER, " + 
+				"SUPPORTID INTEGER, " + 
 				"MEASURE REAL, " + 
-				"SIGNNAME TEXT, " +
+				"SIGNCODE TEXT, " +
 				"DESCRIPTION TEXT, " + 
 				"SIGNFACING INTEGER, " +
 				"SIGNHEIGHT REAL, " +
@@ -2033,7 +2045,7 @@ package com.transcendss.mavric.db
 			sStat.text = "CREATE TABLE IF NOT EXISTS INSPECTIONS ( ID INTEGER PRIMARY KEY AUTOINCREMENT, " + 
 				"OBJECTID INTEGER, " +
 				"INSPECTIONID INTEGER, " +
-				"POLEID INTEGER, " + 
+				"SUPPORTID INTEGER, " + 
 				"SIGNID INTEGER, " + 
 				"INSPECTOR TEXT, " +
 				"DATEINSPECTED REAL, " + 
@@ -2117,14 +2129,14 @@ package com.transcendss.mavric.db
 		
 		public function addDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("OBJECTID", "SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE", "MEASURE")
+			var signColumns:Array = new Array("OBJECTID", "SIGNID", "SUPPORTID", "SIGNCODE", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE", "MEASURE")
 			sStat.text = "INSERT INTO SIGNS " + buildDdotInsertKeyValueStr(sign, signColumns); 
 			sStat.execute();
 		}
 		
 		public function updateDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("SIGNID", "POLEID", "SIGNNAME", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE",  "MEASURE");
+			var signColumns:Array = new Array("SIGNID", "SUPPORTID", "SIGNCODE", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE",  "MEASURE");
 			sStat.text = StringUtil.substitute("UPDATE SIGNS SET {0} WHERE SIGNID={1}", [buildDdotUpdateKeyValueStr(sign, signColumns), sign['SIGNID'].toString()]);
 			sStat.execute();
 		}
@@ -2166,7 +2178,7 @@ package com.transcendss.mavric.db
 			var signs:ArrayCollection = new ArrayCollection();
 			try
 			{
-				sStat.text = "SELECT * FROM SIGNS WHERE POLEID = " + poleID;
+				sStat.text = "SELECT * FROM SIGNS WHERE SUPPORTID = " + poleID;
 				sStat.execute();
 				var data:Array = sStat.getResult().data;
 				signs = new ArrayCollection(data);
@@ -2183,7 +2195,7 @@ package com.transcendss.mavric.db
 			var signs:ArrayCollection = new ArrayCollection();
 			try
 			{
-				sStat.text = "SELECT * FROM SIGNS WHERE POLEID in (@poleIds) ".replace("@poleIds", poleIDs.join(","));
+				sStat.text = "SELECT * FROM SIGNS WHERE SUPPORTID in (@poleIds) ".replace("@poleIds", poleIDs.join(","));
 				sStat.execute();
 				var data:Array = sStat.getResult().data;
 				signs = new ArrayCollection(data);
@@ -2209,7 +2221,7 @@ package com.transcendss.mavric.db
 		
 		public function addDdotInspection(inspection:Object):void
 		{
-			var inspectionColumns:Array = new Array("OBJECTID", "INSPECTIONID", "POLEID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
+			var inspectionColumns:Array = new Array("OBJECTID", "INSPECTIONID", "SUPPORTID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
 				"ADDITIONALACTIONNEEDED", "BENT", "TWISTED", "LOOSE", "RUSTED", "FADED", "PEELING", "OTHER", "COMMENTS");
 			sStat.text = "INSERT INTO INSPECTIONS " + buildDdotInsertKeyValueStr(inspection, inspectionColumns); 
 			sStat.execute();
@@ -2217,7 +2229,7 @@ package com.transcendss.mavric.db
 		
 		public function updateDdotInspection(inspection:Object):void
 		{
-			var inspectionColumns:Array = new Array("INSPECTIONID", "POLEID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
+			var inspectionColumns:Array = new Array("INSPECTIONID", "SUPPORTID", "SIGNID", "INSPECTOR", "DATEINSPECTED", "TYPE", "OVERALLCONDITION", "ACTIONTAKEN", 
 				"ADDITIONALACTIONNEEDED", "BENT", "TWISTED", "LOOSE", "RUSTED", "FADED", "PEELING", "OTHER", "COMMENTS");
 			sStat.text = StringUtil.substitute("UPDATE INSPECTIONS SET {0} WHERE INSPECTIONID={1}", [buildDdotUpdateKeyValueStr(inspection, inspectionColumns), inspection['INSPECTIONID'].toString()]);
 			sStat.execute();
@@ -2241,7 +2253,7 @@ package com.transcendss.mavric.db
 			var inspections:ArrayCollection = new ArrayCollection();
 			try
 			{
-				sStat.text = "SELECT * FROM INSPECTIONS WHERE POLEID = " + poleID + " OR SIGNID in (" + signIDs.join(",") + ")";
+				sStat.text = "SELECT * FROM INSPECTIONS WHERE SUPPORTID = " + poleID + " OR SIGNID in (" + signIDs.join(",") + ")";
 				sStat.execute();
 				var data:Array = sStat.getResult().data;
 				inspections = new ArrayCollection(data);

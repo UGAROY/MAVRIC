@@ -41,7 +41,7 @@
 			{
 				try
 				{
-					signFacingDDView.domainTableIDColName =  "DIRECTION";
+					signFacingDDView.domainTableIDColName =  "SIGNFACING";
 					signFacingDDView.fetchDomainValues();
 					signFacingDDView.btnText = "Sign Facing";
 					signFacingDDView.width_TI = 120;
@@ -77,7 +77,7 @@
 			
 			private function signLabelFunc(item:Object):String
 			{
-				return "" + item.SIGNNAME + "-" + item.SIGNID;
+				return "" + item.SIGNCODE + "-" + item.SIGNID;
 			}
 			
 			protected function newSignBtn_clickHandler(event:MouseEvent):void

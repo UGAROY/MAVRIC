@@ -77,7 +77,7 @@
 			
 			private function descLabelFunc(item:Object, column:GridColumn):String
 			{
-				return FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(item["SIGNNAME"]);
+				return FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(item["SIGNCODE"]);
 			}
 			
 			private function formatArrowDirColumn(item:Object, column:GridColumn):String
@@ -142,7 +142,7 @@
 					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Code"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction" labelFunction="formatArrowDirColumn"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn"/>
-					<s:GridColumn dataField="POLEID" headerText="Support ID"/>
+					<s:GridColumn dataField="SUPPORTID" headerText="Support ID"/>
 				</s:ArrayList>
 			</s:columns>
 		</s:DataGrid>
@@ -168,7 +168,7 @@
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction" labelFunction="formatArrowDirColumn"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn">
 					</s:GridColumn>
-					<s:GridColumn dataField="POLEID" headerText="Support ID"/>
+					<s:GridColumn dataField="SUPPORTID" headerText="Support ID"/>
 				</s:ArrayList>
 			</s:columns>
 		</s:DataGrid>

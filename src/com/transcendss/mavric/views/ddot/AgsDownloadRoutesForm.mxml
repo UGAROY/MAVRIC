@@ -614,16 +614,20 @@
 						
 						
 						//httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String(asset.attributes.OBJECTID));
-						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL() + "attachment/execute?support=&sign=&inspection=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
+						httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL + "attachment/execute?support=&sign=&inspection=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
 						httpServ.addEventListener( ResultEvent.RESULT, function(ev:ResultEvent):void{
+					
 							ev.stopPropagation();
+							var attachments:Array = new Array();
 							var routeNamer:String = ev.currentTarget.request.routeName;
+							var res:Object = JSON.parse(ev.result as String);
 							
-							var attachments:Array = JSON.parse(ev.result as String).results[0].value.attachmentInfos;
+							if(!res.error)
+								attachments = res.results[0].value.attachmentInfos;
 							trace('Geotags retrieved successfully for '+routeNamer);
 							
-								allData[routeNamer]["Geotags"]= attachments;
-								routeResult4(routeNamer);
+							allData[routeNamer]["Geotags"]= attachments;
+							routeResult4(routeNamer);
 							
 							
 						});
@@ -667,12 +671,15 @@
 					
 					
 					//httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String(asset.attributes.OBJECTID));
-					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL() + "sign/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
+					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL + "sign/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
 					httpServ.addEventListener( ResultEvent.RESULT, function(ev:ResultEvent):void{
 						ev.stopPropagation();
+						var signs:Array = new Array();
 						var routeNamer:String = ev.currentTarget.request.routeName;
+						var res:Object = JSON.parse(ev.result as String);
 						
-						var signs:Array = JSON.parse(ev.result as String).results[0].value.features;
+						if(!res.error)
+						 	signs = res.results[0].value.features;
 						trace('Signs retrieved successfully for '+routeNamer);
 						
 						allData[routeNamer]["Signs"]= signs;
@@ -720,15 +727,18 @@
 					
 					
 					//httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String(asset.attributes.OBJECTID));
-					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL() + "inspection/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
+					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL + "inspection/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
 					httpServ.addEventListener( ResultEvent.RESULT, function(ev:ResultEvent):void{
 						ev.stopPropagation();
+						var insps:Array = new Array();
 						var routeNamer:String = ev.currentTarget.request.routeName;
+						var res:Object = JSON.parse(ev.result as String);
 						
-						var signs:Array = JSON.parse(ev.result as String).results[0].value.features;
+						if(!res.error)
+							insps = res.results[0].value.features;
 						trace('Inspections retrieved successfully for '+routeNamer);
 						
-						allData[routeNamer]["Inspections"]= signs;
+						allData[routeNamer]["Inspections"]= insps;
 						routeResult6(routeNamer);
 						
 						
@@ -773,15 +783,18 @@
 					
 					
 					//httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String(asset.attributes.OBJECTID));
-					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL() + "link/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
+					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL + "link/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
 					httpServ.addEventListener( ResultEvent.RESULT, function(ev:ResultEvent):void{
 						ev.stopPropagation();
+						var links:Array = new Array();
 						var routeNamer:String = ev.currentTarget.request.routeName;
+						var res:Object = JSON.parse(ev.result as String);
 						
-						var signs:Array = JSON.parse(ev.result as String).results[0].value.features;
+						if(!res.error)
+							links = res.results[0].value.features;
 						trace('Links retrieved successfully for '+routeNamer);
 						
-						allData[routeNamer]["Links"]= signs;
+						allData[routeNamer]["Links"]= links;
 						routeResult7(routeNamer);
 						
 						
@@ -825,12 +838,16 @@
 					
 					
 					//httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.agsManager.getAttachmentsUrl(layerID ,String(asset.attributes.OBJECTID));
-					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL() + "time/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
+					httpServ.url = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.gpServiceURL + "time/execute?support=&sign=&routeId="+curRoute.routeName +"&from="+curRoute.beginMi+"&to="+curRoute.endMi+"&env%3AoutSR=&env%3AprocessSR=&returnZ=false&returnM=false&f=pjson"
 					httpServ.addEventListener( ResultEvent.RESULT, function(ev:ResultEvent):void{
 						ev.stopPropagation();
+						var timeRes:Array = new Array();
 						var routeNamer:String = ev.currentTarget.request.routeName;
 						
-						var timeRes:Array = JSON.parse(ev.result as String).results[0].value.features;
+						var res:Object = JSON.parse(ev.result as String);
+						
+						if(!res.error)
+							timeRes = res.results[0].value.features;
 						trace('TimeRes retrieved successfully for '+routeNamer);
 						
 						allData[routeNamer]["TimeRes"]= timeRes;
