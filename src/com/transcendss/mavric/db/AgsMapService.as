@@ -183,7 +183,7 @@ package com.transcendss.mavric.db
 //			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) 
 //				+ StringUtil.substitute('?f=json&outStatistics=[{"statisticType":"max","onStatisticField":"{0}","outStatisticFieldName":"max{0}"}]', idFieldName)
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) 
-				+ StringUtil.substitute('?f=json&outFields={0}&orderByFields={0} DESC&returnGeometry=false&where=1=1', idFieldName);
+				+ StringUtil.substitute('?f=json&outFields={0}&orderByFields={0} DESC&returnGeometry=false&where=1=1&gdbVersion=' + _query.params.gdbVersion, idFieldName);
 		}
 		
 		public function getLatLongUrl(routeName:String):String
@@ -192,21 +192,25 @@ package com.transcendss.mavric.db
 				.replace(/@routeId\b/gi,routeName);
 			whereClause = whereClause + ' and ' + _query.dateWhereClause.replace(/@fromDateFieldName\b/gi, _networkLayerContext.fromDateFieldName).replace(/@toDateFieldName\b/gi, _networkLayerContext.toDateFieldName);
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) 
-				+ '?f=json&outSR=@sr&returnM=true&returnGeometry=true&outFields=*&where='.replace('@sr', FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.baseMapSR) 
+				+ '?f=json&outSR=@sr&returnM=true&returnGeometry=true&outFields=*&where=&gdbVersion=@gdbv'
+				.replace(/@gdbv\b/gi, _query.params.gdbVersion)
+				.replace('@sr', FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.baseMapSR) 
 				+ escape(whereClause);
 		}
 		
 		public function getRouteUrl():String
 		{
 			var whereClause:String = _query.allRoutesEventWhereClause.replace(/@routeIdFieldName\b/gi, _networkLayerContext.compositeRouteIdFieldName) ;
-			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) + '?f=json&returnDistinctValues=true&outSR=&returnM=false&returnGeometry=false&orderByFields='+_networkLayerContext.compositeRouteIdFieldName+'&outFields='+_networkLayerContext.compositeRouteIdFieldName+',ROUTENAME&where=' + escape(whereClause);
+			var queryUrl = _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) + '?f=json&returnDistinctValues=true&outSR=&returnM=false&returnGeometry=false&gdbVersion=@gdbv&orderByFields='+_networkLayerContext.compositeRouteIdFieldName+'&outFields='+_networkLayerContext.compositeRouteIdFieldName+',ROUTENAME&where=' + escape(whereClause);
+			return queryUrl.replace(/@gdbv\b/gi, _query.params.gdbVersion);
 		}
 		
 		public function getMinMaxUrl(routeName:String):String
 		{
 			var whereClause:String = _query.routeEventWhereClause.replace(/@routeIdFieldName\b/gi, _calibPointLayerContext.routeIdFieldName).replace(/@routeId\b/gi, routeName);
 			whereClause = whereClause + ' and ' + _query.dateWhereClause.replace(/@fromDateFieldName\b/gi, _calibPointLayerContext.fromDateFieldName).replace(/@toDateFieldName\b/gi, _calibPointLayerContext.toDateFieldName);
-			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _calibPointLayerId) + '?f=json&outSR=&returnM=false&returnGeometry=false&orderByFields='+_calibPointLayerContext.measureFieldName+'&outFields='+_calibPointLayerContext.measureFieldName+'&where=' + escape(whereClause);
+			var queryUrl = _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _calibPointLayerId) + '?f=json&outSR=&returnM=false&returnGeometry=false&gdbVersion=@gdbv&orderByFields='+_calibPointLayerContext.measureFieldName+'&outFields='+_calibPointLayerContext.measureFieldName+'&where=' + escape(whereClause);
+			return queryUrl.replace(/@gdbv\b/gi, _query.params.gdbVersion);
 		}
 		
 		public function getEditsUrl():String
