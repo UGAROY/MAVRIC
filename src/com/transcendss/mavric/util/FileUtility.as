@@ -127,6 +127,15 @@ package com.transcendss.mavric.util
 		{
 			var fTempExist:File = new File(path);
 			
+			
+			
+			if (FlexGlobals.topLevelApplication.platform == "IOS") {
+				fTempExist = File.applicationStorageDirectory.resolvePath(path);
+			} else {
+				fTempExist = new File(path);
+			}
+			
+			
 			var path:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + aName;
 			var fTempFile:File;
 			if (FlexGlobals.topLevelApplication.platform == "IOS") {

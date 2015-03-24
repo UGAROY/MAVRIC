@@ -106,6 +106,7 @@
 			import flash.utils.getDefinitionByName;
 			
 			import mx.collections.ArrayCollection;
+			import mx.core.FlexGlobals;
 			import mx.core.IFlexDisplayObject;
 			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
@@ -997,8 +998,17 @@
 				{
 					var fileutil:FileUtility = new FileUtility();
 					var filename:String = media.source;
-					var file:File = new File("/sdcard/" + filename.substring(filename.lastIndexOf("/"), filename.length));
-					if(filename !== "" && filename && file.exists)
+					var path:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl;
+					
+					var fTemp:File;
+					if (FlexGlobals.topLevelApplication.platform == "IOS") {
+						fTemp = File.applicationStorageDirectory.resolvePath(path+ filename.substring(filename.lastIndexOf("/"), filename.length));
+					} else {
+						fTemp= new File(path+ filename.substring(filename.lastIndexOf("/"), filename.length));
+					}
+					
+					
+					if(filename !== "" && filename && fTemp.exists)
 					{
 						fileutil.deleteFiles(filename);
 					}

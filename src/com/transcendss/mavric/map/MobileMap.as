@@ -1,17 +1,12 @@
 package com.transcendss.mavric.map
 {
 	import com.transcendss.mavric.db.MAVRICDBManager;
-	import com.transcendss.mavric.managers.ComponentManager;
 	import com.transcendss.mavric.util.FileUtility;
 	import com.transcendss.mavric.util.PopUpUtils;
-	import com.transcendss.mavric.views.OverviewMap;
-	import com.transcendss.transcore.events.MapInitEvent;
 	import com.transcendss.transcore.events.TSSMapEvent;
 	import com.tss.mapcore.map.TSSMap;
 	
 	import flash.display.Bitmap;
-	import flash.display.BitmapData;
-	import flash.display.DisplayObject;
 	import flash.display.Loader;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -23,24 +18,15 @@ package com.transcendss.mavric.map
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.ArrayList;
-	import mx.controls.Button;
-	import mx.core.Application;
 	import mx.core.FlexGlobals;
 	import mx.core.UIComponent;
-	import mx.managers.PopUpManager;
-	import mx.utils.ObjectUtil;
 	
-	import spark.components.Application;
 	import spark.components.BorderContainer;
 	import spark.components.Button;
-	import spark.components.DropDownList;
 	import spark.components.Group;
 	import spark.components.Image;
-	import spark.components.Label;
 	import spark.components.Scroller;
 	import spark.core.SpriteVisualElement;
-	
-	import skins.MyScrollerSkin;
 	
 	public class MobileMap extends UIComponent
 	{
@@ -633,13 +619,13 @@ package com.transcendss.mavric.map
 				{
 					for (var n:int = 1 ; n < numberOfLevel; n++)
 					{
-						var path:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.cachedMapUrl + PrefixName + "_" + n + "_" + tileRetrievalCount + ".png";
+						var path2:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.cachedMapUrl + PrefixName + "_" + n + "_" + tileRetrievalCount + ".png";
 						if(mapRetrievalCount == n)
 						{
 							if (FlexGlobals.topLevelApplication.platform == "IOS") {
-								tmpFile = File.applicationStorageDirectory.resolvePath(path);
+								tmpFile = File.applicationStorageDirectory.resolvePath(path2);
 							} else {
-								tmpFile = new File(path);
+								tmpFile = new File(path2);
 							}
 							//tmpFile = new File("/sdcard/mapimages/" + tmpRN + "_" + tmpBM + "_" + tmpEM + "_2_" + tileRetrievalCount + ".png");
 							break;

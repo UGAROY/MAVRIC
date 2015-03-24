@@ -1454,7 +1454,14 @@ package com.transcendss.mavric.managers
 				
 				URLLdr.addEventListener(Event.COMPLETE, 
 					function(e:Event):void { 
-						var fTemp:File = new File(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + fileName);
+						
+						var fTemp:File;
+						if (FlexGlobals.topLevelApplication.platform == "IOS") {
+							fTemp = File.applicationStorageDirectory.resolvePath(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + fileName);
+						} else {
+							fTemp= new File(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + fileName);
+						}
+						//var fTemp:File = new File(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + fileName);
 						//						var fTemp:File = new File(BaseConfigUtility.get("geotags_folder") + fileName);
 						var fsTemp:FileStream = new FileStream();
 						fsTemp.open(fTemp, FileMode.WRITE);
@@ -1462,30 +1469,14 @@ package com.transcendss.mavric.managers
 						var fileData:ByteArray =URLLdr.data;
 						fsTemp.writeBytes(fileData, 0, 0);
 						fsTemp.close();
-						//						if(currentDwldIndex==maxDwnldLength && showAlert && FlexGlobals.topLevelApplication.attachmentDownloadError)
-						//						{
-						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
-						//						}
-						//						else if(currentDwldIndex==maxDwnldLength && showAlert && !FlexGlobals.topLevelApplication.attachmentDownloadError)
-						//						{
-						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database");
-						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-						//						}
 						FlexGlobals.topLevelApplication.decrementEventStack();				
-						//						
+												
 						
 					});
 				URLLdr.addEventListener(IOErrorEvent.IO_ERROR, 
 					function(e:Event):void { 
 						
-						//						if(currentDwldIndex==maxDwnldLength && showAlert)
-						//						{
-						//							FlexGlobals.topLevelApplication.TSSAlert("Route saved to local database.\n Attachment download errors encountered");
-						//							FlexGlobals.topLevelApplication.setBusyStatus(false);
-						//						}
-						//						else
-						//							FlexGlobals.topLevelApplication.attachmentDownloadError = true;
+						
 						FlexGlobals.topLevelApplication.decrementEventStack();
 					});
 				URLLdr.load(new URLRequest(sourceURL));

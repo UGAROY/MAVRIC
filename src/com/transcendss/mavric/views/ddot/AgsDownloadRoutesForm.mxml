@@ -985,7 +985,8 @@
 					
 					catch(e:Error)
 					{
-						trace(e.message);
+						FlexGlobals.topLevelApplication.setBusyStatus(false);
+						FlexGlobals.topLevelApplication.TSSAlert('Error Caching Maps');
 					}
 				}
 			}
