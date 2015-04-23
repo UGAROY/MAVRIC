@@ -23,11 +23,11 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
-			import com.google.maps.*;
 			import com.transcendss.mavric.db.MAVRICDBManager;
 			import com.transcendss.mavric.map.MobileMap;
-			import com.transcendss.mavric.util.ArrayColUtil;
-			import com.transcendss.transcore.events.*;
+			import com.transcendss.transcore.events.MapInitEvent;
+			import com.transcendss.transcore.events.NavControlEvent;
+			import com.transcendss.transcore.events.TSSMapEvent;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
@@ -35,7 +35,6 @@
 			import mx.utils.ObjectUtil;
 			
 			import spark.events.IndexChangeEvent;
-			import spark.events.PopUpEvent;
 			
 			[Bindable]
 			public var routeCoords:ArrayCollection;

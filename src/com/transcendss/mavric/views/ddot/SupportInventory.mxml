@@ -10,6 +10,7 @@
 	<fx:Script>
 		<![CDATA[
 			import com.transcendss.mavric.events.AssetEvent;
+			import com.transcendss.mavric.events.DropDownViewEvent;
 			import com.transcendss.mavric.events.ddot.GeotagEvent;
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
@@ -22,12 +23,14 @@
 			import com.transcendss.transcore.sld.models.components.GeoTag;
 			import com.transcendss.transcore.sld.models.managers.GeotagsManager;
 			import com.transcendss.transcore.util.AssetSymbol;
+			import com.transcendss.transcore.util.Converter;
 			import com.transcendss.transcore.util.TSSAudio;
 			import com.transcendss.transcore.util.TSSPicture;
 			import com.transcendss.transcore.util.TSSVideo;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
+			import mx.core.IVisualElement;
 			import mx.core.UIComponent;
 			import mx.managers.PopUpManager;
 			import mx.rpc.Responder;
@@ -123,6 +126,8 @@
 					supportStatusDDView.fetchDomainValues();
 					supportStatusDDView.btnText = "Support Status";
 					supportStatusDDView.genericPopup.height = 200;
+					supportStatusDDView.customCPEvent = new DropDownViewEvent( DropDownViewEvent.CUSBUTFUNCEVENT);
+					supportStatusDDView.customCPCallback =this.retireChk_changeHandler;
 					SignStatusDDGroup.addElement(supportStatusDDView);
 					
 					baseTypeDDView.domainTableIDColName =  "BASETYPE";
@@ -152,7 +157,8 @@
 					endDateView.width_TI = 120;
 					MsEndDateGroup.addElement(endDateView);
 					
-					attchView.init("SupportInventory",true,true,true);
+					
+					attchView.init("SupportInventory",true,false,true);
 					addAttchmentsHolder.addElement(attchView);
 					
 					var eve:AssetEvent = new AssetEvent(AssetEvent.CULVERTFORMLOADED);
@@ -221,7 +227,7 @@
 					currSupport['invProperties'].NUMBEROFBASES.value = numberOfBasesDDView.domainID;
 					currSupport['invProperties'].SUBBASE.value = subBaseDDView.domainID;
 					currSupport['invProperties'].SUPPORTHEIGHT.value = PoleHeightTextInut.text;
-					currSupport['invProperties'].COMMENTS.value = PoleComments.text;
+					currSupport['invProperties'].COMMENTS.value =  Converter.convertStringToURI(PoleComments.text);
 					currSupport['invProperties'].MSUTILITYID.value = MsUtilityTextInut.text;
 					currSupport['invProperties'].MSSTARTDATE.value = startDateView.text;
 					currSupport['invProperties'].MSENDDATE.value = endDateView.text;
@@ -256,8 +262,10 @@
 				{
 					this.currRouteID = FlexGlobals.topLevelApplication.currentRouteName;
 					this.currMilePost = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+					if (!currSupport['invProperties'].SUPPORTSTATUS.value)
+						currSupport['invProperties'].SUPPORTSTATUS.value = 1;
 					//set lat long from GPS if new GR
-					//currSupport.setAssetLocation("LATITUDE","LONGITUDE");
+					currSupport.setAssetLocation("LATITUDE","LONGITUDE");
 				}
 				else 
 				{
@@ -274,7 +282,7 @@
 				numberOfBasesDDView.domainID = currSupport['invProperties'].NUMBEROFBASES.value || "";
 				subBaseDDView.domainID = currSupport['invProperties'].SUBBASE.value || "";
 				PoleHeightTextInut.text = currSupport['invProperties'].SUPPORTHEIGHT.value || "";
-				PoleComments.text = (currSupport['invProperties'].COMMENTS.value == null || currSupport['invProperties'].COMMENTS.value == "<Null>") ?  " " : currSupport['invProperties'].COMMENTS.value;
+				PoleComments.text =  Converter.convertURIToString((currSupport['invProperties'].COMMENTS.value == null || currSupport['invProperties'].COMMENTS.value == "<Null>") ?  " " : currSupport['invProperties'].COMMENTS.value);
 				MsUtilityTextInut.text = currSupport['invProperties'].MSUTILITYID.value || "";
 				startDateView.value = currSupport['invProperties'].MSSTARTDATE.value != null ? new Date(currSupport['invProperties'].MSSTARTDATE.value) : null;
 				endDateView.value = currSupport['invProperties'].MSENDDATE.value != null ? new Date(currSupport['invProperties'].MSENDDATE.value) : null;
@@ -286,7 +294,7 @@
 					//recordManager.getSigns(currSupportID, signResp);
 					var signObj:Object = recordManager.getSignsByPoleID(currSupportID);
 					currSigns = signObj.signs;
-					currSigns.source.sortOn("SIGN_ORDER", [ Array.NUMERIC]);
+					currSigns.source.sortOn("SIGNORDER", [ Array.NUMERIC]);
 					currInspections = recordManager.getInspectionsForAsset(currSupportID, signObj.signIDs);
 					var gtArray:Array = recordManager.getGeotags(currSupportID);
 					
@@ -295,7 +303,8 @@
 						var tmpMedia:Object = new Object();
 						var tmpGT:GeoTag = gtArray[gti] as GeoTag;	
 						//tmpGT.asset_ty_id = currentSign.assetType;
-						var viE:* = new GeotagsManager().ConvertGeotags(tmpGT,"","local");
+						var gtURL:String= FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl;
+						var viE:* = new GeotagsManager().ConvertGeotags(tmpGT,File.applicationStorageDirectory.resolvePath(gtURL).url+"/","local");
 						if(viE)
 						{
 							var vContainer:VGroup = new VGroup();
@@ -554,6 +563,10 @@
 			
 			protected function retireChk_changeHandler(event:Event):void
 			{
+				
+				this.retireChk.selected = (supportStatusDDView.domainID=="5");
+				
+					
 				if(this.retireChk.selected)
 				{	
 					var _retireResp:mx.rpc.Responder = new mx.rpc.Responder(retireOkay, fault);
@@ -637,6 +650,8 @@
 				signPopUp.close(true);
 				
 				selectedSign = recordManager.createNewSign(currSupportID);
+				selectedSign['MEASURE']  = this.currMilePost;
+				selectedSign['SIGNSTATUS'] = 1;
 				loadSelectedSign(true);
 			}
 			
@@ -751,7 +766,17 @@
 			
 			private function formatAssetLabelColumn(item:Object, column:GridColumn):String
 			{
-				return item['SIGNID'] == null ? "Support" : "Sign -- " +  FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(item["SIGNCODE"]);
+				if (item['SUPPORTID'] != null && item['SUPPORTID'] != 0 && item['SIGNID'] == null)
+					return "Support";
+				else
+				{
+					for each(var sign:Object in currSigns)
+					{
+						if (sign['SIGNID'] == item['SIGNID'])
+							return "Sign -- "+ FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(sign["SIGNCODE"]);
+					}					
+				}
+				return "";
 			}
 			
 			private function formatAssetTypeColumn(item:Object, column:GridColumn):String
@@ -760,11 +785,13 @@
 					return "Support";
 				else
 				{
-					for each(var sign:Object in currSigns)
-					{
-						if (sign['SIGNID'] == item['SIGNID'])
-							return "Sign --"+ FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(sign["SIGNCODE"]);
-					}					
+//					for each(var sign:Object in currSigns)
+//					{
+//						if (sign['SIGNID'] == item['SIGNID'])
+//							return "Sign -- "+ FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(sign["SIGNCODE"]);
+//					}	
+					
+					return "Sign";
 				}
 				return "";
 			}
@@ -926,7 +953,7 @@
 					tmpGT.cached_route_id = supportRouteIdInput.text;
 					tmpGT.begin_mile_point = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
 					tmpGT.end_mile_point = 0;
-					tmpGT.image_file_name = fileName;
+					tmpGT.video_file_name = fileName;
 					tmpGT.text_memo = event.memo;
 					
 					tmpGT.asset_base_id = assetBaseID;
@@ -1035,6 +1062,7 @@
 				assetLabel.text = assetLabelText
 				vContainer.addElement(tmpImage);
 				vContainer.addElement(assetLabel);
+				tmpImage.voiceGroup = vContainer;
 				attachContainer.addElement(vContainer);
 					
 				try{
@@ -1052,9 +1080,33 @@
 			private function signLabelFunc(item:Object):String
 			{
 				var label:String = item["SIGNID"] + " - " + FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getSignDescriptionByMUTCD(item["SIGNCODE"]) ;
-				if(item["SIGN_ORDER"])
-					label +=  " - " +item["SIGN_ORDER"];
+				if(item["SIGNORDER"])
+					label +=  " - " +item["SIGNORDER"];
 				return label;
+			}
+			
+			public override function removeGeoTag(tssmedia:Object):void
+			{
+				var elm:IVisualElement = tssmedia as IVisualElement;
+				if(InvAttachments.containsElement(elm))
+				{
+					if(elm is TSSAudio)
+						InvAttachments.removeElement(tssmedia.voiceGroup);
+					else
+						InvAttachments.removeElement(elm);
+					
+				}
+				
+				else if(InspAttachments.containsElement(elm))
+				{
+					if(elm is TSSAudio)
+						InspAttachments.removeElement(tssmedia.voiceGroup);
+					else
+						InspAttachments.removeElement(elm);
+				}
+				
+				if(geoTagsArr.getItemIndex(tssmedia.geoTag) != -1)
+					geoTagsArr.removeItemAt(geoTagsArr.getItemIndex(tssmedia.geoTag));
 			}
 			
 			//----------------------------------------------------------------------------------------
@@ -1149,7 +1201,8 @@
 						<s:VGroup width="50%">
 							<s:Spacer height="25"/>
 							<s:Label text="Support Height:  " fontWeight="bold"/>
-							<s:TextInput id="PoleHeightTextInut" skinClass="spark.skins.mobile.TextInputSkin"  softKeyboardType="number" restrict = "0-9 \." width="{textInputWidth}"/>
+							
+							<s:TextInput  id="PoleHeightTextInut" skinClass="{spark.skins.mobile.TextInputSkin}"  softKeyboardType="{SoftKeyboardType.NUMBER}" restrict = "0-9 \." width="{textInputWidth}"/>
 						</s:VGroup>
 					</s:HGroup>
 					<s:VGroup id="addAttchmentsHolder" left="0" width="60%" />
@@ -1181,7 +1234,7 @@
 		
 		<s:VGroup id="Sign" paddingLeft="20" paddingTop="20" paddingRight="20">
 			<s:HGroup verticalAlign="middle">
-				<s:Button id="targetSignBtn" label="Target Sign" click="targetSignBtn_clickHandler(event)" />
+				<s:Button id="targetSignBtn" label="Select Sign" click="targetSignBtn_clickHandler(event)" />
 				<s:Spacer width="20"/>
 				<s:TextInput id="signText" text="{selectedSign.SIGNID}" width="325"  editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
 			</s:HGroup>
@@ -1243,8 +1296,9 @@
 	
 	<s:HGroup width="100%">
 		<s:HGroup horizontalAlign="center" width="100%">
-			<s:Button label="Save" click="onSave();"/>
-			<s:Button label="Close" id="clbtn" click="handleCloseEvent();"/>
+			<s:Button label="Save" height="50" width="187" click="onSave();"/>
+			<s:Spacer width="100"/>
+			<s:Button label="Close" height="50" width="187" id="clbtn" click="handleCloseEvent();"/>
 		</s:HGroup>
 		<s:CheckBox label="Retire" id="retireChk" visible="false" change="retireChk_changeHandler(event);"/>
 		<s:Button label="Move to Current Location" id="moveBtn"  click="moveBtn_changeHandler(event)" />

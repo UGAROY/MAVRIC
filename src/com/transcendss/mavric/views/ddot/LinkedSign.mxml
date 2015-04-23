@@ -139,7 +139,7 @@
 					dataProvider="{currentSignDp}">
 			<s:columns>
 				<s:ArrayList>
-					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Code"/>
+					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Description"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction" labelFunction="formatArrowDirColumn"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn"/>
 					<s:GridColumn dataField="SUPPORTID" headerText="Support ID"/>
@@ -164,7 +164,7 @@
 							</fx:Component>
 						</s:itemRenderer>
 					</s:GridColumn>
-					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Code"/>
+					<s:GridColumn dataField="DESCRIPTION" labelFunction="descLabelFunc" headerText="Sign Description"/>
 					<s:GridColumn dataField="ARROWDIRECTION" headerText="Arrow Direction" labelFunction="formatArrowDirColumn"/>
 					<s:GridColumn dataField="MEASURE" headerText="Measure" labelFunction="formatMeasureColumn">
 					</s:GridColumn>
@@ -176,7 +176,7 @@
 		<s:VGroup width="100%" horizontalAlign="center" >
 			<s:HGroup verticalAlign="middle">
 				<s:Label text="Zone ID" fontWeight="bold"/>
-				<s:TextInput id= "zoneIDText" editable="true" skinClass="spark.skins.mobile.TextInputSkin" width="120"/>
+				<s:TextInput id= "zoneIDText" editable="true" skinClass="spark.skins.mobile.TextInputSkin" softKeyboardType="{SoftKeyboardType.NUMBER}" restrict = "0-9" width="120"/>
 				<s:Spacer width="40"/>
 				<s:Button label="Save"  width="100" height="35" click="SaveHandler(event)"/>
 				<s:Spacer width="20"/>

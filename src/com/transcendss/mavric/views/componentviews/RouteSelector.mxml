@@ -2,9 +2,10 @@
 <s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
 			   xmlns:mx="library://ns.adobe.com/flex/mx" 
 			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:tssutils="com.transcendss.mavric.util.*"
 			   xmlns:Validators="Validators.*" 
 			   close="handleCloseEvent();" 
-			   title="Route Selector" width="480"
+			   title="Route Selector" width="650"
 			   xmlns:mate="http://mate.asfusion.com/" xmlns:addOns="MAVRIC2.views.addOns.*"
 			   height.ready="{RouteSelForm.height + 45}"
 			   backgroundColor="0xFFFFCC"
@@ -36,10 +37,13 @@
 			import mx.managers.PopUpManager;
 			
 			import spark.events.PopUpEvent;
+			import spark.skins.mobile.TextInputSkin;
 			
 			
 			
-			
+			[Bindable]
+			[Embed(source="images/gray_icons/icon_Mav-Search_40x40.png")]
+			private var searchIcon:Class;
 			
 			[Bindable]
 			[Embed(source="../../../../../images/list.png")] 
@@ -69,18 +73,8 @@
 			private var rsEvent:RouteSelectorEvent;
 			private var curRoute:Route = null;
 			private var curScale:Number = -1;
-			//private var scales:ArrayCollection = new  ArrayCollection(app.GlobalComponents.ConfigManager.scaleValues);
-//			[Bindable]
-//			private var scaleRepresentatives:ArrayCollection = new ArrayCollection([
-//				{scaleID: 1 , scaleVal:"1\" = 0.02 mi"},
-//				{scaleID: 2 , scaleVal:"1\" = 0.05 mi"},
-//				{scaleID: 3 , scaleVal:"1\" = 0.10 mi"},
-//				{scaleID: 4 , scaleVal:"1\" = 0.20 mi"},
-//				{scaleID: 5 , scaleVal:"1\" = 0.50 mi"},
-//				{scaleID: 6 , scaleVal:"1\" = 1.00 mi"},
-//				{scaleID: 7 , scaleVal:"1\" = 2.00 "},
-//				{scaleID: 8 , scaleVal:"1\" = 5.00 mi"},
-//				{scaleID: 9 , scaleVal:"1\" = 10.00 mi"}]);
+			
+			private var initialKeyword:String = "Route Search: Start typing";
 			
 			[Bindable]
 			private var app:MAVRIC2 = FlexGlobals.topLevelApplication as MAVRIC2;
@@ -88,6 +82,7 @@
 			public function init():void
 			{
 				PopUpUtils.closeAll(this);
+				keywordText.text = initialKeyword;
 				//comboBoxValidator.source = RouteList;
 				//comboBoxValidator.prompt = RouteList.prompt;
 			}
@@ -107,6 +102,7 @@
 					app.GlobalComponents.ConfigManager.serviceURL = ConfigUtility.get("serviceURL");
 					
 				rsEvent.serviceURL = app.GlobalComponents.ConfigManager.serviceURL+"Routes";
+				busyIndicator.busy = true;
 				dispatchEvent(rsEvent); //(see event handler in MainEventMap)
 			}
 			
@@ -116,7 +112,8 @@
 				try
 				{
 					event.stopPropagation();
-					dp = event.dataProviderAC;
+					busyIndicator.busy = false;
+					RouteList.dataProvider= dp = event.dataProviderAC;
 					
 					app.GlobalComponents.routeList=dp;
 //					RouteList.dataProvider = dp;
@@ -124,8 +121,10 @@
 					
 					curRoute = event.route;
 					curScale = event.scale;
+					setRtSelectorValues();
 					setSelectedScale(curScale!=-1?curScale:app.GlobalComponents.ConfigManager.defaultScale);
 //					setRtSelectorValues();
+					
 				}
 				catch (e:Error)
 				{
@@ -303,7 +302,7 @@
 					} 
 					else
 					{
-						selectedScale = .1;
+						selectedScale = app.GlobalComponents.ConfigManager.defaultScale;
 					}
 					rsEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTION_COMPLETE, rte, selectedScale);
 					rsEvent.routeName = rte.routeName;
@@ -326,6 +325,48 @@
 				{
 					trace(e);
 				}
+			}
+			
+			protected function keywordText_focusInHandler(event:FocusEvent):void
+			{
+				if (keywordText.text == initialKeyword)
+				{
+					keywordText.text = "";
+					keywordText.alpha = 1;
+				}
+				
+			}
+			
+			protected function keywordSearch_clickHandler(event:Event):void
+			{
+				if (keywordText.text == initialKeyword)
+				{
+					keywordText.text = "";
+					keywordText.alpha = 1;
+				}
+				
+				getMutcdDP();
+			}
+			
+			public function getMutcdDP(evnt:Event=null):void
+			{			
+				var filteredRoutes:ArrayCollection = dp;
+				
+				
+				filteredRoutes.filterFunction = Route_FilterFunc;
+				filteredRoutes.refresh();
+				RouteList.dataProvider =filteredRoutes;
+			}
+			
+			private function Route_FilterFunc(item:Object):Boolean
+			{
+				var flag:Boolean = true;
+				
+				if (keywordText.text != initialKeyword && keywordText.text != "")
+				{
+					flag = flag && String(item.ROUTE_FULL_NAME).toLowerCase().indexOf(keywordText.text.toLowerCase()) >= 0;
+				}
+				return flag;
 			}
 			
 			private function closeScalePop():void
@@ -360,6 +401,14 @@
 				BegMileInp.softKeyboardType = SoftKeyboardType.NUMBER;
 				EndMileInp.softKeyboardType = SoftKeyboardType.NUMBER;
 			}
+			
+			protected function busyIndicator_initializeHandler(event:FlexEvent):void
+			{
+				//				busyIndicator.setStyle("source", "images/loading2.swf");
+				busyIndicator.setStyle("scale", false);
+				busyIndicator.busy = false;
+			}
+			
 			
 			
 			private function routeLabelFunction(item:Object):String
@@ -403,7 +452,7 @@
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 			<s:VGroup width="100%" height="100%" horizontalAlign="center">
 	   <!-- <s:List id="RouteList"   change="this.getMinMax(event)" valueCommit="this.formValidator.validateForm(event)" dataProvider="{dp}" width="100%" height="100%" labelField="ROUTE_NAME" fontSize="18" allowMultipleSelection="false"/> -->
-			<s:List id="RouteList"   change="closeRoutePop(event)" dataProvider="{dp}" width="100%" height="100%" labelField="ROUTE_NAME" labelFunction="routeLabelFunction" fontSize="18" allowMultipleSelection="false" valueCommit="this.formValidator.validateForm(event)"/>
+			<!--<s:List id="RouteList"   change="closeRoutePop(event)" dataProvider="{dp}" width="100%" height="100%" labelField="ROUTE_NAME" labelFunction="routeLabelFunction" fontSize="18" allowMultipleSelection="false" valueCommit="this.formValidator.validateForm(event)"/>-->
 				<!---->
 		<!--	<s:Button label="OK" click="closeRoutePop()"/> -->
 			
@@ -412,24 +461,37 @@
 		</s:SkinnablePopUpContainer>
 		
 	</fx:Declarations>
-	
+	<tssutils:TSSBusy id="busyIndicator" busy="true" width="100%" height="100%" 
+					  initialize="busyIndicator_initializeHandler(event)">
 	<s:VGroup gap="-30" width="100%" horizontalAlign="center">
 		<s:Form id ="RouteSelForm" width="100%"  includeIn="loading,ready" backgroundColor="0xFFFFCC">		
 			<s:FormItem label="Route:"  width="100%" backgroundColor="0xFFFFCC">
-				<s:HGroup horizontalAlign="center" verticalAlign="top">
+				<s:VGroup verticalAlign="middle">
+					<s:Label id="sroute" color="#000000" fontWeight="bold" textDecoration="underline"/>
+					<s:List id="RouteList" left="0"  borderColor="black"   change="closeRoutePop(event)" width="425" height="175" labelField="ROUTE_NAME" labelFunction="routeLabelFunction" fontSize="18" allowMultipleSelection="false" valueCommit="this.formValidator.validateForm(event)"/>
+				</s:VGroup>
+				<s:VGroup horizontalAlign="center" verticalAlign="top">
 					<!--	<s:DropDownList id="RouteList" height="30"  width="200" labelField="ROUTE_NAME" skinClass="skins.CustomImageScrollerDropDownSkin" 
 					prompt="Select Route"  fontSize="18" dataProvider="{dp}"  change="getMinMax(event);" valueCommit="this.formValidator.validateForm(event);"/> -->
 					<!--
 					<s:List id="RouteList" width="200" height="50" labelField="ROUTE_NAME" fontSize="18" dataProvider="{dp}" allowMultipleSelection="false" change="getMinMax(event)" 
 							valueCommit="this.formValidator.validateForm(event);"/> -->
 					
-					<s:VGroup horizontalAlign="center">
+					<!--<s:VGroup horizontalAlign="center">
 					 	<s:Image toolTip="Select Route" source="{ilist}" click="openRouteSelect(event)"/> 
 						<s:Label text="SELECT ROUTE"  fontSize="12">
 						</s:Label>
-					</s:VGroup>
-					<s:Label id="sroute" color="#000000" fontWeight="bold" textDecoration="underline"/>
-				</s:HGroup>
+					</s:VGroup>-->
+					
+					
+					<s:HGroup verticalAlign="middle" >
+						<s:Spacer width="2"/>
+						<s:TextInput id="keywordText" alpha="0.5" width="250" editable="true" change="keywordSearch_clickHandler(event)" skinClass="spark.skins.mobile.TextInputSkin" focusIn="keywordText_focusInHandler(event)"/>
+						<!--<s:Spacer width="5"/>
+						<s:Image id="keywordSearch" source="{searchIcon}" height="40" width="40" buttonMode="true" click="keywordSearch_clickHandler(event)"/>-->
+					</s:HGroup>
+					
+				</s:VGroup>
 			</s:FormItem>
 		
 				
@@ -475,4 +537,5 @@
 		indeterminateSkin="{skins.ProgressIndeterminateSkin}" color="0x323232" direction="right" mode="event"  
 		width="80%" indeterminate="true" includeIn="preload,loading" includeInLayout.ready="false"  /> -->
 	</s:VGroup>
+	</tssutils:TSSBusy>
 </s:TitleWindow>

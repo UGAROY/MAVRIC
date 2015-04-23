@@ -7,7 +7,7 @@
             "DESCRIPTION": "SUPPORT",
             "UI_NAME": "Support",
             "LRM": "1",
-            "EVENT_LAYER_ID":9,
+            "EVENT_LAYER_ID":5,
             "TYPE_KEY": "LOCATION",
             "DEFAULT_TYPE_VALUE": "NS",
             "LENGTH_UNIT":"",
@@ -17,7 +17,7 @@
             "DEFINITION": {
                 "SUBTYPES": [
                     {
-                        "SUBTYPE": "LEFT",
+                        "SUBTYPE": "1",
                         "LOCATION": "STICK",
                         "DRAWOBJ": null,
                         "DRAWING": {
@@ -32,7 +32,7 @@
                         }
                     },
                     {
-                        "SUBTYPE": "RIGHT",
+                        "SUBTYPE": "2",
                         "LOCATION": "STICK",
                         "DRAWOBJ": null,
                         "DRAWING": {
@@ -54,11 +54,11 @@
         "ASSET_DEF": {
             "ASSET_TYPE": "2",
             "CAPTURE_AVAILABLE": "false",
-            "VISIBLE_ON_STICK": "true",
+            "VISIBLE_ON_STICK": "false",
             "DESCRIPTION": "MILEMARKER",
             "UI_NAME": "Mile Marker",
             "LRM": "1",
-            "EVENT_LAYER_ID": 9,
+            "EVENT_LAYER_ID": 5,
             "LENGTH_UNIT": "",
             "TYPE_KEY": "MUTCD",
             "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",
@@ -76,7 +76,7 @@
             "LENGTH_UNIT":"",
             "UI_NAME": "Intersection",
             "LRM": "1",
-            "EVENT_LAYER_ID":11,
+            "EVENT_LAYER_ID":7,
             "TYPE_KEY": "",
             "SYNC": "false",
             "FORM_CLASS": "com.transcendss.mavric.views.AssetEditForm",

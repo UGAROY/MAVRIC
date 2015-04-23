@@ -244,7 +244,7 @@ package com.transcendss.mavric.map
 		}
 		
 		
-		public function setInitialMapExtent(minx:Number, miny:Number, maxx:Number, maxy:Number, preName:String):void
+		public function setInitialMapExtent(minx:Number, miny:Number, maxx:Number, maxy:Number, preName:String, bboxSR:String = "default"):void
 		{
 			// Add a buffer around the route
 			var xbuf:Number = Math.abs((maxx - minx)) *.1;
@@ -320,14 +320,14 @@ package com.transcendss.mavric.map
 				iMaxy=maxy;
 				mapRetrievalCount = 0;
 				tileRetrievalCount = 0;
-				retrieveMapImages();
+				retrieveMapImages(bboxSR);
 			}
 		}
 		
 		
 		
 		// Retrieve the three map scale images. Check locally first.
-		private function retrieveMapImages():void
+		private function retrieveMapImages(bboxSR:String="default"):void
 		{		
 			try
 			{	
@@ -355,7 +355,11 @@ package com.transcendss.mavric.map
 					
 					bbox = (iMinx + deltaX * n) + ", " + (iMiny + deltaY * m) + ", " +(iMinx + deltaX * (n+1)) + "," + (iMiny + deltaY * (m+1));
 					
-					var mapRequestUrl:String = mapServiceURL+"/export?bbox=" + bbox + "&bboxSR=&layers=&layerdefs=&size=" + msize + "&imageSR=&format=png24&transparent=false&dpi=200&f=pjson";
+					var mapRequestUrl:String ;
+					if(bboxSR =="default")
+						mapRequestUrl = mapServiceURL+"/export?bbox=" + bbox + "&bboxSR="+BaseConfigUtility.get('basemapSR')+"&layers=&layerdefs=&size=" + msize + "&imageSR="+BaseConfigUtility.get('basemapSR')+"&format=png24&transparent=false&dpi=200&f=pjson";
+					else
+						mapRequestUrl = mapServiceURL+"/export?bbox=" + bbox + "&bboxSR=&layers=&layerdefs=&size=" + msize + "&imageSR="+BaseConfigUtility.get('basemapSR')+"&format=png24&transparent=false&dpi=200&f=pjson";
 					
 					var urlReq:URLRequest = new URLRequest(mapRequestUrl);	
 					var urlLdr:URLLoader = new URLLoader();

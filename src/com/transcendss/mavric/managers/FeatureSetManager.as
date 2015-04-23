@@ -1,21 +1,16 @@
 package com.transcendss.mavric.managers
 {
-	import com.cartogrammar.shp.*;
+	import com.cartogrammar.shp.PolygonFeature;
+	import com.cartogrammar.shp.ShpFeature;
 	import com.transcendss.transcore.util.PolarToUTM;
 	
-	import flash.geom.ColorTransform;
 	import flash.geom.Point;
-	import flash.geom.Rectangle;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.ArrayList;
-	import mx.utils.ColorUtil;
-	import mx.utils.NameUtil;
 	import mx.utils.StringUtil;
 	
-	import org.vanrijkom.shp.*;
-	
-	import spark.filters.ShaderFilter;
+	import org.vanrijkom.shp.ShpPoint;
 	
 	/**
 	 * FeatureSetManager monitors a set of Shapefile features and determines

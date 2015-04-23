@@ -150,7 +150,7 @@
 				signselsubCatDDView.domainID = "";
 				CatID = 0;
 				SubCatID = 0;
-				keywordText.text = "";
+				keywordText.text = initialKeyword;
 				signdesc.text = "";
 				signName.text="";
 				mutcdAc.removeAll();

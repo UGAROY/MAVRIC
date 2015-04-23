@@ -7,7 +7,7 @@
 		 creationComplete="init()">
 	
 	<fx:Declarations>
-		<s:SkinnablePopUpContainer id="assetSelectPopup" width="200" height="240"  name="Select Asset to Edit"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+		<s:SkinnablePopUpContainer id="assetSelectPopup" width="400" height="240"  name="Select Asset to Edit"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
 			<s:VGroup width="100%" height="100%" horizontalAlign="center"  >
 				<s:List id="assetSelectorList" change="assetselection_close_handler()" dataProvider="{clickPool}" labelField="list_description"
 						width="100%" height="100%" fontFamily="18" allowMultipleSelection="false"/>
@@ -53,7 +53,7 @@
 			private var isInvForm:Boolean = FlexGlobals.topLevelApplication.isInvForm;
 			//private var invFormSetUpComplete:Boolean = false;
 						
-			public static const BASE_TOLERANCE:Number =250;
+			public static const BASE_TOLERANCE:Number =20; //was 200 for miles
 			private var clickPool:ArrayCollection = new ArrayCollection();
 			
 			private function init():void
@@ -72,6 +72,10 @@
 			
 			public function setRoute(rse:RouteSelectorEvent):void
 			{
+				try
+				{
+				
+				
 				var viewMile:Number =0;
 				var curRte:Route = sldDiagram.currentRoute;
 				if(curRte && rse.route.routeName == curRte.routeName && rse.route.beginMi == curRte.beginMi && rse.route.endMi ==  curRte.endMi)
@@ -83,7 +87,11 @@
 				sldDiagram.updateRoute(rse.route,rse.scale, rse.fromStorage,viewMile);
 				//sldDiagram.viewMile = sldDiagram.viewMile;
 				
-				
+				}
+				catch(e:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert('error drawing route');
+				}
 			}
 			public function setScale(scale:Number):void 
 			{
@@ -381,7 +389,7 @@
 				var _spriteList:Object = FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.spriteLists;
 				var zoomAdjustment:Number =FlexGlobals.topLevelApplication.GlobalComponents.stkDiagram.scale();
 				
-				var tolerance:Number = BASE_TOLERANCE*zoomAdjustment;
+				var tolerance:Number = BASE_TOLERANCE *zoomAdjustment;
 				for (var key:String in _spriteList){
 					if(FlexGlobals.topLevelApplication.GlobalComponents.assetManager.isAssetOnStick(key) && FlexGlobals.topLevelApplication.GlobalComponents.assetManager.isAssetCaptureAvailable(key))
 					{
@@ -390,7 +398,21 @@
 							if(Math.abs(spriteObj.symbol.x - event.asset.symbol.x) <= tolerance && Math.abs(spriteObj.symbol.y - event.asset.symbol.y) <= tolerance){
 								obj = new Object();
 								obj.baseAsset = spriteObj;
-								obj.list_description = obj.baseAsset.description + " " + obj.baseAsset.id;
+								if(obj.baseAsset.description == "SUPPORT")
+								{
+									var supportDomain:ArrayCollection = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getDomain("SUPPORTTYPE");
+									var supportType:String ="";
+									var mp:String = Number(obj.baseAsset.invProperties["MEASURE"].value).toFixed(2);
+									
+									for each (var item:Object in supportDomain)
+									if(item.ID ==obj.baseAsset.invProperties["SUPPORTTYPE"].value)
+										supportType = item.DESCRIPTION;
+									
+									
+									obj.list_description = obj.baseAsset.description + " " + supportType  + " " + mp;
+								}
+								else
+									obj.list_description = obj.baseAsset.description + " " + obj.baseAsset.id;
 								clickPool.addItem(obj);
 								
 							}

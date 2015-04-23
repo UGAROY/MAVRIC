@@ -23,6 +23,7 @@ package com.transcendss.mavric.events.ddot
 		private var _supports:ArrayCollection;
 		private var _signs:ArrayCollection;
 		private var _mainResponder:IResponder;
+		public var whereClause:String= "";
 		
 		public static const SIGN_REQUEST:String="relatedSign_event";
 		public static const INSPECTION_REQUEST:String="relatedInspection_event";

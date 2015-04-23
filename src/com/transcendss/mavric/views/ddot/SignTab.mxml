@@ -10,6 +10,7 @@
 			import com.transcendss.mavric.managers.ddot.DdotRecordManager;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.transcore.util.Converter;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
@@ -91,7 +92,7 @@
 					arrowDirDDView.genericPopup.width = 200;
 					ArrowDirDDGroup.addElement(arrowDirDDView);
 					
-					attchView.init("SignInventory",true,true,true);
+					attchView.init("SignInventory",true,false,true);
 					addAttchmentsHolder.addElement(attchView);
 					
 					//var linkResp:mx.rpc.Responder = new mx.rpc.Responder(linkRetrieved,  failReqHandler);
@@ -222,10 +223,10 @@
 				descriptionTextInut.text = sign['DESCRIPTION'];
 				signFacingDDView.domainID = sign['SIGNFACING'];
 				signSizeDDView.domainID = sign['SIGNSIZE'];
-				signOrderDDView.domainID = sign['SIGN_ORDER'];
-				signStatusDDView.domainID = sign['SIGNSTATUS'];
+				signOrderDDView.domainID = sign['SIGNORDER'];
+				signStatusDDView.domainID = sign['SIGNSTATUS'] || "1";
 				arrowDirDDView.domainID = sign['ARROWDIRECTION'];
-				signComments.text = sign['COMMENTS'];
+				signComments.text = Converter.convertURIToString(sign['COMMENTS']);
 				isLZchkbox.selected = sign['ISLOADINGZONE'];
 				setSignImage();
 			}
@@ -236,10 +237,10 @@
 				sign['DESCRIPTION'] = descriptionTextInut.text;
 				sign['SIGNFACING']= signFacingDDView.domainID;
 				sign['SIGNSIZE'] = signSizeDDView.domainID;
-				sign['SIGN_ORDER'] = signOrderDDView.domainID;
+				sign['SIGNORDER'] = signOrderDDView.domainID;
 				sign['SIGNSTATUS'] = signStatusDDView.domainID;
 				sign['ARROWDIRECTION'] = arrowDirDDView.domainID ;
-				sign['COMMENTS'] = signComments.text;
+				sign['COMMENTS'] =  Converter.convertStringToURI(signComments.text);
 				sign['ISLOADINGZONE'] = isLZchkbox.selected;
 				
 			}
@@ -309,15 +310,16 @@
 									 skinClass="spark.skins.mobile.TextInputSkin"/>
 					</s:HGroup>-->
 					<s:Spacer height="5"/>
-					<s:CheckBox id="isLZchkbox" label="Is Parking Zone"/>
+					<s:Group id="ArrowDirDDGroup" ></s:Group>
+					
 					<s:Spacer height="10"/>
-					<s:Group id="ArrowDirDDGroup" visible="{isLZchkbox.selected}"></s:Group>
-					<s:HGroup width="100%" verticalAlign="middle" visible="{isLZchkbox.selected}">
+					<s:CheckBox id="isLZchkbox" label="Is Parking Zone"/>
+					<s:HGroup width="100%" verticalAlign="middle" >
 						<s:Button id="linkedSignBtn" width="45%" label="Linked Sign"
 								  click="linkedSignBtn_clickHandler(event)"/>
 						<s:Spacer width="10%"/>
 						<s:Button id="timeDayBtn" width="45%" label="Time and Day"
-								  click="timeDayBtn_clickHandler(event)" enabled="{trEnable}"/>
+								  click="timeDayBtn_clickHandler(event)"/>
 					</s:HGroup>
 					<s:Spacer height="10"/>
 					<s:HGroup verticalAlign="middle" visible="{trEnable}">

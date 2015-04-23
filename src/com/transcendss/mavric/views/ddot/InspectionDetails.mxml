@@ -11,6 +11,7 @@
 			import com.transcendss.mavric.util.DatePickerViewHoriz;
 			import com.transcendss.mavric.util.DropDownViewVert;
 			import com.transcendss.mavric.views.componentviews.AddAttachments;
+			import com.transcendss.transcore.util.Converter;
 			
 			import mx.core.FlexGlobals;
 			import mx.events.CloseEvent;
@@ -69,7 +70,7 @@
 					inspectDateView.width_TI = 120;
 					DateInspectedGroup.addElement(inspectDateView);
 					
-					attchView.init("InspectionDetails",true,true,true);
+					attchView.init("InspectionDetails",true,false,true);
 					addAttchmentsHolder.addElement(attchView);
 				}
 				catch(err:Error)
@@ -93,7 +94,7 @@
 				isPeeling.selected = inspection['PEELING'];
 				otherDamage.selected = inspection['OTHER'];
 				inspectorText.text = inspection['INSPECTOR'];
-				inspectionComment.text = inspection['COMMENTS'];
+				inspectionComment.text =  Converter.convertURIToString(inspection['COMMENTS']);
 				
 			}
 			
@@ -127,7 +128,7 @@
 					inspection['PEELING'] = isPeeling.selected;
 					inspection['OTHER'] = otherDamage.selected;
 					inspection['INSPECTOR'] = inspectorText.text;
-					inspection['COMMENTS'] = inspectionComment.text;
+					inspection['COMMENTS'] =  Converter.convertStringToURI(inspectionComment.text);
 					
 					PopUpManager.removePopUp(this);
 					

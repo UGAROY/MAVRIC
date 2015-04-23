@@ -4157,202 +4157,202 @@
         {
           "ID": "R3-1",
           "DESCRIPTION": "Movement Prohibition",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-10",
           "DESCRIPTION": "Preferential Lane Vehicle Occupancy Definition(post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-10a",
           "DESCRIPTION": "Preferential Lane Vehicle Occupancy Definition(post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-11",
           "DESCRIPTION": "HOV Lane operation",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-11a",
           "DESCRIPTION": "HOV Lane Assignment",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-11b",
           "DESCRIPTION": "Preferential Lane Assinment",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-11P",
           "DESCRIPTION": "Motorcycles Allowed (plaque)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-12",
           "DESCRIPTION": "HOV Lane Ahead (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-12a",
           "DESCRIPTION": "HOV Lane Ends (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-12b",
           "DESCRIPTION": "HOV Lane Ends  Ahead (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-13",
           "DESCRIPTION": "Preferential Lane Vehicle Occupancy Definition(post-mounted)(overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-13a",
           "DESCRIPTION": "Preferential Lane Vehicle Occupancy Definition(post-mounted)(overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-14",
           "DESCRIPTION": "HOV Lane Periods of Operation (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-14a",
           "DESCRIPTION": "HOV Lane Periods of Operation (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-14b",
           "DESCRIPTION": "HOV Lane Periods of Operation (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-14c",
           "DESCRIPTION": "Preferential Lane Periods of Operation (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-15",
           "DESCRIPTION": "HOV Lane Ahead (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-15a",
           "DESCRIPTION": "HOV Lane Begins XX Miles (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-15b",
           "DESCRIPTION": "HOV Lane Ends (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-15c",
           "DESCRIPTION": "HOV Lane Ends (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-15d",
           "DESCRIPTION": "Preferential Lane Ahead or Ends (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-15e",
           "DESCRIPTION": "Preferential Lane Ahead or Ends (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-17",
           "DESCRIPTION": "Bike Lane",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-17aP",
           "DESCRIPTION": " Bike Lane (plaques)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-17bP",
           "DESCRIPTION": " Bike Lane (plaques)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-18",
           "DESCRIPTION": "Movement Prohibition",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-2",
           "DESCRIPTION": "Movement Prohibition",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-20L",
           "DESCRIPTION": " Begin Left Turn Lane",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-20R",
           "DESCRIPTION": " Begin Right Turn Lane",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-23",
           "DESCRIPTION": "All Turns (U Turn) from Right Lane",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-23a",
           "DESCRIPTION": "All Turns (U Turn) from Right Lane",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-24",
           "DESCRIPTION": "All Turns (U Turn) with arrow",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-24a",
           "DESCRIPTION": "U and Left Turns with arrow",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-24b",
           "DESCRIPTION": "All Turns (U Turn) with arrow",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-25",
           "DESCRIPTION": "All Turns (U Turn) with arrow",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-25a",
           "DESCRIPTION": "U and Left Turns with arrow",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-25b",
           "DESCRIPTION": "All Turns (U Turn) with arrow",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-26",
           "DESCRIPTION": "U and Left Turns with arrow",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-26a",
           "DESCRIPTION": "All Turns (U Turn) with arrow",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-27",
           "DESCRIPTION": "Movement Prohibition",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-28",
@@ -4367,12 +4367,12 @@
         {
           "ID": "R3-2a ",
           "DESCRIPTION": " No Left Turn Across Tracks",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-3",
           "DESCRIPTION": "Movement Prohibition",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-30P",
@@ -4382,177 +4382,177 @@
         {
           "ID": "R3-33",
           "DESCRIPTION": "Right Lane Must Exit",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-4",
           "DESCRIPTION": "Movement Prohibition",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-40",
           "DESCRIPTION": "Priced Managed Lane Vehicle Occupancy Definition (post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-42",
           "DESCRIPTION": "Priced Managed Lane Ends (post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-42b",
           "DESCRIPTION": "Priced Managed Lane Ends (post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-42c",
           "DESCRIPTION": "Priced Managed Lane Ends Advance (post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-43",
           "DESCRIPTION": "Priced Managed Lane Vehicle Occupancy Definition (post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-44",
           "DESCRIPTION": "Priced Managed Lane Periods of Operation (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-44a",
           "DESCRIPTION": "Priced Managed Lane Periods of Operation (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-45",
           "DESCRIPTION": "Priced Managed Lane Ends (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-45a",
           "DESCRIPTION": "Priced Managed Lane Ends (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-48",
           "DESCRIPTION": "Priced Managed Lane Toll Rate",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-48a",
           "DESCRIPTION": "Priced Managed Lane Toll Rate",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-5",
           "DESCRIPTION": "Mandatory Movement Lane Control",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-5a",
           "DESCRIPTION": "Mandatory Movement Lane Control",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-5bP",
           "DESCRIPTION": "Left Lane (plaque)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-5cP",
           "DESCRIPTION": "HOV 2+ (plaque)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-5dP",
           "DESCRIPTION": "Taxi Lane (plaque)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-5eP",
           "DESCRIPTION": "Center Lane (plaque)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-5fP",
           "DESCRIPTION": "Right Lane (plaque)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-5gP",
           "DESCRIPTION": "Bus Lane (plaque)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-6",
           "DESCRIPTION": "Optional Movement Lane Control",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-7",
           "DESCRIPTION": "Right (Left) Lane Must Turn Right (Left)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-8",
           "DESCRIPTION": "Advance Intersection Lane Control",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-8a",
           "DESCRIPTION": "Advance Intersection Lane Control",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-8b",
           "DESCRIPTION": "Advance Intersection Lane Control",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9a",
           "DESCRIPTION": "Two-Way Left Turn Only (overhead)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9b",
           "DESCRIPTION": "Two-Way Left Turn Only (post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9cP",
           "DESCRIPTION": "BEGIN",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9dP",
           "DESCRIPTION": "END",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9e",
           "DESCRIPTION": "Reversible Lane Control (symbol)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9f",
           "DESCRIPTION": "Reversible Lane Control (post-mounted)",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9g",
           "DESCRIPTION": "Advance Reversible Lane Control Transition Signing",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9h",
           "DESCRIPTION": "Advance Reversible Lane Control Transition Signing",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R3-9i",
           "DESCRIPTION": "End Reverse Lane",
-          "SIGN_SUB_CATEGORY_ID": 60
+          "SIGN_SUB_CATEGORY_ID": 3
         },
         {
           "ID": "R4-1",

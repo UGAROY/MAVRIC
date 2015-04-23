@@ -196,6 +196,10 @@
 				//FlexGlobals.topLevelApplication.GlobalComponents.invDiagram.draw();
 			}
 			
+			public function routeFaultResult():void{
+				FlexGlobals.topLevelApplication.TSSAlert("Error obtaining routes");
+				FlexGlobals.topLevelApplication.setRouteSelectorFree();
+			}
 			
 		]]>
 	</fx:Script>
@@ -251,6 +255,9 @@
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
 					</mate:MethodInvoker>
 				</mate:resultHandlers>
+				<mate:faultHandlers>
+					<mate:InlineInvoker method="routeFaultResult"/>
+				</mate:faultHandlers>
 			</mate:HTTPServiceInvoker>
 		</mate:EventHandlers>
 	
@@ -545,7 +552,31 @@
 		</mate:EventHandlers>
 		
 		<mate:EventHandlers type="{DdotRecordEvent.SIGN_REQUEST}" debug="{debugFlag}">
-			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" method="POST" debug="{debugFlag}" >
+				<mate:Request where = "{event.whereClause}" 
+							  gdbVersion = "{ConfigUtility.get('gdb_version')}"
+							  returnGeometry="false"
+							  f = "pjson"
+							  text=""	
+							  objectIds=""	
+							  time=""
+							  geometry=""	
+							  geometryType="esriGeometryEnvelope"
+							  inSR=""
+							  spatialRel="esriSpatialRelIntersects"
+							  relationParam=""
+							  outFields="*"
+							  maxAllowableOffset=""	
+							  geometryPrecision=""
+							  outSR=""
+							  returnIdsOnly="false"
+							  returnCountOnly="false"
+							  orderByFields=""
+							  groupByFieldsForStatistics=""	
+							  outStatistics=""
+							  returnZ="false"
+							  returnM="false"
+							  returnDistinctValues="false"/>
 				<mate:resultHandlers>
 					<!--<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onSignServiceResult'}" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
@@ -572,7 +603,31 @@
 		</mate:EventHandlers>
 		
 		<mate:EventHandlers type="{DdotRecordEvent.INSPECTION_REQUEST}" debug="{debugFlag}">
-			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" method="POST" debug="{debugFlag}" >
+				<mate:Request where = "{event.whereClause}" 
+							  gdbVersion = "{ConfigUtility.get('gdb_version')}"
+							  returnGeometry="false"
+							  f = "pjson"
+							  text=""	
+							  objectIds=""	
+							  time=""
+							  geometry=""	
+							  geometryType="esriGeometryEnvelope"
+							  inSR=""
+							  spatialRel="esriSpatialRelIntersects"
+							  relationParam=""
+							  outFields="*"
+							  maxAllowableOffset=""	
+							  geometryPrecision=""
+							  outSR=""
+							  returnIdsOnly="false"
+							  returnCountOnly="false"
+							  orderByFields=""
+							  groupByFieldsForStatistics=""	
+							  outStatistics=""
+							  returnZ="false"
+							  returnM="false"
+							  returnDistinctValues="false"/>
 				<mate:resultHandlers>
 					<!--<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onInspectionServiceResult'}" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
@@ -586,7 +641,31 @@
 		</mate:EventHandlers>
 		
 		<mate:EventHandlers type="{DdotRecordEvent.LINK_REQUEST}" debug="{debugFlag}">
-			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" method="POST" debug="{debugFlag}" >
+				<mate:Request where = "{event.whereClause}" 
+							  gdbVersion = "{ConfigUtility.get('gdb_version')}"
+							  returnGeometry="false"
+							  f = "pjson"
+							  text=""	
+							  objectIds=""	
+							  time=""
+							  geometry=""	
+							  geometryType="esriGeometryEnvelope"
+							  inSR=""
+							  spatialRel="esriSpatialRelIntersects"
+							  relationParam=""
+							  outFields="*"
+							  maxAllowableOffset=""	
+							  geometryPrecision=""
+							  outSR=""
+							  returnIdsOnly="false"
+							  returnCountOnly="false"
+							  orderByFields=""
+							  groupByFieldsForStatistics=""	
+							  outStatistics=""
+							  returnZ="false"
+							  returnM="false"
+							  returnDistinctValues="false"/>
 				<mate:resultHandlers>
 					<mate:InlineInvoker  method="onLinkResult" arguments="{[resultObject, event]} "/>
 				</mate:resultHandlers>
@@ -597,7 +676,31 @@
 		</mate:EventHandlers>
 		
 		<mate:EventHandlers type="{DdotRecordEvent.TIME_RESTRICTION_REQUEST}" debug="{debugFlag}">
-			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" debug="{debugFlag}" >
+			<mate:HTTPServiceInvoker url="{event.serviceURL}" resultFormat="text" method="POST" debug="{debugFlag}" >
+				<mate:Request where = "{event.whereClause}" 
+							  gdbVersion = "{ConfigUtility.get('gdb_version')}"
+							  returnGeometry="false"
+							  f = "pjson"
+							  text=""	
+							  objectIds=""	
+							  time=""
+							  geometry=""	
+							  geometryType="esriGeometryEnvelope"
+							  inSR=""
+							  spatialRel="esriSpatialRelIntersects"
+							  relationParam=""
+							  outFields="*"
+							  maxAllowableOffset=""	
+							  geometryPrecision=""
+							  outSR=""
+							  returnIdsOnly="false"
+							  returnCountOnly="false"
+							  orderByFields=""
+							  groupByFieldsForStatistics=""	
+							  outStatistics=""
+							  returnZ="false"
+							  returnM="false"
+							  returnDistinctValues="false"/>
 				<mate:resultHandlers>
 					<!--<mate:MethodInvoker generator="{DdotRecordManager}" method="{'onTimeRestrictionServiceResult'}" arguments="{[resultObject, event]}">
 						<mate:Properties dispatcher="{scope.dispatcher}"/>
@@ -889,7 +992,7 @@
 	-->
 		
 		<mate:Injectors target="{ControlBar}" debug="{debugFlag}">
-			<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setJumpScale"/>
+			<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setScale"/>
 			<mate:ListenerInjector eventType="{RouteSelectorEvent.ROUTE_SELECTION_COMPLETE}" method="changeScale"/>
 			<mate:ListenerInjector eventType="{ExternalFileEvent.CONFIG_FILE_LOADED}" method="setImageSource"/>
 <!--			<mate:ListenerInjector eventType="{MapOperationEvent.MAP_SCALE_CHANGED}" method="setJumpScale"/>

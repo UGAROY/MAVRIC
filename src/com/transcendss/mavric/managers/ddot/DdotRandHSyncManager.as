@@ -46,9 +46,9 @@ package com.transcendss.mavric.managers.ddot
 		//		private var _linkEventLayerID:Number = 16;
 		//		private var _trEventLayerID:Number = 18;
 		
-		private var maxSupportIDOnServer:Number;
-		private var maxSignIDOnServer:Number;
-		private var maxInspectionIDOnServer:Number;
+//		private var maxSupportIDOnServer:Number;
+//		private var maxSignIDOnServer:Number;
+//		private var maxInspectionIDOnServer:Number;
 		
 		private var supportGtArray:Array = new Array();
 		private var signGtArray:Array = new Array();
@@ -92,20 +92,20 @@ package com.transcendss.mavric.managers.ddot
 			
 			
 			var data:Array 	 = dbManager.exportAssets("SUPPORT");
-			changeCount   	+=  data?data.length:0;
+			changeCount   	+=  data && data.length>0?data.length:0;
 			data 		  	 = dbManager.exportGeotagData("1");
-			changeCount 	+=   data?data.length:0;
+			changeCount 	+=    data && data.length>0?data.length:0;
 			data 			 = dbManager.exportDdotRecords("SIGNS");
-			changeCount 	+=   data?data.length:0;
+			changeCount 	+=    data && data.length>0?data.length:0;
 			data 			 = dbManager.exportGeotagData("SIGN");
-			
-			changeCount		+=  data?data.length:0;
+			changeCount		+=   data && data.length>0?data.length:0;
 			data 			 = dbManager.exportDdotRecords("INSPECTIONS");
-			changeCount 	+=  data?data.length:0;
+			changeCount 	+=   data && data.length>0?data.length:0;
 			data 			 = dbManager.exportGeotagData("INSPECTION");
-			changeCount 	+=   data?data.length:0;
+			changeCount 	+=   data && data.length>0?data.length:0;
 			
-			
+			FlexGlobals.topLevelApplication.syncAssetsCount = changeCount;
+//			FlexGlobals.topLevelApplication.TSSAlert(changeCount);
 			return changeCount ;
 		}
 		
@@ -163,7 +163,7 @@ package com.transcendss.mavric.managers.ddot
 			//			// temporary codes
 			//			syncLink();
 			//			return;
-			
+			FlexGlobals.topLevelApplication.setBusyStatus(true);
 			// Fire off find max support id event
 			fireMaxIDRequest("SUPPORTID", FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerIDByType("1"));
 		}
@@ -189,14 +189,14 @@ package com.transcendss.mavric.managers.ddot
 			
 			if (evt.eventLayerID == FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getEventLayerIDByType("1"))
 			{
-				maxSupportIDOnServer = maxId;
+				recordManager.maxSupportIDOnServer = maxId;
 				syncSupport();
 				// fire off events to find the max sign id
 				fireMaxIDRequest("SIGNID", recordManager.signEventLayerID)
 			}
 			else if (evt.eventLayerID == recordManager.signEventLayerID)
 			{
-				maxSignIDOnServer = maxId;
+				recordManager.maxSignIDOnServer = maxId;
 				syncSign();
 				// fire off events to find the max inspection id
 				fireMaxIDRequest("INSPECTIONID", recordManager.inspectionEventLayerID);
@@ -209,7 +209,7 @@ package com.transcendss.mavric.managers.ddot
 			}
 			else if (evt.eventLayerID == recordManager.inspectionEventLayerID)
 			{
-				maxInspectionIDOnServer = maxId;
+				recordManager.maxInspectionIDOnServer = maxId;
 				syncInspection();
 			}
 		}
@@ -226,7 +226,7 @@ package com.transcendss.mavric.managers.ddot
 			{
 				if (supportAsset['SUPPORTID'] < 0)
 					// Based on the current code, the support starts from -2. So do an extra -1
-					supportAsset['SUPPORTID'] = maxSupportIDOnServer - supportAsset['SUPPORTID'] - 1; 
+					supportAsset['SUPPORTID'] = recordManager.maxSupportIDOnServer - supportAsset['SUPPORTID'] - 1; 
 			}
 			applyEdits(supportAssetData);	
 			return true;
@@ -242,10 +242,10 @@ package com.transcendss.mavric.managers.ddot
 				for each(var signAsset:Object in signAssetData.data)
 				{
 					if (signAsset['SUPPORTID'] < 0)
-						signAsset['SUPPORTID'] = maxSupportIDOnServer - signAsset['SUPPORTID'] - 1; 
+						signAsset['SUPPORTID'] = recordManager.maxSupportIDOnServer - signAsset['SUPPORTID'] - 1; 
 					if (signAsset['SIGNID'] < 0)
 					{
-						signAsset['SIGNID'] = maxSignIDOnServer - signAsset['SIGNID'];
+						signAsset['SIGNID'] = recordManager.maxSignIDOnServer - signAsset['SIGNID'];
 						signAsset['STATUS'] = "NEW";
 					}
 				}
@@ -261,12 +261,12 @@ package com.transcendss.mavric.managers.ddot
 				for each(var inspection:Object in inspectionData.data)
 				{
 					if (inspection['SUPPORTID'] < 0)
-						inspection['SUPPORTID'] = maxSupportIDOnServer - inspection['SUPPORTID'] - 1; 
+						inspection['SUPPORTID'] = recordManager.maxSupportIDOnServer - inspection['SUPPORTID'] - 1; 
 					if (inspection['SIGNID'] != null && inspection['SIGNID'] < 0)
-						inspection['SIGNID'] = maxSignIDOnServer - inspection['SIGNID'];
+						inspection['SIGNID'] = recordManager.maxSignIDOnServer - inspection['SIGNID'];
 					if (inspection['INSPECTIONID'] < 0)
 					{
-						inspection['INSPECTIONID'] = maxInspectionIDOnServer - inspection['INSPECTIONID'];	
+						inspection['INSPECTIONID'] = recordManager.maxInspectionIDOnServer - inspection['INSPECTIONID'];	
 						inspection['STATUS'] = "NEW";
 					}
 				}
@@ -283,13 +283,13 @@ package com.transcendss.mavric.managers.ddot
 			for each (var link:Object in links)
 			{
 				if (link['SIGNID'] < 0)
-					link['SIGNID'] = maxSignIDOnServer - link['SIGNID'];
+					link['SIGNID'] = recordManager.maxSignIDOnServer - link['SIGNID'];
 				var linkIDArray:Array = String(link['LINKID']).split('_');
 				for (var i:int = 0; i < linkIDArray.length; i++)
 				{
 					var linkID:Number = parseInt(linkIDArray[i]);
 					if (linkID < 0)
-						linkIDArray[i] = (maxSignIDOnServer - linkID).toString();
+						linkIDArray[i] = (recordManager.maxSignIDOnServer - linkID).toString();
 				}
 				link['LINKID'] = linkIDArray.join('_');
 				signIDs.push(link['SIGNID']);
@@ -370,7 +370,9 @@ package com.transcendss.mavric.managers.ddot
 				else
 					return this[k];
 			});
-			FlexGlobals.topLevelApplication.incrementEventStack();
+			
+			
+			//FlexGlobals.topLevelApplication.incrementEventStack();
 			dispatcher.dispatchEvent(sync);
 		}
 		
@@ -387,7 +389,7 @@ package com.transcendss.mavric.managers.ddot
 				{
 					var linkID:Number = parseInt(linkIDArray[i]);
 					if (linkID < 0)
-						linkIDArray[i] = (maxSignIDOnServer - linkID).toString();
+						linkIDArray[i] = (recordManager.maxSignIDOnServer - linkID).toString();
 				}
 				timeRestriction['LINKID'] = linkIDArray.join('_');
 				tbdLinkIDs.push(timeRestriction['LINKID']);
@@ -449,12 +451,14 @@ package com.transcendss.mavric.managers.ddot
 				else
 					return this[k];
 			});
-			FlexGlobals.topLevelApplication.incrementEventStack();
+			//FlexGlobals.topLevelApplication.incrementEventStack();
 			dispatcher.dispatchEvent(sync);
 		}
 		
 		private function applyEdits(assetTypeObj:Object):void
 		{
+			try
+			{
 			var applyEditsObj:Object = new Object();
 			applyEditsObj.id= assetTypeObj.eventLayerID;
 			
@@ -463,12 +467,25 @@ package com.transcendss.mavric.managers.ddot
 				var editsArr:Array = new Array(); 
 				var attrObj:Object = new Object();
 				var asset:Object  = assetTypeObj.data[j];
+				var geometry:Object = new Object();
+				
 				
 				applyEditsObj.adds = new Array();
 				applyEditsObj.updates = new Array();
 				applyEditsObj.deletes = new Array();
 				
+				if(asset.LATITUDE && asset.LONGITUDE && asset.STATUS == 'NEW')
+				{
+					geometry.x = Number(asset.LONGITUDE);
+					geometry.y =  Number(asset.LATITUDE);
+					geometry.z =  0;
+					geometry.spatialReference = {"wkid" : 4326}; //GPS lat longs are in 4326
+					attrObj.geometry = geometry;
+				}
+				
 				attrObj.attributes = asset;
+				
+				
 				var sync:DdotSyncEvent = new DdotSyncEvent(DdotSyncEvent.APPLY_EDITS);
 				sync.assetTy = assetTypeObj.assetTy;
 				sync.assetID = asset[assetTypeObj.primaryKey];
@@ -491,15 +508,23 @@ package com.transcendss.mavric.managers.ddot
 					else
 						return this[k];
 				});
-				FlexGlobals.topLevelApplication.incrementEventStack();
+				//FlexGlobals.topLevelApplication.incrementEventStack();
 				dispatcher.dispatchEvent(sync);
+			}
+			}catch(e:Error)
+			{
+				FlexGlobals.topLevelApplication.TSSAlert('Error in Syncing');
 			}
 		}
 		
 		public function clearLocalData(syncResult:Object, event:DdotSyncEvent):void
 		{
-			FlexGlobals.topLevelApplication.decrementEventStack();
+			
+		//	FlexGlobals.topLevelApplication.decrementEventStack();
 			event.stopPropagation();
+			FlexGlobals.topLevelApplication.syncAssetsCount--;
+			try
+			{
 			var assetDesc:String;
 			if (event.assetTy == "1")
 				assetDesc = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.assetDefs[event.assetTy].DESCRIPTION;
@@ -525,13 +550,20 @@ package com.transcendss.mavric.managers.ddot
 				else
 					onSyncError(layerID,String(result[0].addResults[0].objectId), event.assetTy,assetDesc, event.assetID, event.assetPK, {error:{description:"Error occured during sync process."}});
 			}
+			
+		}catch(e:Error)
+		{
+			FlexGlobals.topLevelApplication.TSSAlert('Error in reading sync response');
+		}
+			
 		}
 		
 		
 		private function onSyncSuccess(layer:String,objID:String, assetTy:String, assetDesc:String, assetID:String, assetPK:String, supportID:Number, signID:Number):void
 		{
-			supportID = supportID > maxSupportIDOnServer ? maxSupportIDOnServer - supportID -1: supportID;
-			signID = signID > maxSignIDOnServer ? maxSignIDOnServer - signID: signID;
+			
+			supportID = supportID > recordManager.maxSupportIDOnServer ? recordManager.maxSupportIDOnServer - supportID -1: supportID;
+			signID = signID > recordManager.maxSignIDOnServer ? recordManager.maxSignIDOnServer - signID: signID;
 			// Get the local id
 			var localAssetID:Number = Number(assetID);
 			if (assetTy == "1")
@@ -548,18 +580,20 @@ package com.transcendss.mavric.managers.ddot
 			}
 			else if (assetTy == "INSPECTION")
 			{
-				localAssetID = localAssetID > maxInspectionIDOnServer ? maxInspectionIDOnServer - localAssetID: localAssetID;
+				localAssetID = localAssetID > recordManager.maxInspectionIDOnServer ? recordManager.maxInspectionIDOnServer - localAssetID: localAssetID;
 				inspectionGtArray=dbManager.getDdotLocalGeoTags(supportID, signID, false, "INSPECTION");
 				uploadAttachments(inspectionGtArray, layer, objID);
 			}
 			else if (assetTy == "LINK")
 			{
 				dbManager.clearLinks();
+				displaySyncResult();
 				return;
 			}
 			else if (assetTy == "TIMERESTRICTION")
 			{
 				dbManager.clearTimeRestrictions();
+				displaySyncResult();
 				return;
 			}
 			
@@ -568,20 +602,29 @@ package com.transcendss.mavric.managers.ddot
 		
 		private function onSyncError(layerID:String,objID:String, assetTy:String,assetDesc:String,  assetID:String, assetPK:String, error:Object):void
 		{
+			
+			//FlexGlobals.topLevelApplication.decrementEventStack();
 			FlexGlobals.topLevelApplication.failedSyncDetails += " \ntype: "+assetDesc + ", id: "+ assetID;
 			displaySyncResult();
 		}
 		
 		private function displaySyncResult():void
 		{
-			if(FlexGlobals.topLevelApplication.runningEvents<1 && FlexGlobals.topLevelApplication.failedSyncDetails=="")
+			//if(FlexGlobals.topLevelApplication.runningEvents<1 && FlexGlobals.topLevelApplication.failedSyncDetails=="")
+			
+			if(FlexGlobals.topLevelApplication.syncAssetsCount==0)
+				//.topLevelApplication.setBusyStatus(false);
 			{
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
 				FlexGlobals.topLevelApplication.TSSAlert("Assets Synced Successfully.");
-				recordManager.updateSupportIDs(maxSupportIDOnServer);
+				recordManager.updateSupportIDs(recordManager.maxSupportIDOnServer);
 				recordManager.resetNewSignInspectionID();
 			}
-			else if(FlexGlobals.topLevelApplication.runningEvents<1 &&  FlexGlobals.topLevelApplication.failedSyncDetails!="")
+			else if(FlexGlobals.topLevelApplication.syncAssetsCount==0 &&  FlexGlobals.topLevelApplication.failedSyncDetails!="")
+			{
+				FlexGlobals.topLevelApplication.setBusyStatus(false);
 				FlexGlobals.topLevelApplication.TSSAlert("Error occured when syncing asset: " + FlexGlobals.topLevelApplication.failedSyncDetails);
+			}
 		}
 		
 		private function uploadAttachments(gtArray:Array, layerID:String, objectID:String):void
@@ -591,7 +634,7 @@ package com.transcendss.mavric.managers.ddot
 				displaySyncResult();
 				return;
 			}
-			FlexGlobals.topLevelApplication.incrementEventStack();
+			//FlexGlobals.topLevelApplication.incrementEventStack();
 			var filename :String = gtArray[0].image_file_name||gtArray[0].video_file_name||gtArray[0].voice_file_name;
 			var byteArr:ByteArray = fileUtil.readFile(filename);
 			var urlRequest:URLRequest = new URLRequest();
@@ -615,7 +658,8 @@ package com.transcendss.mavric.managers.ddot
 		}
 		
 		private function  urlLoaderEventHandler(event:Event,filename:String, gtArray:Array, layerID:String, ObjectID:String):void {
-			FlexGlobals.topLevelApplication.decrementEventStack();
+			//FlexGlobals.topLevelApplication.decrementEventStack();
+			FlexGlobals.topLevelApplication.syncAssetsCount--;
 			var response:Object = JSON.parse(String(event.target.data));
 			if(response.error)
 				FlexGlobals.topLevelApplication.failedSyncDetails += " \n"+response.error.message;
@@ -630,7 +674,8 @@ package com.transcendss.mavric.managers.ddot
 		
 		// Called on upload io error
 		private function ioErrorCallback(event:IOErrorEvent, gtArray:Array, layerID:String, ObjectID:String):void {
-			FlexGlobals.topLevelApplication.decrementEventStack();
+//			FlexGlobals.topLevelApplication.decrementEventStack();
+			FlexGlobals.topLevelApplication.syncAssetsCount--;
 			FlexGlobals.topLevelApplication.failedSyncDetails += " \nIO Error when uploading attachment";
 			gtArray.shift();
 			uploadAttachments(gtArray, layerID, ObjectID);
@@ -638,7 +683,8 @@ package com.transcendss.mavric.managers.ddot
 		
 		// Called on upload security error
 		private function secErrorCallback(event:SecurityErrorEvent, gtArray:Array, layerID:String, ObjectID:String):void {
-			FlexGlobals.topLevelApplication.decrementEventStack();
+//			FlexGlobals.topLevelApplication.decrementEventStack();
+			FlexGlobals.topLevelApplication.syncAssetsCount--;
 			FlexGlobals.topLevelApplication.failedSyncDetails += " \nSecurity Error when uploading attachment";
 			gtArray.shift();
 			uploadAttachments(gtArray, layerID, ObjectID);

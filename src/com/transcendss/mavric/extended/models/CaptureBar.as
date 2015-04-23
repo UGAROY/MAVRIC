@@ -1,54 +1,33 @@
 package com.transcendss.mavric.extended.models
 {
 	import com.asfusion.mate.events.Dispatcher;
-//	import com.transcendss.mavric.data.GPSData;
-	import com.transcendss.mavric.events.AccessPointEvent;
 	import com.transcendss.mavric.events.DataEventEvent;
 	import com.transcendss.mavric.events.GPSEvent;
-	import com.transcendss.mavric.events.GestureControlEvent;
-	import com.transcendss.mavric.managers.AssetManager;
-//	import com.transcendss.nativeExtensions.GPSTools.GPSHandler;
-	import com.transcendss.transcore.events.ExternalFileEvent;
 	import com.transcendss.transcore.sld.models.components.BaseAsset;
 	
-	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.events.GeolocationEvent;
 	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
-	import flash.filesystem.File;
-	import flash.filesystem.FileMode;
-	import flash.filesystem.FileStream;
 	import flash.sensors.Geolocation;
-	import flash.text.TextLineMetrics;
 	import flash.utils.Timer;
 	
 	import mx.collections.ArrayCollection;
 	import mx.collections.ArrayList;
 	import mx.core.FlexGlobals;
-	import mx.core.UIComponent;
 	import mx.events.FlexEvent;
-	import mx.managers.PopUpManager;
 	
-	import spark.components.BorderContainer;
 	import spark.components.Button;
-	import spark.components.CheckBox;
 	import spark.components.DropDownList;
 	import spark.components.Group;
-	import spark.components.HGroup;
 	import spark.components.Image;
 	import spark.components.Label;
 	import spark.components.Panel;
-	import spark.components.RadioButton;
 	import spark.components.Scroller;
-	import spark.components.SkinnablePopUpContainer;
 	import spark.components.TextInput;
 	import spark.components.VGroup;
 	import spark.events.IndexChangeEvent;
 	import spark.layouts.VerticalLayout;
-	import spark.primitives.BitmapImage;
-	import spark.primitives.Rect;
-	import spark.skins.spark.DefaultComplexItemRenderer;
 
 	public class CaptureBar extends Group
 	{
@@ -76,6 +55,8 @@ package com.transcendss.mavric.extended.models
 		private var gpsck:Image = new Image();
 		
 		public var GPS_ON:Boolean = false;
+		public var lat:Number = 38.922928 ;
+		public var long:Number = -77.029712;
 		
 		[Bindable]
 		[Embed(source="../../../../../images/gray_icons/icon_Mav_GPS_40x40_off.png")] protected var gpsImageOff:Class
@@ -152,7 +133,7 @@ package com.transcendss.mavric.extended.models
 				if(item.CAPTURE_AVAILABLE != "false")
 				{
 					var tempButton:Button = new Button();
-					tempButton.label = item.UI_NAME;
+					tempButton.label = "Add "+ item.UI_NAME;
 					tempButton.styleName = item.DESCRIPTION;
 					tempButton.width = bwidth;
 					tempButton.height = bheight;
@@ -564,10 +545,24 @@ package com.transcendss.mavric.extended.models
 				if (FlexGlobals.topLevelApplication.useInternalGPS) {
 					var internalGPS:Geolocation = new Geolocation();
 					geo.setRequestedUpdateInterval(3000);
+					
 				} else {
 					tickTimer = new Timer(3000);
 					tickTimer.addEventListener(TimerEvent.TIMER, function(ev:TimerEvent) {
 						var nev:GeolocationEvent = new GeolocationEvent(GeolocationEvent.UPDATE);
+//						nev.latitude = lat =lat+.01 ;
+//						nev.longitude= long;
+//						nev.longitude =-77.008896;
+//						nev.latitude= 38.876498;
+//						nev.horizontalAccuracy=10;
+					
+						//D st & 12th St--GPS
+//						nev.longitude =-76.99032;
+//						nev.latitude= 38.88406; 
+						//D st and 12 st -- google maps
+//						nev.latitude= 38.884112;
+//						nev.longitude =-76.990289;
+						
 						geo.dispatchEvent(nev);
 						trace("Update");
 					});
@@ -602,7 +597,7 @@ package com.transcendss.mavric.extended.models
 				
 				ev.precision = event.horizontalAccuracy;
 				trace(ev.precision);
-				if (ev.precision < 50)
+				if (ev.precision < 70)//changed from 50 for ipad--DDOT
 					isDispatchable = true;
 			} else
 			{

@@ -30,21 +30,14 @@
 	<fx:Script>
 		<![CDATA[
 			import com.cartogrammar.shp.ShpMap;
-			import com.transcendss.mavric.db.CachedElement;
 			import com.transcendss.mavric.db.CachedRoute;
 			import com.transcendss.mavric.db.MAVRICDBManager;
-			import com.transcendss.mavric.extended.models.MAVRICDiagram;
 			import com.transcendss.mavric.managers.FeatureSetManager;
 			import com.transcendss.mavric.map.MobileMap;
 			import com.transcendss.mavric.util.PopUpUtils;
-			import com.transcendss.mavric.util.TSSRectangle;
-			import com.transcendss.transcore.sld.models.InventoryDiagram;
-			import com.transcendss.transcore.sld.models.components.Culvert;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
-			import mx.core.IFlexDisplayObject;
-			import mx.events.CloseEvent;
 			import mx.events.FlexEvent;
 			import mx.managers.PopUpManager;
 			import mx.rpc.Responder;

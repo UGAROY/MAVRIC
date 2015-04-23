@@ -192,7 +192,7 @@ package com.transcendss.mavric.db
 				.replace(/@routeId\b/gi,routeName);
 			whereClause = whereClause + ' and ' + _query.dateWhereClause.replace(/@fromDateFieldName\b/gi, _networkLayerContext.fromDateFieldName).replace(/@toDateFieldName\b/gi, _networkLayerContext.toDateFieldName);
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, _networkLayerId) 
-				+ '?f=json&outSR=@sr&returnM=true&returnGeometry=true&outFields=*&where=&gdbVersion=@gdbv'
+				+ '?f=json&outSR=@sr&returnM=true&returnGeometry=true&outFields=*&gdbVersion=@gdbv&where='
 				.replace(/@gdbv\b/gi, _query.params.gdbVersion)
 				.replace('@sr', FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.baseMapSR) 
 				+ escape(whereClause);
@@ -237,6 +237,7 @@ package com.transcendss.mavric.db
 		
 		public function getEventUrl(layerID:Number, routeName:String, routeFromMeasure:Number, routeToMeasure:Number):String
 		{
+			
 			var queryParams:Object =  ObjectUtil.clone( _query.params);
 			
 			var whereClause:String 
@@ -298,6 +299,7 @@ package com.transcendss.mavric.db
 			
 			var tempQueryStr:String = URLUtil.objectToString(queryParams,"&");
 			tempQueryStr = tempQueryStr.replace(/%40whereClause\b/gi, escape(whereClause));
+
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) + '?' + tempQueryStr;
 		}
 		
@@ -308,6 +310,12 @@ package com.transcendss.mavric.db
 			var tempQueryStr:String = URLUtil.objectToString(queryParams,"&");
 			tempQueryStr = tempQueryStr.replace(/%40whereClause\b/gi, escape(whereClause));
 			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID) + '?' + tempQueryStr;
+		}
+		
+		public function getCustomEventUrlForPost(layerID:Number):String
+		{
+			
+			return _server.url +_server.mapServer+ _server.endpoints.query.replace(/@layerId/gi, layerID);
 		}
 		
 		public function getFindEventUrl(layerIDList:Array, searchText:String, searchField:String):String

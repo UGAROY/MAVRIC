@@ -63,7 +63,7 @@
                 },
                 {
                     "NAME": "SUBBASE",
-                    "TYPE": "TEXT",
+                    "TYPE": "INTEGER",
                     "Nullable": "TRUE"
                 },
                 {

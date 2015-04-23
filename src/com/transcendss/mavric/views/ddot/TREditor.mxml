@@ -27,6 +27,8 @@
 			private var endTimeDDView:DropDownViewHoriz = new DropDownViewHoriz();
 			private var exceptionDDView:DropDownViewHoriz = new DropDownViewHoriz();
 			
+			private var orderDDView:DropDownViewHoriz = new DropDownViewHoriz();
+			
 			private function init():void
 			{
 				try
@@ -71,6 +73,14 @@
 					exceptionDDView.genericPopup.height = 200;
 					exceptionDDView.genericPopup.width = 200;
 					exceptionDDGroup.addElement(exceptionDDView);
+					
+					orderDDView.domainTableIDColName =  "SIGNORDER";
+					orderDDView.fetchDomainValues();
+					orderDDView.btnText = "Order";
+					orderDDView.width_TI = 120;
+					orderDDView.genericPopup.height = 200;
+					orderDDView.genericPopup.width = 200;
+					orderDDGroup.addElement(orderDDView);
 				}
 				catch(err:Error)
 				{
@@ -85,8 +95,9 @@
 				startTimeDDView.domainID = String(currTimeObj['STARTTIME']);
 				endTimeDDView.domainID = String(currTimeObj['ENDTIME']);
 				hourLimitTextInut.text = String(currTimeObj['HOURLIMIT'] || "");
-				orderTextInut.text = String(currTimeObj['RESTRICTIONORDER'] || "") ;
+				//orderTextInut.text = String(currTimeObj['RESTRICTIONORDER'] || "") ;
 				exceptionDDView.domainID = String(currTimeObj['EXCEPTION']);
+				orderDDView.domainID = String(currTimeObj['RESTRICTIONORDER']);
 			}
 
 			
@@ -105,8 +116,9 @@
 					currTimeObj['STARTTIME'] =  parseInt(startTimeDDView.domainID);
 					currTimeObj['ENDTIME'] =  parseInt(endTimeDDView.domainID);
 					currTimeObj['HOURLIMIT'] = parseInt(hourLimitTextInut.text) || null;
-					currTimeObj['RESTRICTIONORDER'] = parseInt(orderTextInut.text) || null;
+					//currTimeObj['RESTRICTIONORDER'] = parseInt(orderTextInut.text) || null;
 					currTimeObj['EXCEPTION'] = parseInt(exceptionDDView.domainID);
+					currTimeObj['RESTRICTIONORDER'] = parseInt(orderDDView.domainID);
 					
 					trEditorCallback(currTimeObj, this.isNewTimeObj); 
 					
@@ -146,15 +158,13 @@
 				<s:Group id="endTimeDDGroup" width="45%"/>
 			</s:HGroup>
 			<s:Spacer height="5"/>
-			<s:HGroup verticalAlign="middle">
+			<s:HGroup verticalAlign="middle" >
 				<s:Label text="Hour Limit:" fontWeight="bold" />
-				<s:Spacer width="40"/>
-				<s:TextInput id="hourLimitTextInut" width="120" skinClass="spark.skins.mobile.TextInputSkin" softKeyboardType="number" restrict = "0-9 \."/>
 				<s:Spacer width="50"/>
-				<s:Label text="Order:" fontWeight="bold"/>
-				<s:Spacer width="80"/>
-				<s:TextInput id="orderTextInut" width="120"  skinClass="spark.skins.mobile.TextInputSkin" softKeyboardType="number" restrict = "0-9"/>
-				
+				<s:TextInput id="hourLimitTextInut" width="120" skinClass="spark.skins.mobile.TextInputSkin" softKeyboardType="number" restrict = "0-9 \."/>
+				<s:Spacer width="90"/>
+				<!--<s:TextInput id="orderTextInut" width="120"  skinClass="spark.skins.mobile.TextInputSkin" softKeyboardType="number" restrict = "0-9"/>-->
+				<s:Group id="orderDDGroup" width="45%"/>
 			</s:HGroup>
 			<s:Spacer height="5"/>
 			<s:HGroup verticalAlign="middle">
@@ -162,10 +172,10 @@
 			</s:HGroup>
 			<s:Spacer height="10"/>
 			<s:HGroup verticalAlign="middle">
-				<s:Spacer width="210"/>
-				<s:Button label="Save" height="35" click="SaveHandler(event)"/>
-				<s:Spacer width="10"/>
-				<s:Button label="Cancel" height="35" click="handleCloseEvent()"/>
+				<s:Spacer width="50"/>
+				<s:Button label="Save" height="40" width="117" click="SaveHandler(event)"/>
+				<s:Spacer width="50"/>
+				<s:Button label="Cancel" height="40" width="117" click="handleCloseEvent()"/>
 			</s:HGroup>
 		</s:VGroup>	
 	</s:VGroup>	

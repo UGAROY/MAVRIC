@@ -4,19 +4,11 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import com.transcendss.mavric.views.componentviews.AddAttachments;
-			import com.transcendss.mavric.views.ddot.InspectionDetails;
-			
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			import mx.managers.PopUpManager;
 			
-			import spark.components.Button;
 			import spark.events.GridSelectionEvent;
-			import spark.skins.mobile.TextInputSkin;
-			
-			import skins.HeaderlessPanelSkin;
-			import skins.TSSSkinnablePopUpContainerSkin;
 			
 			
 			[Bindable]

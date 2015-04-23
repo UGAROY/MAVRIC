@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
-			   xmlns:s="library://ns.adobe.com/flex/spark" 
-			   width="290" height="384"
-			   title="Download Routes"
-			   name="RouteBoundariesForm"
-			   creationComplete="init(event)"
-			   skinClass="skins.MavricTitleWindowSkin"
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
 			   xmlns:mate="http://mate.asfusion.com/"
-			   >
+			   width="290" height="384" creationComplete="init(event)" name="RouteBoundariesForm"
+			   skinClass="skins.MavricTitleWindowSkin" title="Download Routes">
 	<fx:Declarations>
-		<mate:Dispatcher id="myDispatcher" />
-		<s:SkinnablePopUpContainer id="typePopUp" width="300" height="400"  name="Select Type"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+		<mate:Dispatcher id="myDispatcher"/>
+		<s:SkinnablePopUpContainer id="typePopUp" width="300" height="400" name="Select Type"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 				<s:VGroup width="100%" height="100%" horizontalAlign="center">
-					<s:List id="typeList" change="{closeType(null)}"  dataProvider="{dp}" labelField="name" width="100%" height="100%" fontSize="18" allowMultipleSelection="false"/>
+					<s:List id="typeList" width="100%" height="100%" allowMultipleSelection="false"
+							change="{closeType(null)}" dataProvider="{dp}" fontSize="18"
+							labelField="name"/>
 				</s:VGroup>
 			</s:Panel>
 		</s:SkinnablePopUpContainer>
 		
-		<s:SkinnablePopUpContainer id="boundaryPopUp" width="300" height="400"  name="Select Type"  skinClass="skins.TSSSkinnablePopUpContainerSkin" >
+		<s:SkinnablePopUpContainer id="boundaryPopUp" width="300" height="400" name="Select Type"
+								   skinClass="skins.TSSSkinnablePopUpContainerSkin">
 			<s:Panel width="100%" height="100%" skinClass="skins.HeaderlessPanelSkin">
 				<s:VGroup width="100%" height="100%" horizontalAlign="center">
-					<s:List id="boundsList" change="{closeBounds()}"  dataProvider="{boundsDP}" labelField="DESCRIPTION" width="100%" height="100%" fontSize="18" allowMultipleSelection="false"/>
+					<s:List id="boundsList" width="100%" height="100%" allowMultipleSelection="false"
+							change="{closeBounds()}" dataProvider="{boundsDP}" fontSize="18"
+							labelField="DESCRIPTION"/>
 				</s:VGroup>
 			</s:Panel>
 		</s:SkinnablePopUpContainer>
@@ -99,7 +101,7 @@
 			
 			private var mapDownloadFlag:Boolean = false;
 			
-			private var chunkSize:Number = 35;
+			private var chunkSize:Number = 5;
 			private var chunkNum:Number =0;
 			
 			
@@ -379,6 +381,7 @@
 					}
 					catch (err:Error)
 					{
+						FlexGlobals.topLevelApplication.setBusyStatus(false)
 						FlexGlobals.topLevelApplication.TSSAlert("Error in retrieving assets"+err.message + "");
 					}
 				}
@@ -501,7 +504,8 @@
 				}
 				catch (err:Error)
 				{
-					FlexGlobals.topLevelApplication.TSSAlert(err.message + "");
+					FlexGlobals.topLevelApplication.setBusyStatus(false)
+					FlexGlobals.topLevelApplication.TSSAlert('Error Requesting Lat Long' +err.message + "");
 				}
 				
 			}
@@ -521,7 +525,13 @@
 				{
 					var routeName:String = ev.currentTarget.request.routeName;
 					allData[routeName]["Coords"] = new Array();
-					var tempCoords:Array= JSON.parse(String(ev.message.body)).features[0].geometry.paths;
+					var features:Array = JSON.parse(String(ev.message.body)).features;
+					
+					var tempCoords:Array;
+					if(features && features.length>0)
+						tempCoords =features[0].geometry.paths;
+					else
+						tempCoords=[]; 
 					
 					for each (var coord:Array in tempCoords)
 						allData[routeName]["Coords"].push({ "X" : String(coord[0]) , "Y" : String(coord[1]), "M" : String(coord[2])});
@@ -529,8 +539,9 @@
 					
 				}
 				catch (err:Error)
-				{					
-					FlexGlobals.topLevelApplication.TSSAlert(err.message + "");
+				{				
+					FlexGlobals.topLevelApplication.setBusyStatus(false)
+					FlexGlobals.topLevelApplication.TSSAlert('Error handling Lat Long Response ' +err.message + "");
 				}
 			}
 			
@@ -695,7 +706,7 @@
 				
 				catch (e:Error)
 				{
-					FlexGlobals.topLevelApplication.TSSAlert("Error saving attachments to local database :" + String(e.message));
+					FlexGlobals.topLevelApplication.TSSAlert("Error saving Signs to local database :" + String(e.message));
 				}
 				
 				
@@ -751,7 +762,7 @@
 				
 				catch (e:Error)
 				{
-					FlexGlobals.topLevelApplication.TSSAlert("Error saving attachments to local database :" + String(e.message));
+					FlexGlobals.topLevelApplication.TSSAlert("Error saving Inspections to local database :" + String(e.message));
 				}
 				
 				
@@ -807,7 +818,7 @@
 				
 				catch (e:Error)
 				{
-					FlexGlobals.topLevelApplication.TSSAlert("Error saving attachments to local database :" + String(e.message));
+					FlexGlobals.topLevelApplication.TSSAlert("Error saving Links to local database :" + String(e.message));
 				}
 				
 				
@@ -879,11 +890,13 @@
 			
 			public function createCached():void
 			{
+				
 				trace("in function createCached: Final Routes:" + finalRoutes.length + ". Loaded: "+ loadedRoutes.length);
 				if (finalRoutes.length == loadedRoutes.length)
 				//if (finalRoutes.length == 1)
 				{
-					
+					try
+					{
 					for each (var routte:Object in finalRoutes)
 					{
 						
@@ -892,15 +905,18 @@
 						setTimeout(incrementCounter, 5000);
 						
 					}
-					
+				
 					FlexGlobals.topLevelApplication.setBusyStatus(false);
 					
 					//Make sure the second donwload is right
 					//finalRoutes.removeAll();
 					
 					cachedDistrictMap();
-					
-					
+				}catch(e:Error)
+				{
+					FlexGlobals.topLevelApplication.TSSAlert('Error caching route data:' + e.message);
+				}
+					FlexGlobals.topLevelApplication.setBusyStatus(false);
 				}else if(finalRoutes.length==this.chunkSize*this.chunkNum)
 				{
 					var newChunkEnd:Number = this.chunkSize*this.chunkNum + this.chunkSize;
@@ -908,6 +924,7 @@
 					requestNextChunk(this.chunkSize*this.chunkNum,Math.min(this.loadedRoutes.length,newChunkEnd));
 					chunkNum++;
 				}
+				
 				
 			}
 			
@@ -1043,7 +1060,7 @@
 				var maxY:Number = extArr[3];
 				var mobMap:MobileMap = new MobileMap();
 				mobMap.isDistrictCached = true;
-				mobMap.setInitialMapExtent(minX, minY, maxX, maxY, "D_" + txtBounds.text);
+				mobMap.setInitialMapExtent(minX, minY, maxX, maxY, "D_" + txtBounds.text, "4623");
 			}
 			
 			private function incrementCounter():void
@@ -1100,28 +1117,30 @@
 	<s:Form id="formInput" width="288" fontSize="12">
 		<s:FormItem label="Boundary" fontSize="12">
 			<s:Button height="35" label="Types" click="openTypeSelect(event)"/>
-			<s:TextInput id="txtTypes" width="132" change="enableSubmit(event)" editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:TextInput id="txtTypes" width="132" change="enableSubmit(event)" editable="false"
+						 skinClass="spark.skins.mobile.TextInputSkin"/>
 		</s:FormItem>
 		
 		<s:FormItem id="varLabel" label="Boundaries">
-			<s:Button id="btnBounds" height="35" label="Boundaries" click="openBoundsSelect(event)" />
-			<s:TextInput id="txtBounds" width="132" change="enableSubmit(event)" editable="false" skinClass="spark.skins.mobile.TextInputSkin"/>
+			<s:Button id="btnBounds" height="35" label="Boundaries" click="openBoundsSelect(event)"/>
+			<s:TextInput id="txtBounds" width="132" change="enableSubmit(event)" editable="false"
+						 skinClass="spark.skins.mobile.TextInputSkin"/>
 		</s:FormItem>
 		
 		<s:FormItem label="# of Routes">
-			<s:Label id="numRoutes" />	
+			<s:Label id="numRoutes"/>	
 		</s:FormItem>
 		
 		<s:FormItem label="Total Route Miles">
-			<s:Label id="numMile" />	
+			<s:Label id="numMile"/>	
 		</s:FormItem>
 		
 		<s:Group>
 			<s:layout>
-				<s:HorizontalLayout horizontalAlign="center" />
+				<s:HorizontalLayout horizontalAlign="center"/>
 			</s:layout>
-			<s:Button id="btnSubmit" label="Submit" click="btnSubmit_click(event)" />
-			<s:Label id="processCounter" text="{DLRFTipLabel}" />
+			<s:Button id="btnSubmit" label="Submit" click="btnSubmit_click(event)"/>
+			<s:Label id="processCounter" text="{DLRFTipLabel}"/>
 		</s:Group>
 	</s:Form>
 	

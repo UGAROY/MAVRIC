@@ -1506,7 +1506,7 @@ package com.transcendss.mavric.db
 			var data:Array = new Array();
 			try
 			{
-				sStat.text = "SELECT * from GEOTAGS where is_cached = 0";
+				sStat.text = "SELECT * from GEOTAGS where is_cached = 0 and asset_type='"+assetType+"'";
 				
 				sStat.execute();
 				data= sStat.getResult().data;
@@ -2027,7 +2027,7 @@ package com.transcendss.mavric.db
 				"SIGNSTATUS INTEGER,"+
 				"ARROWDIRECTION TEXT," +
 				"ISLOADINGZONE INTEGER," +
-				"SIGN_ORDER INTEGER," +
+				"SIGNORDER INTEGER," +
 				"SIGNSIZE TEXT, " +
 				"COMMENTS TEXT);";
 			sStat.execute();
@@ -2129,14 +2129,14 @@ package com.transcendss.mavric.db
 		
 		public function addDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("OBJECTID", "SIGNID", "SUPPORTID", "SIGNCODE", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE", "MEASURE")
+			var signColumns:Array = new Array("OBJECTID", "SIGNID", "SUPPORTID", "SIGNCODE", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGNORDER", "SIGNSIZE", "MEASURE")
 			sStat.text = "INSERT INTO SIGNS " + buildDdotInsertKeyValueStr(sign, signColumns); 
 			sStat.execute();
 		}
 		
 		public function updateDdotSign(sign:Object):void
 		{
-			var signColumns:Array = new Array("SIGNID", "SUPPORTID", "SIGNCODE", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGN_ORDER", "SIGNSIZE",  "MEASURE");
+			var signColumns:Array = new Array("SIGNID", "SUPPORTID", "SIGNCODE", "DESCRIPTION", "SIGNFACING", "SIGNHEIGHT", "SIGNSTATUS", "ARROWDIRECTION", "COMMENTS", "ISLOADINGZONE", "SIGNORDER", "SIGNSIZE",  "MEASURE");
 			sStat.text = StringUtil.substitute("UPDATE SIGNS SET {0} WHERE SIGNID={1}", [buildDdotUpdateKeyValueStr(sign, signColumns), sign['SIGNID'].toString()]);
 			sStat.execute();
 		}
@@ -2305,11 +2305,11 @@ package com.transcendss.mavric.db
 		
 		public function addLink(linkID:String, signID:Number, oldLinkID:String, zoneID:String):void
 		{
-			sStat.text = "INSERT INTO LINKEDSIGN (LINKID, SIGNID, OLDLINKEDID, ZONEID) VALUES ('@linkID', @signID, '@oldLinkID','@zoneID')"
+			sStat.text = "INSERT INTO LINKEDSIGN (LINKID, SIGNID, OLDLINKEDID, ZONEID) VALUES ('@linkID', @signID, '@oldLinkID',@zoneID)"
 				.replace("@linkID", linkID)
 				.replace("@signID", signID.toString())
 				.replace("@oldLinkID", oldLinkID)
-				.replace("@zoneID", zoneID);
+				.replace("@zoneID", zoneID?zoneID:'null');
 			sStat.execute();
 		}
 		
@@ -2355,7 +2355,7 @@ package com.transcendss.mavric.db
 				.replace("@endTime", tr['ENDTIME']||null)
 				.replace("@hourLimit", tr['HOURLIMIT']||null)
 				.replace("@restrictionOrder", tr['RESTRICTIONORDER']||null)
-				.replace("@exception", tr['EXCEPTION']);
+				.replace("@exception", tr['EXCEPTION']||null);
 			sStat.execute();
 		}
 		

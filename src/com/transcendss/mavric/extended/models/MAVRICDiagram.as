@@ -123,6 +123,7 @@ package com.transcendss.mavric.extended.models
 		private var leftCulvertStart:Number = 0;
 		private var rightCulvertStart:Number = 0;
 		private var savingRoutetoLocalDB:Boolean = false;
+		private var bottomPanelContentBeforeSave:String = "";
 		private var continueMoveToXYFlag:Boolean = false;
 		private var iconLocations:ArrayCollection = new ArrayCollection();
 		private var calloutExitBtnImg:Image = new Image();
@@ -225,6 +226,7 @@ package com.transcendss.mavric.extended.models
 		
 		public function milepostReqResponse(result:Object):void
 		{
+			
 			//var nRouteObj:Object = signEvent.nrouteObj;
 			var fromStorage:Boolean = result.nRouteObj.fromStorage;
 			var nRoute:Route = result.nRouteObj.nRoute as Route;
@@ -1347,7 +1349,7 @@ package com.transcendss.mavric.extended.models
 		public function getJSONRoute():String
 		{
 			var curRte:Route = stickDrawing.route;
-			var JSONStr:String = "{\"route\": { \"routeName\": \"" + curRte.routeName + "\", \"beginMi\" : \"" + curRte.beginMi + "\", \"endMi\" : \"" + curRte.endMi + "\", \"routeNumber\" : \"" + curRte.routeNumber + "\"}}"; 
+			var JSONStr:String = "{\"route\": { \"routeName\": \"" + curRte.routeName + "\", \"beginMi\" : \"" + curRte.beginMi + "\", \"endMi\" : \"" + curRte.endMi + "\", \"routeNumber\" : \"" + curRte.routeNumber + "\", \"routeFullName\" : \"" + curRte.routeFullName + "\"}}"; 
 			return JSONStr;
 		}
 		
@@ -1368,7 +1370,8 @@ package com.transcendss.mavric.extended.models
 			if (end < 0)
 				end = rteObj.endMi;
 			
-			var newRte:Route = new Route(rteObj.routeName, begin, end, rteObj.routeNumber);
+			
+			var newRte:Route = new Route(rteObj.routeName, begin, end, rteObj.routeNumber, rteObj.routeFullName);
 			
 //			if(milepostData !=null && milepostData.length>0)
 //			{
@@ -1593,7 +1596,7 @@ package com.transcendss.mavric.extended.models
 			{		
 				var runEvent:NavControlEvent = new NavControlEvent(NavControlEvent.XY_CHANGE, true, true);
 				runEvent.mp = getCurrentMP();
-				
+				trace('**fireXYChange'+runEvent.mp);
 				this.dispatcher.dispatchEvent(runEvent);
 			}
 			catch(error:TypeError)
@@ -1657,9 +1660,11 @@ package com.transcendss.mavric.extended.models
 				return;
 			}	
 			FlexGlobals.topLevelApplication.setBusyStatus(true);
-			if(FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.invPanelContent != "bars")
+			var btmPnl:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.invPanelContent;
+			if(btmPnl != "bars")
 			{
 				savingRoutetoLocalDB = true;
+				bottomPanelContentBeforeSave = btmPnl;
 				FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.invPanelContent="bars";
 			}
 			else
@@ -1744,6 +1749,8 @@ package com.transcendss.mavric.extended.models
 			storeDDOTassets(sID);
 			//store geotags
 			storeDDOTGeotags();
+			
+			FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.invPanelContent= bottomPanelContentBeforeSave  ;
 		}
 		
 		private function storeDDOTassets(sID:Number):void{
@@ -1946,7 +1953,7 @@ package com.transcendss.mavric.extended.models
 			var dx:Number;
 			var dy:Number;
 			
-			if (mapSR == "4623" || mapSR == "4327" || mapSR == "102113")
+			if (mapSR == "4623" || mapSR == "4326" || mapSR == "4327" || mapSR == "102113")
 			{
 				baseX = parseFloat(path[0].X);
 				baseY = parseFloat(path[0].Y);
@@ -2154,7 +2161,9 @@ package com.transcendss.mavric.extended.models
 		{
 			var mileMarkerArrC:ArrayCollection = stickDrawing.JSONToMileMarkers(cStickElement.content, begin, end);
 			
-			var rte:Route = new Route(cRoute.routeid, cRoute.beginmile, cRoute.endmile);
+			var routeJson:String = cRoute.content;
+			var cRouteCon:Object = JSON.parse(routeJson);
+			var rte:Route = new Route(cRoute.routeid, cRoute.beginmile, cRoute.endmile,0,cRouteCon.route.routeFullName);
 			FlexGlobals.topLevelApplication.GlobalComponents.assetManager.route = rte;
 			if (mileMarkerArrC.length==0)
 				mileMarkerArrC = FlexGlobals.topLevelApplication.GlobalComponents.assetManager.getAssetsByRoute("MILEMARKER", rte);
@@ -2400,7 +2409,7 @@ package com.transcendss.mavric.extended.models
 			
 			if (fsm == null)
 				return;
-			
+			//FlexGlobals.topLevelApplication.TSSAlert(x +","+ y);;
 			var pUTM:PolarToUTM = new PolarToUTM();
 			var utmObj:Object = pUTM.latlongToUTM(y, x);
 			fsm.latitude = y;

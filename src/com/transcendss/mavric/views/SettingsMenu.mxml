@@ -952,8 +952,8 @@
 				</s:VGroup>
 			</s:HGroup>
 			
-			<s:Label text="Default Bottom Panel Content:"/>
-			<s:HGroup>
+			<s:Label text="Default Bottom Panel Content:" visible="{!BaseConfigUtility.getBool('hide_bottom_panel_options')}" includeInLayout="{!BaseConfigUtility.getBool('hide_bottom_panel_options')}"/>
+			<s:HGroup visible="{!BaseConfigUtility.getBool('hide_bottom_panel_options')}" includeInLayout="{!BaseConfigUtility.getBool('hide_bottom_panel_options')}">
 				
 				<s:RadioButton id="mapRadio" label="Overview Map" group="{btmPanelRadioSelect}"
 							   value="map"></s:RadioButton>

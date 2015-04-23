@@ -65,7 +65,7 @@
 					signStatusDDView.genericPopup.width = 200;
 					SignStatusDDGroup.addElement(signStatusDDView);
 					
-					attchView.init("SignInventory",true,true,true);
+					attchView.init("SignInventory",true,false,true);
 					addAttchmentsHolder.addElement(attchView);
 				}
 				catch (err:Error)

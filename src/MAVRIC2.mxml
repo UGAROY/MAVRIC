@@ -13,7 +13,8 @@
 			   preloader="com.transcendss.mavric.util.MAVRICPreLoader"
 			   applicationComplete="init()"
 			   creationComplete="checkConnection()"
-			   preinitialize="onPreinitialize()">
+			   preinitialize="onPreinitialize()"
+			   runtimeDPIProvider="com.transcendss.mavric.util.RuntimeDPIProvider">
 	<!--xmlns="http://mate.asfusion.com/"-->
 	<!--- This is the MAVRIC App -->
 	<fx:Declarations>
@@ -308,6 +309,7 @@
 				var version:String = Capabilities.version;
 				if (version.indexOf('IOS') > -1) {
 					platform = 'IOS';
+					appCntrlBar.Exit.visible=false;
 				} else if (version.indexOf('AND') > -1) {
 					platform = 'ANDROID';
 				} else {
@@ -493,7 +495,7 @@
 					
 					showRouteSelector();
 					
-					var rsEvent:RouteSelectorEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTOR_POPULATE,sldDiagram.getRoute(),sldDiagram.getScale());
+					var rsEvent:RouteSelectorEvent = new RouteSelectorEvent(RouteSelectorEvent.ROUTE_SELECTOR_POPULATE,sldDiagram.getRoute(),GlobalComponents.ConfigManager.defaultScale);
 					rsEvent.routeName = sldDiagram.getRoute().routeName;
 					//dispatchEvent(rsEvent);
 					setTimeout(dispatchEvent, 500, rsEvent);
@@ -532,6 +534,11 @@
 				routeSelWindow = RouteSelector(PopUpManager.createPopUp(this,RouteSelector,false));
 				PopUpManager.centerPopUp(routeSelWindow);
 				routeSelWindow.y = 50;
+			}
+			
+			public function setRouteSelectorFree():void{
+				if(routeSelWindow)
+				routeSelWindow.busyIndicator.busy = false;
 			}
 			
 			public function showMainForm():void
@@ -623,13 +630,14 @@
 				trace("Video Captured");
 				
 				var media:MediaPromise =event.data;
-				trace(media.file.url + "-" + media.relativePath + "-" + media.mediaType);
+				//TSSAlert(event.data.file.url);
+				//TSSAlert(media.file.url + "-" + media.relativePath + "-" + media.mediaType);
 				var tmpEvent:videoEvent = new videoEvent(videoEvent.NEWVIDEO, true, true);
 				
 				var video:Video = event.data as Video;
 				tmpEvent.video = video;
 				tmpEvent.memo = "test video";
-				tmpEvent.path = media.file.url;
+				tmpEvent.path = media.file.nativePath;//ddot changed for ios
 				dataSource = media.open();
 				
 				if (media.isAsync)
@@ -804,7 +812,8 @@
 			
 			public function showVideo(event:videoEvent):void
 			{
-				
+				try
+				{
 				var videoObject:Video=new Video();
 				var popup : IFlexDisplayObject;
 				var container:DisplayObject;
@@ -832,6 +841,8 @@
 				//Replaced by toky video player
 				if (event.tssvideo.filePath.substring(0, 4) == "http") // if the source is the online database, else the local database
 					player.source = event.tssvideo.filePath;
+				else if(FlexGlobals.topLevelApplication.platform == "IOS") 
+					player.source = event.tssvideo.filePath;
 					//player.source = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.serviceURL+"FileUpload/" + event.tssvideo.filePath.substr(event.tssvideo.filePath.length - 17);
 				else if (event.tssvideo.filePath.substring(0, 8) == "file:///") // if the path is full path.
 					player.source = event.tssvideo.filePath;
@@ -839,10 +850,15 @@
 					player.source = "file:///mnt/sdcard/geotags/" + event.tssvideo.filePath;
 				player.autoRewind = true;
 				
+				//TSSAlert(event.tssvideo.filePath);
 				vFrame.addVideoPlayer(player);
 				//vFrame.addVideo(event.tssvideo.video);
 				
 				vFrame.addEventListener(CloseEvent.CLOSE, handleVideoClose);
+				}catch(e:Error)
+				{
+					TSSAlert("Error playing video");
+				}
 			}
 			
 			public function handleVideoClose(ev:CloseEvent):void

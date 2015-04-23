@@ -222,7 +222,7 @@
 				}				
 			}
 			
-			public function setJumpScale(event:Event):void{
+			public function setScale(event:Event):void{
 				
 				// set jump scale
 				if (jump2ScaleItems.length == 0) {
@@ -231,8 +231,8 @@
 				for(var j:int=0;j<ScaleInp.dataProvider.length;j++)
 				{
 					var scale:String = String(jump2ScaleItems.getItemAt(j).scaleValue);
-					var dScale:String = FlexGlobals.topLevelApplication.sldDiagram.getScale().toString();
-					if(scale == dScale)
+					var dScale:Number = app.GlobalComponents.ConfigManager.defaultScale;
+					if(scale == String(dScale))
 					{
 						ScaleInp.selectedIndex=j;
 						scaleText.text = "Scale: " + (ScaleInp.selectedItem.scaleLabel as String);//FlexGlobals.topLevelApplication.sldDiagram.getScale().toString();
@@ -541,7 +541,7 @@
 				<s:Spacer width="150"/>
 				<!--<mx:Spacer width="100%"/>-->
 				<!--<s:Image id="Sync" buttonMode="true" width="40" height="40" click="{verifySyncChanges(event)}"/>-->
-				<s:Image id="Exit" buttonMode="true" width="40" height="40" visible="{FlexGlobals.topLevelApplication.platform!='IOS'}" click="quitApp(event)"/>
+				<s:Image id="Exit" buttonMode="true" width="40" height="40" includeInLayout="{app.platform!='IOS'}" visible="{app.platform!='IOS'}" click="quitApp(event)"/>
 				
 			</s:HGroup><!--
 			<mx:Spacer width="100%"/>-->

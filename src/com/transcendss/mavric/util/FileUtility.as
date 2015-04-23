@@ -125,23 +125,15 @@ package com.transcendss.mavric.util
 		
 		public function WriteVideo(vid:Video, aName:String, path:String):void
 		{
-			var fTempExist:File = new File(path);
 			
+			var sourceFile:File = File.applicationDirectory.resolvePath(path);
 			
-			
+			var path2:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + aName;
+			var destinationFile:File;
 			if (FlexGlobals.topLevelApplication.platform == "IOS") {
-				fTempExist = File.applicationStorageDirectory.resolvePath(path);
+				destinationFile = File.applicationStorageDirectory.resolvePath(path2);
 			} else {
-				fTempExist = new File(path);
-			}
-			
-			
-			var path:String = FlexGlobals.topLevelApplication.GlobalComponents.ConfigManager.geotagUrl + aName;
-			var fTempFile:File;
-			if (FlexGlobals.topLevelApplication.platform == "IOS") {
-				fTempFile = File.applicationStorageDirectory.resolvePath(path);
-			} else {
-				fTempFile = new File(path);
+				destinationFile = new File(path2);
 			}
 			
 			/*var fsFlvEncoder:FileStreamFlvEncoder = new FileStreamFlvEncoder(fTempFile, 30);
@@ -177,9 +169,9 @@ package com.transcendss.mavric.util
 			fsFlvEncoder.kill();*/
 			
 			var fsStream:FileStream = new FileStream();
-			fsStream.open(fTempFile, FileMode.WRITE);
+			fsStream.open(destinationFile, FileMode.WRITE);
 			var fsExists:FileStream = new FileStream();
-			fsExists.open(fTempExist, FileMode.READ);
+			fsExists.open(sourceFile, FileMode.READ);
 			while (fsExists.bytesAvailable > 0)
 				fsStream.writeByte(fsExists.readByte());
 			

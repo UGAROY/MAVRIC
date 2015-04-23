@@ -32,11 +32,11 @@ package com.transcendss.mavric.managers.ddot
 		
 		private var _supportDict:Object;
 		
-		private var _signEventLayerID:Number = 17;
-		private var _inspectionEventLayerID:Number = 15;
-		private var _linkEventLayerID:Number = 16;
-		private var _trEventLayerID:Number = 18;
-		private var _wardEventLayerID:Number = 14;
+		private var _signEventLayerID:Number = 13;
+		private var _inspectionEventLayerID:Number = 11;
+		private var _linkEventLayerID:Number = 12;
+		private var _trEventLayerID:Number = 14;
+		private var _wardEventLayerID:Number = 10;
 		
 		public var dispatcher:IEventDispatcher;
 		
@@ -46,6 +46,10 @@ package com.transcendss.mavric.managers.ddot
 		private var _allLinks:ArrayCollection = new ArrayCollection();
 		private var _allTimeRestrictions:ArrayCollection = new ArrayCollection();
 		private var _intersectionList:ArrayCollection= new ArrayCollection();
+		
+		public var maxSupportIDOnServer:Number;
+		public var maxSignIDOnServer:Number;
+		public var maxInspectionIDOnServer:Number;
 		
 		public function get signEventLayerID():Number
 		{
@@ -193,7 +197,7 @@ package com.transcendss.mavric.managers.ddot
 			sign['COMMENTS'] = null;
 			sign['ISLOADINGZONE'] = null;
 			
-			sign['MEASURE'] = FlexGlobals.topLevelApplication.sldDiagram.sldDiagram.getCurrentMP();
+			
 			
 			return sign;
 		}
@@ -263,7 +267,9 @@ package com.transcendss.mavric.managers.ddot
 				{
 					supportIDList.push(temp.id);
 					if(temp.invProperties[temp.typeKey].value=='null')
-						temp.invProperties[temp.typeKey].value='LEFT'; //set it to N by default
+						temp.invProperties[temp.typeKey].value=1; //set it to N by default
+					
+					
 					if(temp.invProperties["SUPPORTSTATUS"].value!=5)//if it is not retired
 						assetCollection.push(temp);
 				}
@@ -301,7 +307,8 @@ package com.transcendss.mavric.managers.ddot
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.SIGN_REQUEST);
 			var whereClause:String =  "SUPPORTID in (@poleIds)"
 				.replace("@poleIds", supportIDList.join(','));
-			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._signEventLayerID, whereClause);
+			_requestEvent.whereClause = whereClause;
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrlForPost(this._signEventLayerID);
 			_requestEvent.supportIDs = supportIDList;
 			_requestEvent.responder =  responder;
 			_dispatcher.dispatchEvent(_requestEvent);
@@ -366,7 +373,8 @@ package com.transcendss.mavric.managers.ddot
 			var whereClause:String =  "SUPPORTID in (@poleId) or SIGNID in (@signIds)"
 				.replace("@poleId", ddotEvent.supportIDs.join(','))
 				.replace('@signIds', ddotEvent.signIDs.join(","));
-			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._inspectionEventLayerID, whereClause);
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrlForPost(this._inspectionEventLayerID);
+			_requestEvent.whereClause = whereClause;
 			_requestEvent.supportIDs = ddotEvent.supportIDs;
 			_requestEvent.signIDs = ddotEvent.signIDs;
 			_requestEvent.responder = ddotEvent.responder;
@@ -547,7 +555,7 @@ package com.transcendss.mavric.managers.ddot
 			
 			for each (var sign:Object in _allSigns)
 			{
-				if (sign['SIGNID'] != signID && localIDs.indexOf('SIGNID')===-1)
+				if (sign['SIGNID'] != signID && localIDs.indexOf(sign['SIGNID'])===-1)
 					otherSigns.addItem(sign);
 			}
 			return otherSigns;
@@ -627,7 +635,8 @@ package com.transcendss.mavric.managers.ddot
 			FlexGlobals.topLevelApplication.incrementEventStack();
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.LINK_REQUEST);
 			var whereClause:String =  "SIGNID IN (@signIds)".replace("@signIds", signIDs.join(','));
-			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._linkEventLayerID, whereClause);
+			_requestEvent.whereClause = whereClause;
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrlForPost(this._linkEventLayerID);
 			_requestEvent.signIDs = signIDs;
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
@@ -677,11 +686,17 @@ package com.transcendss.mavric.managers.ddot
 		public function getTimeRestrictionByLinkID(linkID:String):ArrayCollection
 		{
 			var tres:ArrayCollection = new ArrayCollection();
+			
 			for each(var restriction in this._allTimeRestrictions)
 			{
 				if(restriction.LINKID ==linkID)
 					tres.addItem(restriction);
 			}
+			
+			
+			var localInsp:ArrayCollection = _mdbm.getTimeRestrictionByLinkID(linkID);
+			tres.addAll(localInsp);
+			
 			
 			return tres;
 		}
@@ -691,7 +706,8 @@ package com.transcendss.mavric.managers.ddot
 			FlexGlobals.topLevelApplication.incrementEventStack();
 			_requestEvent = new DdotRecordEvent(DdotRecordEvent.TIME_RESTRICTION_REQUEST);
 			var whereClause:String =  "LINKID IN ('@linkIds')".replace("@linkIds", linkIDs.join('\',\''));
-			_requestEvent.serviceURL = _agsMapService.getCustomEventUrl(this._trEventLayerID, whereClause);
+			_requestEvent.whereClause = whereClause;
+			_requestEvent.serviceURL = _agsMapService.getCustomEventUrlForPost(this._trEventLayerID);
 			_dispatcher.dispatchEvent(_requestEvent);
 			_requestEvent = null;
 		}
